@@ -13,6 +13,7 @@ If {DATE2} is present it means that the image was taken in {DATE1} and registere
 You need to perform the following registrations: (A) S1->S2; (B) S2->S3; (C) S1->S3. (A) and (B) are consecutive; (C) is
 non-consecutive. Then apply the registration to the lesion masks. We denote Li the Lesion mask of Si.
 *** Note that the lesions masks must be labeled BEFORE the registration ***
+3. Run MatchingAlgo.py
 
 3. The algo inputs all the pairs of registered and fix lesion masks. For ex: [(L1->L2, L2), (L1->L3, L3), ...]; the algo
 gets the parameters r, d, p, as in Shalom's Algo.
