@@ -82,10 +82,12 @@ def convert_json_format():
 #
 # r.show_all()
 
-ld = LoaderSimpleFromJson(f"/cs/usr/bennydv/Desktop/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/C_A_glong_gt.json")
+ld = LoaderSimpleFromJson(f"/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/C_A_glong_gt.json")
 lg1 = LongitClassification(ld)
 dr_2 = DrawerLabels(lg1)
 dr_2.show_graph()
+
+
 
 for pat in get_patients_list():
     # for pat in get_patients_list():
