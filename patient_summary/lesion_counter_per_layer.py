@@ -68,7 +68,7 @@ def print_counter_into_pdf(layer_counters: dict, new_lesion_counters: dict, pdf_
     elements.append(subtitle)
 
     # graph image
-    graph = Image("C_A_patient_summary.png", height=400, width=500)
+    graph = Image("C_A_patient_summary.png", height=300, width=400)
     elements.append(graph)
 
     credit_style = ParagraphStyle('credit_style',fontsize=12)
@@ -99,7 +99,7 @@ def print_counter_into_pdf(layer_counters: dict, new_lesion_counters: dict, pdf_
 
 def generate_counter():
     ld = LoaderSimpleFromJson(
-        f"/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/C_A_glong_gt.json")
+        f"/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/A_W_glong_gt.json")
     lg1 = LongitClassification(ld)
     dr_2 = DrawerLabels(lg1)
     dr_2.show_graph("C_A_patient_summary.png")
