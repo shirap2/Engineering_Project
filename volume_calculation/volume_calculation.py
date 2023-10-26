@@ -32,8 +32,8 @@ def from_mask_to_volume(path):
     return volume_per_label
 
 
-def generate_longitudinal_volumes_array():
-    files = os.listdir("/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_W_")
+def generate_longitudinal_volumes_array(patient_path: str):
+    files = os.listdir(patient_path)
     scans = [f for f in files if f.startswith('lesions_gt_')]
     date_pattern = r'(\d{2}_\d{2}_\d{4})'
     formatted_dates = [(datetime.strptime(re.search(date_pattern, filename).group(), '%d_%m_%Y'), filename) for filename
@@ -42,7 +42,7 @@ def generate_longitudinal_volumes_array():
     longitudinal_volumes_array = []
     for file_name in sorted_filenames:
         longitudinal_volumes_array.append(from_mask_to_volume(
-            f"/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_W_/{file_name}"))
+            f"{patient_path}/{file_name}"))
     return longitudinal_volumes_array
 
 
@@ -92,7 +92,8 @@ def get_volumes():
     ld = LoaderSimpleFromJson(
         f"/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/A_W_glong_gt.json")
 
-    longitudinal_volumes_array = generate_longitudinal_volumes_array()  # returns sorted (by date) array of
+    longitudinal_volumes_array = generate_longitudinal_volumes_array(
+        "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_W_")  # returns sorted (by date) array of
     # dictionaries (one for each time stamp), key - lesion idx, value - volume in mm^3
 
     diff_in_total = get_diff_in_total(longitudinal_volumes_array)  # array of tuples: (diff in total percentage, diff in total mm^3), when the idx in the array represents the time stamp
@@ -102,4 +103,4 @@ def get_volumes():
                                              longitudinal_volumes_array))  # returns a dictionary of key - edge, value - tuple of (difference in
     # percentage, difference in mm^3)
 
-get_volumes()
+# get_volumes()

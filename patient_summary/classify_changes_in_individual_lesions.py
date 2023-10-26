@@ -46,7 +46,6 @@ def count_d_in_d_out(ld):
             d_in_d_out_per_time_arr[root] = [0, 0]
         d_in_d_out_per_time_arr[root][D_OUT] += 1
 
-    print(d_in_d_out_per_time_arr)
     return d_in_d_out_per_time_arr
 
 
@@ -96,57 +95,3 @@ def gen_dict_classified_nodes_for_layers(classified_nodes):
         dict_classified_times[node_time][node_class] += 1
     return dict_classified_times
 
-
-
-
-def generate_layer_class_chart(classified_nodes_dict):
-
-    unique_classes = [getattr(changes_in_individual_lesions, attr) for attr in dir(changes_in_individual_lesions) if not callable(getattr(changes_in_individual_lesions, attr)) and not attr.startswith("__")]
-    unique_layers = sorted(classified_nodes_dict.keys())
-
-    # Create a 2D list for the data (counts)
-    data = [[f"Time Layer"] + unique_classes]
-    for layer in unique_layers:
-        row = [layer] + [classified_nodes_dict.get(layer, {}).get(class_, 0) for class_ in unique_classes]
-        data.append(row)
-
-    # Create a PDF document
-    doc = SimpleDocTemplate("layer_class_chart.pdf", pagesize=letter)
-
-    elements = []
-
-    title_string = "Layer Class Chart"
-    subtitle = "Lesion Class Type"
-
-    title_style = getSampleStyleSheet()['Title']
-    title = Paragraph(title_string, title_style)
-
-    elements.append(title)
-    elements.append(Spacer(1, 20))
-
-    table = Table(data)
-
-    # Define table style
-    table_style = TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), (0.8, 0.8, 0.8)),  # Grey background for headers
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # Center align all cells
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),  # Bold font for headers
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  # Add padding to headers
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),  # Add gridlines with 1pt width
-    ])
-
-    table.setStyle(table_style)
-
-    elements.append(table)
-
-    doc.build(elements)
-
-
-ld = LoaderSimpleFromJson(
-    f"/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/A_W_glong_gt.json")
-d_in_d_out_per_time_arr = count_d_in_d_out(ld)
-print(classify_changes_in_individual_lesions(d_in_d_out_per_time_arr))
-classes_dict = gen_dict_classified_nodes_for_layers(classify_changes_in_individual_lesions(d_in_d_out_per_time_arr))
-print(classes_dict)
-
-generate_layer_class_chart(classes_dict)
