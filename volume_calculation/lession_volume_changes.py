@@ -1,12 +1,10 @@
 
-from volume_calculation import generate_longitudinal_volumes_array
+from volume_calculation.volume_calculation import generate_longitudinal_volumes_array
 
 
 def generate_volume_list_single_lesion(patient_path):
     longitudinal_volumes_array = generate_longitudinal_volumes_array(patient_path)  # returns sorted (by date) array of
     # dictionaries (one for each time stamp), key - lesion idx, value - volume in mm^3
-
-    print(longitudinal_volumes_array)
 
     grouped_volumes = {}
 
@@ -40,15 +38,16 @@ def check_single_lession_growth(vol_list,lession_idx):
             decreasing = False
         elif lession_volumes[i] < lession_volumes[i - 1]:
             increasing = False
-
+    text =""
     if increasing:
-        print(f"Volumes are consistently increasing over time.")
+        text +="Volumes are consistently increasing over time."
     elif decreasing:
-        print(f"Volumes are consistently decreasing over time.")
+        text+= "Volumes are consistently decreasing over time."
     else:
-        print(f"Volumes show both increases and decreases over time.")
+        text +="Volumes show both increases and decreases over time."
+    return text
 
-vol_list = generate_volume_list_single_lesion("/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_W_")
-print(vol_list)
-check_single_lession_growth(vol_list,2)
+# vol_list = generate_volume_list_single_lesion("/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_W_")
+# print(vol_list)
+# check_single_lession_growth(vol_list,2)
 

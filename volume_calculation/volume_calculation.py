@@ -103,4 +103,3 @@ def get_volumes():
                                              longitudinal_volumes_array))  # returns a dictionary of key - edge, value - tuple of (difference in
     # percentage, difference in mm^3)
 
-# get_volumes()
