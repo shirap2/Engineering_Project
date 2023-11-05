@@ -588,6 +588,7 @@ class Longit:
         self._patient_name = patient_name
         self._patient_dates = patient_dates
 
+
     def get_graph(self) -> nx.Graph:
         return self._graph
 
@@ -786,6 +787,7 @@ class Drawer:
         """Add to each node the color attribute GRAY"""
         nx.set_node_attributes(self._base_graph, values=Colors.GRAY, name=NodeAttr.COLOR)
 
+
     def set_edges_drawing_attributes(self):
         """Add to each node the color attribute BLACK and set the connection style"""
         nx.set_edge_attributes(self._base_graph, values=Colors.BLACK, name=EdgeAttr.COLOR)
@@ -883,7 +885,7 @@ class Drawer:
 
     def set_nodes_labels(self):
         return nx.get_node_attributes(self._base_graph, self.attr_to_print_on_nodes())
-
+        
     def draw(self, pos):
         """This function prints the title of the figure and the graph"""
         plt.title(self._patient_name, fontsize=12)

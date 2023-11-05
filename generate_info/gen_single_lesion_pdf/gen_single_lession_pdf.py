@@ -1,10 +1,10 @@
 import os
 from common_packages.LongGraphPackage import LoaderSimpleFromJson
-from generate_info.gen_single_patient_pdf import get_nodes_graph_image
-from generate_pdf_base import BasePDFGenerator
+from generate_info.generate_pdf_base import BasePDFGenerator
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from volume_calculation.lession_volume_changes import check_single_lession_growth, generate_volume_list_single_lesion
+from gen_single_lesion_graph import get_nodes_graph_image
 
 
 
@@ -48,7 +48,7 @@ def create_pdf_file(patient_name : str, scan_name : str, patient_partial_path : 
     elements.append(Spacer(1,20))
 
     # graph image
-    elements += get_nodes_graph_image(png_name, ld)
+    elements += get_nodes_graph_image("single_labeled_lesion_graph.png" , patient_partial_path, ld)
     elements.append(Spacer(1,20))
 
 

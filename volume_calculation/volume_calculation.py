@@ -87,6 +87,11 @@ def get_diff_in_total(longitudinal_volumes_array):
         total_volume_arr.append([total_vol_mm3, vol_percentage_diff, vol_mm3_diff])
     return total_volume_arr
 
+def get_percentage_diff_per_edge_dict(ld, partial_patient_path):
+    longitudinal_volumes_array = generate_longitudinal_volumes_array(partial_patient_path)
+    # remove the difference in mm^3, leave only difference in percentage
+    volume_change_per_edge = get_dict_of_volume_change_per_edge(ld,longitudinal_volumes_array)
+    return {edge: percentage for edge, (percentage, _) in volume_change_per_edge.items()}
 
 def get_volumes():
     ld = LoaderSimpleFromJson(
@@ -95,11 +100,14 @@ def get_volumes():
     longitudinal_volumes_array = generate_longitudinal_volumes_array(
         "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_W_")  # returns sorted (by date) array of
     # dictionaries (one for each time stamp), key - lesion idx, value - volume in mm^3
-
+    
     diff_in_total = get_diff_in_total(longitudinal_volumes_array)  # array of tuples: (diff in total percentage, diff in total mm^3), when the idx in the array represents the time stamp
 
-    print(diff_in_total)
-    print(get_dict_of_volume_change_per_edge(ld,
-                                             longitudinal_volumes_array))  # returns a dictionary of key - edge, value - tuple of (difference in
+    # print(diff_in_total)
+    # print(get_dict_of_volume_change_per_edge(ld,
+    #                                          longitudinal_volumes_array))  # returns a dictionary of key - edge, value - tuple of (difference in
     # percentage, difference in mm^3)
 
+    # print(get_percentage_diff_per_edge_dict(ld, "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_W_"))
+
+# get_volumes()
