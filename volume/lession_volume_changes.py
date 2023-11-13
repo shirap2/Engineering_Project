@@ -1,10 +1,10 @@
 
-from volume_calculation.volume_calculation import generate_longitudinal_volumes_array
+from volume.volume_calculation import generate_longitudinal_volumes_array
 
 
 def generate_volume_list_single_lesion(patient_path):
     longitudinal_volumes_array = generate_longitudinal_volumes_array(patient_path)  # returns sorted (by date) array of
-    # dictionaries (one for each time stamp), key - lesion idx, value - volume in mm^3
+    # dictionaries (one for each time stamp), key - lesion idx, value - volume in cm^3
 
     grouped_volumes = {}
 

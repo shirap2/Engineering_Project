@@ -3,21 +3,24 @@ import networkx as nx
 from typing import Dict
 import numpy as np
 from common_packages.BaseClasses import Longit, NodeAttr, EdgeAttr, Colors, Drawer
-from volume_calculation.volume_calculation import get_percentage_diff_per_edge_dict, generate_longitudinal_volumes_array
+from volume.volume_calculation import get_percentage_diff_per_edge_dict, generate_longitudinal_volumes_array
 
-def edit_volume_percentage_data_to_str(vol_percentage_diff_per_edge: dict):
+def edit_volume_percentage_data_to_str_and_color(vol_percentage_diff_per_edge: dict):
     edited_dict = dict()
+    color_dict = dict()
     for edge, percentage in vol_percentage_diff_per_edge.items():
-
+        color = 'green'
         diff_is_positive = (percentage > 0)
-        percentage = str(round(percentage, 2)) + "%"
+        percentage = str(round(percentage)) + "%"
 
         if diff_is_positive:
             percentage = "+" + percentage
+            color = 'red'
 
         edited_dict.update({edge: percentage})
+        color_dict.update({edge: color})
     
-    return edited_dict
+    return edited_dict, color_dict
 
 
 
@@ -28,15 +31,15 @@ def get_node_volume(node_str : str, partial_patient_path : str):
 
 
 def get_edge_label_color(edge_labels : dict):
-    # color_dict = dict()
-    # for edge, vol_percent_str in edge_labels.items():
-    #     sign = vol_percent_str[0]
-    #     if sign == '+':
-    #         color_dict.update({edge : 'red'})
-    #     elif sign == '-':
-    #         color_dict.update({edge : 'green'})
-    # return color_dict
-    return 'red'
+    color_dict = dict()
+    for edge, vol_percent_str in edge_labels.items():
+        sign = vol_percent_str[0]
+        if sign == '+':
+            color_dict.update({edge : 'red'})
+        elif sign == '-':
+            color_dict.update({edge : 'green'})
+    return color_dict
+    # return 'red'
 
 
 class DrawerLabelsAndLabeledEdges(Drawer):
@@ -66,14 +69,15 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         """Add to each node the color attribute BLACK and set the connection style"""
         super().set_edges_drawing_attributes()
         percentage_diff_per_edge_dict = get_percentage_diff_per_edge_dict(self.ld, self.partial_patient_path)
-        percentage_diff_per_edge_dict = edit_volume_percentage_data_to_str(percentage_diff_per_edge_dict)
+        percentage_diff_per_edge_dict, color_dict = edit_volume_percentage_data_to_str_and_color(percentage_diff_per_edge_dict)
         nx.set_edge_attributes(self._base_graph, percentage_diff_per_edge_dict, name='label')
+        nx.set_edge_attributes(self._base_graph, color_dict, name='color')
 
     def set_nodes_volume_labels(self):
         idx_dict = nx.get_node_attributes(self._base_graph, self.attr_to_print_on_nodes())
-        # return {node : f'Lesion ID: {idx}\nVolume: {get_volume(node)}[mm³]' for node, idx in idx_dict.items()}
-        print(idx_dict)
-        return {node : f'{get_node_volume(node, self.partial_patient_path)}[mm³]' for node, idx in idx_dict.items()}
+        # return {node : f'Lesion ID: {idx}\nVolume: {get_volume(node)}[cm³]' for node, idx in idx_dict.items()}
+        # print(idx_dict)
+        return {node : f'{get_node_volume(node, self.partial_patient_path)}' for node, idx in idx_dict.items()}
     
     def draw(self, pos):
         """This function prints the title of the figure and the graph"""
@@ -108,6 +112,9 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                                            is_skip_edge[e]],
                                connectionstyle='arc3, rad=-0.1')
         edge_labels = nx.get_edge_attributes(self._base_graph, 'label')
-        nx.draw_networkx_edge_labels(G=self._base_graph, pos=pos, edge_labels=edge_labels, font_color=get_edge_label_color(edge_labels), font_size=10)
+        colors = get_edge_label_color(edge_labels)
+        for edge, label in edge_labels.items():
+            color = colors[edge]
+            nx.draw_networkx_edge_labels(G=self._base_graph, pos=pos, edge_labels={edge: label}, font_color=color)
 
         

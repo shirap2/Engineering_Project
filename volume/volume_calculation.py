@@ -17,9 +17,10 @@ def get_voxels_count_per_label(scan):
     return counts_per_label
 
 
-def from_voxels_count_to_volume_mm_3(counts_per_label: dict, nifti):
+def from_voxels_count_to_volume_cm_3(counts_per_label: dict, nifti):
     one_voxel_volume = nifti.header.get_zooms()[0] * nifti.header.get_zooms()[1] * nifti.header.get_zooms()[2]
     volume_per_label = {key: val * one_voxel_volume for key, val in counts_per_label.items()}
+    volume_per_label = {key: val / 1000 for key, val in volume_per_label.items()} # mm_3 to cm_3
     return volume_per_label
 
 
@@ -28,7 +29,7 @@ def from_mask_to_volume(path):
 
     labeled_scan = get_labeled_segmentation(scan)
     counts_per_label = get_voxels_count_per_label(labeled_scan)
-    volume_per_label = from_voxels_count_to_volume_mm_3(counts_per_label, nifti)
+    volume_per_label = from_voxels_count_to_volume_cm_3(counts_per_label, nifti)
     return volume_per_label
 
 
@@ -74,22 +75,22 @@ def get_dict_of_volume_change_per_edge(ld: LoaderSimpleFromJson, longitudinal_vo
 def get_diff_in_total(longitudinal_volumes_array):
     total_volume_arr = []
     for dict in longitudinal_volumes_array:
-        total_vol_mm3 = 0
+        total_vol_cm3 = 0
         for key, val in dict.items():
-            total_vol_mm3 += val
+            total_vol_cm3 += val
 
-        vol_percentage_diff, vol_mm3_diff = 0, 0
+        vol_percentage_diff, vol_cm3_diff = 0, 0
         if len(total_volume_arr) > 0:
             prev_total_vol = total_volume_arr[len(total_volume_arr) - 1][0]
-            vol_percentage_diff = ((total_vol_mm3 / prev_total_vol)-1)*100
-            vol_mm3_diff = total_vol_mm3 - prev_total_vol
+            vol_percentage_diff = ((total_vol_cm3 / prev_total_vol)-1)*100
+            vol_cm3_diff = total_vol_cm3 - prev_total_vol
 
-        total_volume_arr.append([total_vol_mm3, vol_percentage_diff, vol_mm3_diff])
+        total_volume_arr.append([total_vol_cm3, vol_percentage_diff, vol_cm3_diff])
     return total_volume_arr
 
 def get_percentage_diff_per_edge_dict(ld, partial_patient_path):
     longitudinal_volumes_array = generate_longitudinal_volumes_array(partial_patient_path)
-    # remove the difference in mm^3, leave only difference in percentage
+    # remove the difference in cm^3, leave only difference in percentage
     volume_change_per_edge = get_dict_of_volume_change_per_edge(ld,longitudinal_volumes_array)
     return {edge: percentage for edge, (percentage, _) in volume_change_per_edge.items()}
 
@@ -99,15 +100,15 @@ def get_volumes():
 
     longitudinal_volumes_array = generate_longitudinal_volumes_array(
         "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_W_")  # returns sorted (by date) array of
-    # dictionaries (one for each time stamp), key - lesion idx, value - volume in mm^3
+    # dictionaries (one for each time stamp), key - lesion idx, value - volume in cm^3
     
-    diff_in_total = get_diff_in_total(longitudinal_volumes_array)  # array of tuples: (diff in total percentage, diff in total mm^3), when the idx in the array represents the time stamp
+    diff_in_total = get_diff_in_total(longitudinal_volumes_array)  # array of tuples: (diff in total percentage, diff in total cm^3), when the idx in the array represents the time stamp
 
     # print(diff_in_total)
     # print(get_dict_of_volume_change_per_edge(ld,
     #                                          longitudinal_volumes_array))  # returns a dictionary of key - edge, value - tuple of (difference in
-    # percentage, difference in mm^3)
+    # percentage, difference in cm^3)
 
-    # print(get_percentage_diff_per_edge_dict(ld, "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_W_"))
+    get_percentage_diff_per_edge_dict(ld, "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_W_")
 
 # get_volumes()
