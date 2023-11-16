@@ -33,7 +33,7 @@ def check_lesion_growth_from_last_scan(lesion_volumes):
     
     prev_volume = lesion_volumes[-2]
     vol_change_type =""
-    change_percentage = int(abs((cur_volume/prev_volume)-1)*100)
+    change_percentage = round(abs((cur_volume/prev_volume)-1)*100)
     if cur_volume<prev_volume:
         text += f"Lesion volume has decreased by {change_percentage}% from previous scan to current scan. "
     elif cur_volume>prev_volume:
@@ -61,7 +61,7 @@ def check_single_lession_growth(vol_list,lesion_idx):
             decreasing = False
         elif lesion_volumes[i] < lesion_volumes[i - 1]:
             increasing = False
-    change_percentage = int(abs((lesion_volumes[-1]/lesion_volumes[0])-1)*100)
+    change_percentage = round(abs((lesion_volumes[-1]/lesion_volumes[0])-1)*100)
     if increasing:
         text +=f"Volume consistently increased over time by {change_percentage}% from first scan to last scan."
     elif decreasing:
@@ -85,7 +85,7 @@ def lesion_growth_percentage(patient_partial_path,num_of_tumors):
 
     # Determine the change type based on the sign of vol_percentage_diff
     change_type = "increased" if vol_percentage_diff >= 0 else "decreased"
-    vol_percentage_diff_abs = int(abs((final_value / initial_value)-1) * 100)
+    vol_percentage_diff_abs = round(abs((final_value / initial_value)-1) * 100)
     # Format the message based on the presence of a minus sign
     vol_diff_text = f"{vol_percentage_diff_abs}%"
 
