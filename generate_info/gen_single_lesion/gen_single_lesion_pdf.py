@@ -3,7 +3,7 @@ from common_packages.LongGraphPackage import LoaderSimpleFromJson
 from generate_info.generate_pdf_base import BasePDFGenerator
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from volume.lession_volume_changes import check_single_lession_growth, generate_volume_list_single_lesion
+from volume.lession_volume_changes import check_single_lession_growth, generate_volume_list_single_lesion, lesion_growth_percentage
 from generate_info.gen_single_lesion.gen_single_lesion_graph import get_nodes_graph_image
 
 
@@ -51,12 +51,14 @@ def create_single_lesion_pdf_page(patient_name : str, scan_name : str, patient_p
 
 
     # lession volume change text
-    elements+=get_sub_title("Lession Growth Changes")
+    elements+=get_sub_title("Lesion Growth Changes")
     vol_list = generate_volume_list_single_lesion(patient_partial_path)
+    num_of_tumors = len(vol_list)
     for key in vol_list.keys():
          text_to_add =check_single_lession_growth(vol_list,key)
-         paragraph = Paragraph("Lession "+str(key)+": "+ text_to_add)
+         paragraph = Paragraph("Lesion "+str(key)+": "+ text_to_add)
          elements.append(paragraph)
+    elements+=lesion_growth_percentage(patient_partial_path,num_of_tumors)
        
     return elements
 
