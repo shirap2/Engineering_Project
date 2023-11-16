@@ -51,12 +51,11 @@ def count_d_in_d_out(ld):
 
 def classify_changes_in_individual_lesions(d_in_d_out_per_time_arr):
     classified_nodes = {}
-    print(d_in_d_out_per_time_arr)
     # Extract the highest time stamp value
-    highest_y = max(int(key.split('_')[1]) for key in d_in_d_out_per_time_arr.keys())
+    highest_t = max(int(key.split('_')[1]) for key in d_in_d_out_per_time_arr.keys())
 
-    # Filter keys based on the highest y value
-    filtered_keys = [key for key in d_in_d_out_per_time_arr.keys() if int(key.split('_')[1]) == highest_y]
+    # Filter keys based on the highest time stamp value
+    filtered_keys = [key for key in d_in_d_out_per_time_arr.keys() if int(key.split('_')[1]) == highest_t]
 
     
     for node, [d_in, d_out] in d_in_d_out_per_time_arr.items():
