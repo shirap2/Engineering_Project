@@ -1,4 +1,5 @@
 
+import math
 from volume.volume_calculation import generate_longitudinal_volumes_array, get_diff_in_total
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
 
@@ -19,32 +20,54 @@ def generate_volume_list_single_lesion(patient_path):
     sorted_grouped_volumes = dict(sorted(grouped_volumes.items()))
 
     return sorted_grouped_volumes
+"""
+this function gets a list of a lesion's volume changes over time and 
+checks the difference from last 2 consecutive scans"""
+def check_lesion_growth_from_last_scan(lesion_volumes):
+    text = ""
+    if not lesion_volumes:
+        return "No volume data available for the lesion."
+    cur_volume = lesion_volumes[-1]
+    if len(lesion_volumes)<2:
+        return "No volume data available for the lesion from previous scans"
+    
+    prev_volume = lesion_volumes[-2]
+    vol_change_type =""
+    change_percentage = int(abs((cur_volume/prev_volume)-1)*100)
+    if cur_volume<prev_volume:
+        text += f"Lesion volume has decreased by {change_percentage}% from previous scan to current scan. "
+    elif cur_volume>prev_volume:
+        text += f"Lesion volume has decreased by {change_percentage}% from previous scan to current scan. "
+    else:
+        text += "No change in lesion volume from previous scan to current scan. "
 
-
+    return text
 
 """
 this function gets a list of a lession's volume changes over time 
 and checks if the volume increased/decreased
 """
-def check_single_lession_growth(vol_list,lession_idx):
-    lession_volumes = vol_list[lession_idx]
-    if not lession_volumes:
+def check_single_lession_growth(vol_list,lesion_idx):
+    lesion_volumes = vol_list[lesion_idx]
+    if not lesion_volumes:
         return "No volume data available for the lesion."
         
     increasing = decreasing = True
 
-    for i in range(1, len(lession_volumes)-1):
-        if lession_volumes[i] > lession_volumes[i - 1]:
+    text = check_lesion_growth_from_last_scan(lesion_volumes)
+
+    for i in range(1, len(lesion_volumes)-1):
+        if lesion_volumes[i] > lesion_volumes[i - 1]:
             decreasing = False
-        elif lession_volumes[i] < lession_volumes[i - 1]:
+        elif lesion_volumes[i] < lesion_volumes[i - 1]:
             increasing = False
-    text =""
+    change_percentage = int(abs((lesion_volumes[-1]/lesion_volumes[0])-1)*100)
     if increasing:
-        text +="Volume consistently increased over time."
+        text +=f"Volume consistently increased over time by {change_percentage}% from first scan to last scan."
     elif decreasing:
-        text+= "Volume consistently decreased over time."
+        text+= f"Volume consistently decreased over time by {change_percentage}% from first scan to last scan."
     else:
-        text +="Volume shows both increases and decreases over time."
+        text +=f"Volume shows both increases and decreases over time from first scan to last scan."
     return text
 
 """
@@ -62,7 +85,7 @@ def lesion_growth_percentage(patient_partial_path,num_of_tumors):
 
     # Determine the change type based on the sign of vol_percentage_diff
     change_type = "increased" if vol_percentage_diff >= 0 else "decreased"
-    vol_percentage_diff_abs = int(abs((final_value - initial_value) / abs(initial_value)) * 100)
+    vol_percentage_diff_abs = int(abs((final_value / initial_value)-1) * 100)
     # Format the message based on the presence of a minus sign
     vol_diff_text = f"{vol_percentage_diff_abs}%"
 

@@ -58,6 +58,7 @@ def create_single_lesion_pdf_page(patient_name : str, scan_name : str, patient_p
          text_to_add =check_single_lession_growth(vol_list,key)
          paragraph = Paragraph("Lesion "+str(key)+": "+ text_to_add)
          elements.append(paragraph)
+    elements.append(Spacer(1,12))
     elements+=lesion_growth_percentage(patient_partial_path,num_of_tumors)
        
     return elements
