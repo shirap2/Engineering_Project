@@ -58,7 +58,7 @@ def create_single_lesion_pdf_page(patient_name : str, scan_name : str, patient_p
     elements.append(Spacer(1,20))
 
     # graph image
-    elements += get_note("In the following graphs along each edge, the % change in volume between one scan and the next is shown in green/red; under each node, the actual volume is shown in black, in cubic cm.")
+    elements += get_note("In the following graphs along each edge, the % change in volume between one scan and the next is shown in green/red; On top of each node, the actual volume is shown in cubic cm, and under each node the time stamp appears.")
     elements.append(Spacer(1,20))
     vol_list = generate_volume_list_single_lesion(patient_partial_path)
     cc_idx = 0
