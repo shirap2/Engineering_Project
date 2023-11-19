@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from typing import Dict
 import numpy as np
-from common_packages.BaseClasses import Longit, NodeAttr, EdgeAttr, Colors, Drawer
+from common_packages.BaseClasses import Longit, NodeAttr, EdgeAttr, Colors, Drawer, Loader
 from volume.volume_calculation import get_percentage_diff_per_edge_dict, generate_longitudinal_volumes_array
 
 def edit_volume_percentage_data_to_str_and_color(vol_percentage_diff_per_edge: dict):
@@ -39,19 +39,50 @@ def get_edge_label_color(edge_labels : dict):
         elif sign == '-':
             color_dict.update({edge : 'green'})
     return color_dict
-    # return 'red'
 
 
 class DrawerLabelsAndLabeledEdges(Drawer):
     """Displays the Longit graph with the nodes' color as the ITKSNAP label color. With the parameter attr_to_show you
     can decide what text to print on the nodes. The default is label number"""
-    def __init__(self, longit: Longit, partial_patient_path : str, ld , attr_to_print=None):
+    def __init__(self, longit: Longit, cc_idx: int, partial_patient_path : str, ld: Loader , attr_to_print=None):
         self._attr_to_print = attr_to_print
         if self._attr_to_print is not None:
             longit.nodes_have_attribute(self._attr_to_print)
-        super().__init__(longit)
+
         self.partial_patient_path = partial_patient_path
         self.ld = ld
+        G = longit.get_graph()
+        components = list(nx.connected_components(G))
+
+        self._is_graph_empty = False
+        if cc_idx >= len(components):
+            self._is_graph_empty = True
+            return
+        subgraph = G.subgraph(components[cc_idx])
+        self._base_graph = subgraph
+
+        longit.nodes_have_attribute(NodeAttr.LAYER)
+        longit.nodes_have_attribute(NodeAttr.LABEL)
+        self._cnt = 0
+        self._num_of_layers = longit.get_num_of_layers()
+
+        pat_name = longit.get_patient_name()
+        if pat_name is None:
+            self._patient_name = ""
+        else:
+            self._patient_name = pat_name
+
+        pat_dates = longit.get_patient_dates()
+        if pat_dates is None:
+            self._patient_dates = [f"t{i}" for i in range(self._num_of_layers)]
+        else:
+            self._patient_dates = pat_dates
+        nx.set_node_attributes(self._base_graph, values=False, name=NodeAttr.IS_PLACEHOLDER)
+
+    def set_nodes_drawing_attributes(self):
+        """Add to each node the color attribute GRAY"""
+        nx.set_node_attributes(self._base_graph, values=Colors.GRAY, name=NodeAttr.COLOR)
+
 
     def set_nodes_drawing_attributes(self):
         labels = nx.get_node_attributes(self._base_graph, name=NodeAttr.LABEL)
@@ -79,13 +110,25 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         # print(idx_dict)
         return {node : f'{get_node_volume(node, self.partial_patient_path)}' for node, idx in idx_dict.items()}
     
+    def get_lesion_idx(self):
+        current_node = list(self._base_graph.nodes)[0]
+        max_time_stamp = int(current_node.split("_")[1])
+        for node in self._base_graph.nodes:
+            time = int(node.split("_")[1])
+            if time > max_time_stamp:
+                current_node = node
+
+        return int(node.split("_")[0])
+
+    
     def draw(self, pos):
         """This function prints the title of the figure and the graph"""
 
         # node_sizes = nx.get_node_attributes(self._base_graph, 'size')
         # scaling_factor = 0.5
         # font_sizes = {n: int(size * scaling_factor) for n, size in node_sizes.items()}
-
+        plt.xlim([-2, 2])
+        plt.ylim([-1, 1])
         plt.title(self._patient_name, fontsize=12)
         nx.draw_networkx_nodes(G=self._base_graph,
                                pos=pos,
@@ -93,9 +136,10 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         nx.draw_networkx_labels(G=self._base_graph,
                                 pos=pos,
                                 labels=self.set_nodes_labels())
+        nodes_volume_labels = self.set_nodes_volume_labels()
         nx.draw_networkx_labels(G=self._base_graph,
-                                pos={k: (v[0], v[1]-0.07) for k, v in pos.items()},
-                                labels=self.set_nodes_volume_labels(), font_size=10, font_color='black')
+                                pos={k: (v[0], v[1]+0.15) for k, v in pos.items()},
+                                labels=nodes_volume_labels, font_size=10, font_color='black')
         is_skip_edge = nx.get_edge_attributes(self._base_graph, EdgeAttr.IS_SKIP)
         nx.draw_networkx_edges(G=self._base_graph,
                                pos=pos,
@@ -117,4 +161,16 @@ class DrawerLabelsAndLabeledEdges(Drawer):
             color = colors[edge]
             nx.draw_networkx_edge_labels(G=self._base_graph, pos=pos, edge_labels={edge: label}, font_color=color)
 
-        
+
+
+    def set_graph_layout(self):
+        """Stack graph's connected components one upon the other and fill the blanks with placeholders"""
+        cc_subgraphs = [self._base_graph.subgraph(cc) for cc in nx.connected_components(self._base_graph)]
+        if len(cc_subgraphs) == 0:
+            return
+        cc_graph = self.fill_with_placeholders(cc_subgraphs[0])
+        for i in range(1, len(cc_subgraphs)):
+            curr_cc_graph = self.fill_with_placeholders(cc_subgraphs[i])
+            cc_graph = nx.compose(cc_graph, curr_cc_graph)
+        self._base_graph = cc_graph
+    

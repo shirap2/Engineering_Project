@@ -109,7 +109,7 @@ class LongitClassification_v0(Longit):
 
 class LongitClassification(Longit):
     def __init__(self, loader: Loader, patient_name=None, patient_dates=None):
-        super().__init__(loader, patient_name, patient_dates)
+        super().__init__(loader, patient_name, patient_dates) 
         self._forward_graph = self.make_graph_directed(self._graph)
 
     def classify_nodes(self):

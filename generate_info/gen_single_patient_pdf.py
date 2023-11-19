@@ -104,11 +104,11 @@ def get_nodes_graph_image(image_path : str, ld):
 
     graph = Image(image_path, height=300, width=400)
 
-    # credit_style = ParagraphStyle('credit_style',fontsize=12)
-    # credit = Paragraph("Di Veroli B., Joskowicz L. A Graph Theoretic Approach for Analysis of Lesion Changes and Lesions "
-    #                    "Detection Review in Longitudinal Ontological Imaging, CASMIP Hebrew University, 2023",credit_style)
+    credit_style = ParagraphStyle('credit_style',fontsize=12)
+    credit = Paragraph("Di Veroli B., Joskowicz L. A Graph Theoretic Approach for Analysis of Lesion Changes and Lesions "
+                       "Detection Review in Longitudinal Ontological Imaging, CASMIP Hebrew University, 2023",credit_style)
     
-    return [graph]
+    return [graph, credit]
 
 
 def create_single_patient_pdf_page(patient_name : str, scan_name : str, patient_partial_path : str):

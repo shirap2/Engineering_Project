@@ -866,7 +866,7 @@ class Drawer:
         self.add_legend(nodes_position=pos)
         plt.axis('off')
         if save_path is not None:
-            plt.savefig(save_path, bbox_inches='tight')
+            plt.savefig(save_path)
         plt.show()
 
     def write_dates(self, nodes_position):
