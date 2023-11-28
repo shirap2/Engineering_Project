@@ -1,3 +1,4 @@
+import math
 import matplotlib.pyplot as plt
 import networkx as nx
 from typing import Dict
@@ -11,7 +12,10 @@ def edit_volume_percentage_data_to_str_and_color(vol_percentage_diff_per_edge: d
     for edge, percentage in vol_percentage_diff_per_edge.items():
         color = 'green'
         diff_is_positive = (percentage > 0)
-        percentage = str(round(percentage)) + "%"
+        if math.isinf(percentage):
+            percentage = ""
+        else:
+            percentage = str(round(percentage)) + "%"
 
         if diff_is_positive:
             percentage = "+" + percentage
@@ -27,7 +31,9 @@ def edit_volume_percentage_data_to_str_and_color(vol_percentage_diff_per_edge: d
 def get_node_volume(node_str : str, partial_patient_path : str):
     idx, time = node_str.split('_')
     longitudinal_volumes_array = generate_longitudinal_volumes_array(partial_patient_path)
-    return round(longitudinal_volumes_array[int(time)][int(idx)], 2)
+    if int(idx) in longitudinal_volumes_array[int(time)]:
+        return round(longitudinal_volumes_array[int(time)][int(idx)], 2)
+    return 0
 
 
 def get_edge_label_color(edge_labels : dict):
@@ -158,8 +164,9 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         edge_labels = nx.get_edge_attributes(self._base_graph, 'label')
         colors = get_edge_label_color(edge_labels)
         for edge, label in edge_labels.items():
-            color = colors[edge]
-            nx.draw_networkx_edge_labels(G=self._base_graph, pos=pos, edge_labels={edge: label}, font_color=color)
+            if edge in colors: ## added this bc of keyerror
+                color = colors[edge]
+                nx.draw_networkx_edge_labels(G=self._base_graph, pos=pos, edge_labels={edge: label}, font_color=color)
 
 
 

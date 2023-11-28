@@ -48,10 +48,20 @@ def generate_longitudinal_volumes_array(patient_path: str):
 
 
 def get_volume_percentage_diff(longitudinal_volumes_array, root_idx, tail_idx, root_time, tail_time):
-    root_volume = longitudinal_volumes_array[root_time][root_idx]
-    tail_volume = longitudinal_volumes_array[tail_time][tail_idx]
+    if root_idx in longitudinal_volumes_array[root_time]:
+        root_volume = longitudinal_volumes_array[root_time][root_idx]
+    else:
+        root_volume=0
+    ## check if tail index is in dictionary - check if lesion has disapeared
+    if tail_idx not in longitudinal_volumes_array[tail_time]:
+        tail_volume =0
+    else:
+        tail_volume = longitudinal_volumes_array[tail_time][tail_idx]
 
-    percentage_diff = ((tail_volume / root_volume) - 1) * 100
+    if root_volume ==0:
+        percentage_diff = tail_volume*100
+    else:
+        percentage_diff = ((tail_volume / root_volume) - 1) * 100
 
     actual_diff = tail_volume - root_volume
 
