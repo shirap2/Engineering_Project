@@ -247,12 +247,7 @@ def create_single_lesion_pdf_page(patient_name : str, json_path : str, pkl_path 
         
         elements += get_graph_title(lesions_idx)
         elements += [graph]
-        elements += get_lesion_history_text(lesions_idx[0], vol_list)#todo
-
-        ## shira added text for classification of connected component 
-        elements+=cc_class_text(node2cc,nodes2cc_class,lesions_idx[0])
-
-        elements.append(Spacer(1,20))
+        elements += get_lesion_history_text(lesion_idx, vol_list)
         cc_idx += 1
 
     return elements

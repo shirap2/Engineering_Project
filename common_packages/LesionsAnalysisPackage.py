@@ -564,59 +564,59 @@ class TableManagerTester(TableManager):
 
 if __name__ == "__main__":
     a = 1
-    #from general_utils import *
-    # df_dict = pd.read_excel("/cs/casmip/bennydv/lungs_pipeline/lesions_matching/lesion_matching_database_nnunet/lesions_data.xlsx", index_col=0, sheet_name=None)
-    # df_res = pd.read_excel(f"/cs/casmip/bennydv/nn_unet/nnUNet_raw_data_base/nnUNet_raw_data/Task501_Lungs/nnunet_test_measures_3.xlsx", index_col=0, sheet_name='diameter_0')
-    # pats = get_patients_list()
-    # pats = [p for p in pats if p!='B_B_S_']
-    # for pat_i, df in enumerate(df_dict.values()):
-    #     pat_name = pats[pat_i]
-    #     print(pat_name)
-    #     dates = get_patient_dates(pat_name)
-    #     all_ind = [ind.split('_')[1] for ind in df.index]
-    #     df['ind'] = all_ind
-    #     for ind in np.unique(all_ind):
-    #         date = dates[int(ind)]
-    #         fp_les = sum((df['ind'] == ind)&(df[LesionAttr.DETECTION]=='fp'))
-    #         fp_nnunet = df_res.loc[f'{pat_name}-{date}', 'Detection FP']
-    #         del_in_reg = sum((df['ind'] == ind)&(pd.isnull(df[LesionAttr.DETECTION])))
-    #         if fp_nnunet == del_in_reg + fp_les:
-    #             continue
-    #
-    #         print(f"date={date}, t={int(ind)}: #FP_lesion_data: {sum((df['ind'] == ind)&(df[LesionAttr.DETECTION]=='fp'))},"
-    #               f" deleted in reg: {del_in_reg}, #FP_nnunet_measure: {df_res.loc[f'{pat_name}-{date}', 'Detection FP']}")
-    #     print("")
-    # for pat_name in get_patients_list():
-    #     dates = get_patient_dates(pat_name)
-    #     print(pat_name)
-    #     for date in dates:
-    #         #img, _ = load_nifti_data(f"/cs/casmip/bennydv/nn_unet/nnUNet_raw_data_base/nnUNet_raw_data/Task501_Lungs/labelsTs/{pat_name}{date}.nii.gz")
-    #         label_img, _ = load_nifti_data(f"/cs/casmip/bennydv/lungs_pipeline/pred_data/size_filtered/labeled_no_reg/{pat_name}/lesions_pred_{date}.nii.gz")
-    #         #label_img = label(img, connectivity=1)
-    #         label_img = label_img.astype(int)
-    #         cc_num = label_img.max()
-    #         cc_areas = ndimage.sum(label_img>0, label_img, range(cc_num + 1))
-    #         area_mask = (cc_areas != 20)
-    #         label_img[area_mask[label_img]] = 0
-    #         n_20_voxel_pred = len(np.unique(label_img)) - 1
-    #         if n_20_voxel_pred > 1:
-    #             print(f"{date}: #{n_20_voxel_pred} lesions with 20 voxels")
+    from general_utils import *
+    df_dict = pd.read_excel("/cs/casmip/bennydv/lungs_pipeline/lesions_matching/lesion_matching_database_nnunet/lesions_data.xlsx", index_col=0, sheet_name=None)
+    df_res = pd.read_excel(f"/cs/casmip/bennydv/nn_unet/nnUNet_raw_data_base/nnUNet_raw_data/Task501_Lungs/nnunet_test_measures_3.xlsx", index_col=0, sheet_name='diameter_0')
+    pats = get_patients_list()
+    pats = [p for p in pats if p!='B_B_S_']
+    for pat_i, df in enumerate(df_dict.values()):
+        pat_name = pats[pat_i]
+        print(pat_name)
+        dates = get_patient_dates(pat_name)
+        all_ind = [ind.split('_')[1] for ind in df.index]
+        df['ind'] = all_ind
+        for ind in np.unique(all_ind):
+            date = dates[int(ind)]
+            fp_les = sum((df['ind'] == ind)&(df[LesionAttr.DETECTION]=='fp'))
+            fp_nnunet = df_res.loc[f'{pat_name}-{date}', 'Detection FP']
+            del_in_reg = sum((df['ind'] == ind)&(pd.isnull(df[LesionAttr.DETECTION])))
+            if fp_nnunet == del_in_reg + fp_les:
+                continue
+    
+            print(f"date={date}, t={int(ind)}: #FP_lesion_data: {sum((df['ind'] == ind)&(df[LesionAttr.DETECTION]=='fp'))},"
+                  f" deleted in reg: {del_in_reg}, #FP_nnunet_measure: {df_res.loc[f'{pat_name}-{date}', 'Detection FP']}")
+        print("")
+    for pat_name in get_patients_list():
+        dates = get_patient_dates(pat_name)
+        print(pat_name)
+        for date in dates:
+            #img, _ = load_nifti_data(f"/cs/casmip/bennydv/nn_unet/nnUNet_raw_data_base/nnUNet_raw_data/Task501_Lungs/labelsTs/{pat_name}{date}.nii.gz")
+            label_img, _ = load_nifti_data(f"/cs/casmip/bennydv/lungs_pipeline/pred_data/size_filtered/labeled_no_reg/{pat_name}/lesions_pred_{date}.nii.gz")
+            #label_img = label(img, connectivity=1)
+            label_img = label_img.astype(int)
+            cc_num = label_img.max()
+            cc_areas = ndimage.sum(label_img>0, label_img, range(cc_num + 1))
+            area_mask = (cc_areas != 20)
+            label_img[area_mask[label_img]] = 0
+            n_20_voxel_pred = len(np.unique(label_img)) - 1
+            if n_20_voxel_pred > 1:
+                print(f"{date}: #{n_20_voxel_pred} lesions with 20 voxels")
 
 
 
 
-    # l0 = Lesion(1, 0)
-    # l1 = Lesion(1, 1)
-    # l2 = Lesion(2, 2)
-    # l3 = Lesion(2, 3)
-    #
-    # m1 = Match(l0, l1)
-    # m2 = Match(l1, l0)
-    # m3 = Match(l1, l2)
-    #
-    # mlist = [m1, m2]
-    #
-    # a = 0
+    l0 = Lesion(1, 0)
+    l1 = Lesion(1, 1)
+    l2 = Lesion(2, 2)
+    l3 = Lesion(2, 3)
+    
+    m1 = Match(l0, l1)
+    m2 = Match(l1, l0)
+    m3 = Match(l1, l2)
+    
+    mlist = [m1, m2]
+    
+    a = 0
 
-    # tb = TableManagerTester()
-    # tb.run()
+    tb = TableManagerTester()
+    tb.run()
