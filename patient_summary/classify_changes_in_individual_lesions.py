@@ -48,8 +48,11 @@ def count_d_in_d_out(ld):
 
     return d_in_d_out_per_time_arr
 
-
-def classify_changes_in_individual_lesions(d_in_d_out_per_time_arr):
+"""
+this funcion gets dictonary of node as key and value [num,num] representing 
+the number of edges going in and out of the node as input.
+the function returns a dictionary of classified nodes. key is node and value is its class """
+def classify_changes_in_individual_lesions(d_in_d_out_per_time_arr,ld):
     classified_nodes = {}
     # Extract the highest time stamp value
     highest_t = max(int(key.split('_')[1]) for key in d_in_d_out_per_time_arr.keys())
@@ -57,8 +60,27 @@ def classify_changes_in_individual_lesions(d_in_d_out_per_time_arr):
     # Filter keys based on the highest time stamp value
     filtered_keys = [key for key in d_in_d_out_per_time_arr.keys() if int(key.split('_')[1]) == highest_t]
 
-    
-    for node, [d_in, d_out] in d_in_d_out_per_time_arr.items():
+    ## need to check all nodes, including those that don't have edges..
+    nodes_list = ld.get_nodes()
+    for node in nodes_list:
+        if node in classified_nodes:
+            continue
+        next_time =int(node.split("_")[1])+1
+        node_in_next_scan = node.split("_")[0]+"_"+str(next_time)
+        if node not in d_in_d_out_per_time_arr:
+            if int(node.split("_")[1])!=0:
+                # node is lone in current scan. needs to be labeled as disappeared from next scan
+                classified_nodes[node]=changes_in_individual_lesions.LONE
+                if next_time<=highest_t and node_in_next_scan not in classified_nodes:
+                    classified_nodes[node_in_next_scan] =changes_in_individual_lesions.DISAPPEARED
+                continue
+            if int(node.split("_")[1])==0:
+                classified_nodes[node]=changes_in_individual_lesions.NEW
+                if next_time<=highest_t and node_in_next_scan not in classified_nodes:
+                    classified_nodes[node_in_next_scan] =changes_in_individual_lesions.DISAPPEARED
+                continue  
+
+        [d_in, d_out] = d_in_d_out_per_time_arr.get(node)
         if d_in == 0 and d_out == 0:
             classified_nodes[node] = changes_in_individual_lesions.LONE
             continue
@@ -67,8 +89,11 @@ def classify_changes_in_individual_lesions(d_in_d_out_per_time_arr):
             classified_nodes[node] = changes_in_individual_lesions.NEW
             continue
 
-        if d_in == 1 and d_out == 0 and node not in filtered_keys:
-            classified_nodes[node] = changes_in_individual_lesions.DISAPPEARED
+        # if d_in == 1 and d_out == 0 and node not in filtered_keys:
+        if d_in == 1 and d_out == 0 :
+            classified_nodes[node] = changes_in_individual_lesions.PERSISTENT
+            if next_time<=highest_t and node_in_next_scan not in classified_nodes:
+                classified_nodes[node_in_next_scan]=changes_in_individual_lesions.DISAPPEARED
             continue
 
         if d_in == 1 and d_out == 1:

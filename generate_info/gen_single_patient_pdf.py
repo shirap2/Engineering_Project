@@ -30,7 +30,7 @@ def get_sub_title(sub_title: str):
 
 
 def get_lesion_counter_and_classifier_table(ld):
-    classified_nodes_dict = gen_dict_classified_nodes_for_layers(classify_changes_in_individual_lesions(count_d_in_d_out(ld)))
+    classified_nodes_dict = gen_dict_classified_nodes_for_layers(classify_changes_in_individual_lesions(count_d_in_d_out(ld),ld))
     unique_classes = [getattr(changes_in_individual_lesions, attr) for attr in dir(changes_in_individual_lesions) if not callable(getattr(changes_in_individual_lesions, attr)) and not attr.startswith("__")]
     unique_layers = sorted(classified_nodes_dict.keys())
 
