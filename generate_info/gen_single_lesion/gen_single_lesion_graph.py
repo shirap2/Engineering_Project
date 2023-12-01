@@ -23,11 +23,11 @@ def crop_middle_of_image(input_path, output_path, crop_dimensions):
     cropped_image = original_image.crop((left, upper, right, lower))
     cropped_image.save(output_path)
 
-def get_single_node_graph_image(image_path : str, partial_patient_path : str, scan_name: str, cc_idx: int):
 
-    ld = LoaderSimpleFromJson(scan_name)
-    lg = LongitClassification(ld)
-    dr = DrawerLabelsAndLabeledEdges(lg, cc_idx, partial_patient_path, ld)
+
+def get_single_node_graph_image(image_path : str, scan_name: str, cc_idx: int, lg, ld, components: list, longitudinal_volumes_array: list, percentage_diff_per_edge_dict):
+
+    dr = DrawerLabelsAndLabeledEdges(lg, cc_idx, ld, components, longitudinal_volumes_array, percentage_diff_per_edge_dict)
 
     if dr._is_graph_empty:
          return [None, None]
@@ -37,9 +37,9 @@ def get_single_node_graph_image(image_path : str, partial_patient_path : str, sc
             os.remove(full_path)
     plt.figure()
     dr.show_graph(full_path)
-    crop_dimensions = (600, 100)
+    crop_dimensions = (1000, 400)
     crop_middle_of_image(full_path, full_path, crop_dimensions)
-    graph = ply.Image(full_path, height=80, width=500)
+    graph = ply.Image(full_path, height=200, width=500)
 
     return [graph, dr.get_lesion_idx()]
 

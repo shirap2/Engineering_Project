@@ -4,7 +4,7 @@ import networkx as nx
 from typing import Dict
 import numpy as np
 from common_packages.BaseClasses import Longit, NodeAttr, EdgeAttr, Colors, Drawer, Loader
-from volume.volume_calculation import get_percentage_diff_per_edge_dict, generate_longitudinal_volumes_array
+from volume.volume_calculation import get_percentage_diff_per_edge_dict
 
 def edit_volume_percentage_data_to_str_and_color(vol_percentage_diff_per_edge: dict):
     edited_dict = dict()
@@ -28,14 +28,6 @@ def edit_volume_percentage_data_to_str_and_color(vol_percentage_diff_per_edge: d
 
 
 
-def get_node_volume(node_str : str, partial_patient_path : str):
-    idx, time = node_str.split('_')
-    longitudinal_volumes_array = generate_longitudinal_volumes_array(partial_patient_path)
-    if int(idx) in longitudinal_volumes_array[int(time)]:
-        return round(longitudinal_volumes_array[int(time)][int(idx)], 2)
-    return 0
-
-
 def get_edge_label_color(edge_labels : dict):
     color_dict = dict()
     for edge, vol_percent_str in edge_labels.items():
@@ -50,15 +42,14 @@ def get_edge_label_color(edge_labels : dict):
 class DrawerLabelsAndLabeledEdges(Drawer):
     """Displays the Longit graph with the nodes' color as the ITKSNAP label color. With the parameter attr_to_show you
     can decide what text to print on the nodes. The default is label number"""
-    def __init__(self, longit: Longit, cc_idx: int, partial_patient_path : str, ld: Loader , attr_to_print=None):
+    def __init__(self, longit: Longit, cc_idx: int, ld: Loader , components: list, longitudinal_volumes_array: list, percentage_diff_per_edge_dict, attr_to_print=None):
         self._attr_to_print = attr_to_print
         if self._attr_to_print is not None:
             longit.nodes_have_attribute(self._attr_to_print)
 
-        self.partial_patient_path = partial_patient_path
+        # self.partial_patient_path = partial_patient_path
         self.ld = ld
         G = longit.get_graph()
-        components = list(nx.connected_components(G))
 
         self._is_graph_empty = False
         if cc_idx >= len(components):
@@ -85,16 +76,25 @@ class DrawerLabelsAndLabeledEdges(Drawer):
             self._patient_dates = pat_dates
         nx.set_node_attributes(self._base_graph, values=False, name=NodeAttr.IS_PLACEHOLDER)
 
+        self.longitudinal_volumes_array = longitudinal_volumes_array
+        self.percentage_diff_per_edge_dict = percentage_diff_per_edge_dict
+        # get_percentage_diff_per_edge_dict(self.ld, self.partial_patient_path)
+
     def set_nodes_drawing_attributes(self):
         """Add to each node the color attribute GRAY"""
         nx.set_node_attributes(self._base_graph, values=Colors.GRAY, name=NodeAttr.COLOR)
-
 
     def set_nodes_drawing_attributes(self):
         labels = nx.get_node_attributes(self._base_graph, name=NodeAttr.LABEL)
         colors = {node: {NodeAttr.COLOR: Colors.itk_colors(node_label)} for node, node_label in
                   labels.items()}
         nx.set_node_attributes(self._base_graph, colors)
+
+    def get_node_volume(self, node_str : str):
+        idx, time = node_str.split('_')
+        if int(idx) in self.longitudinal_volumes_array[int(time)]:
+            return round(self.longitudinal_volumes_array[int(time)][int(idx)], 2)
+        return 0
 
     def attr_to_print_on_nodes(self):
         if self._attr_to_print is None:
@@ -105,26 +105,33 @@ class DrawerLabelsAndLabeledEdges(Drawer):
     def set_edges_drawing_attributes(self):
         """Add to each node the color attribute BLACK and set the connection style"""
         super().set_edges_drawing_attributes()
-        percentage_diff_per_edge_dict = get_percentage_diff_per_edge_dict(self.ld, self.partial_patient_path)
-        percentage_diff_per_edge_dict, color_dict = edit_volume_percentage_data_to_str_and_color(percentage_diff_per_edge_dict)
+        percentage_diff_per_edge_dict, color_dict = edit_volume_percentage_data_to_str_and_color(self.percentage_diff_per_edge_dict)
         nx.set_edge_attributes(self._base_graph, percentage_diff_per_edge_dict, name='label')
         nx.set_edge_attributes(self._base_graph, color_dict, name='color')
 
     def set_nodes_volume_labels(self):
-        idx_dict = nx.get_node_attributes(self._base_graph, self.attr_to_print_on_nodes())
-        # return {node : f'Lesion ID: {idx}\nVolume: {get_volume(node)}[cm³]' for node, idx in idx_dict.items()}
-        # print(idx_dict)
-        return {node : f'{get_node_volume(node, self.partial_patient_path)}' for node, idx in idx_dict.items()}
+        is_place_holder_dict = nx.get_node_attributes(self._base_graph, NodeAttr.IS_PLACEHOLDER)
+        nodes_volume_labels_dict = dict()
+        for node, is_place_holder in is_place_holder_dict.items():
+            if not is_place_holder:
+                nodes_volume_labels_dict[node] = f'{self.get_node_volume(node)}[cm³]'
+        return nodes_volume_labels_dict
     
     def get_lesion_idx(self):
-        current_node = list(self._base_graph.nodes)[0]
-        max_time_stamp = int(current_node.split("_")[1])
-        for node in self._base_graph.nodes:
+        is_place_holder_dict = nx.get_node_attributes(self._base_graph, NodeAttr.IS_PLACEHOLDER)
+        nodes_not_place_holders = [node for node, is_place_holder in is_place_holder_dict.items() if not is_place_holder]
+        max_node = list(nodes_not_place_holders)[0]
+        max_time_stamp = int(max_node.split("_")[1])
+        for node in nodes_not_place_holders:
+            print(node)
             time = int(node.split("_")[1])
             if time > max_time_stamp:
-                current_node = node
+                max_node = node
+                max_time_stamp = time
 
-        return int(node.split("_")[0])
+        max_nodes = [int(node.split("_")[0]) for node in nodes_not_place_holders if int(node.split("_")[1]) == max_time_stamp]
+
+        return max_nodes
 
     
     def draw(self, pos):
@@ -142,10 +149,12 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         nx.draw_networkx_labels(G=self._base_graph,
                                 pos=pos,
                                 labels=self.set_nodes_labels())
+        
         nodes_volume_labels = self.set_nodes_volume_labels()
         nx.draw_networkx_labels(G=self._base_graph,
                                 pos={k: (v[0], v[1]+0.15) for k, v in pos.items()},
                                 labels=nodes_volume_labels, font_size=10, font_color='black')
+        
         is_skip_edge = nx.get_edge_attributes(self._base_graph, EdgeAttr.IS_SKIP)
         nx.draw_networkx_edges(G=self._base_graph,
                                pos=pos,
@@ -163,6 +172,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                                connectionstyle='arc3, rad=-0.1')
         edge_labels = nx.get_edge_attributes(self._base_graph, 'label')
         colors = get_edge_label_color(edge_labels)
+        nx.spring_layout(self._base_graph, scale=6.0)
         for edge, label in edge_labels.items():
             if edge in colors: ## added this bc of keyerror
                 color = colors[edge]
