@@ -103,11 +103,11 @@ class DrawerLabelsAndLabeledEdges(Drawer):
             return self._attr_to_print
         
     def set_edges_drawing_attributes(self):
-        """Add to each node the color attribute BLACK and set the connection style"""
         super().set_edges_drawing_attributes()
-        percentage_diff_per_edge_dict, color_dict = edit_volume_percentage_data_to_str_and_color(self.percentage_diff_per_edge_dict)
-        nx.set_edge_attributes(self._base_graph, percentage_diff_per_edge_dict, name='label')
-        nx.set_edge_attributes(self._base_graph, color_dict, name='color')
+        # todo : return
+        # percentage_diff_per_edge_dict, color_dict = edit_volume_percentage_data_to_str_and_color(self.percentage_diff_per_edge_dict)
+        # nx.set_edge_attributes(self._base_graph, percentage_diff_per_edge_dict, name='label')
+        # nx.set_edge_attributes(self._base_graph, color_dict, name='color')
 
     def set_nodes_volume_labels(self):
         is_place_holder_dict = nx.get_node_attributes(self._base_graph, NodeAttr.IS_PLACEHOLDER)
@@ -123,7 +123,6 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         max_node = list(nodes_not_place_holders)[0]
         max_time_stamp = int(max_node.split("_")[1])
         for node in nodes_not_place_holders:
-            print(node)
             time = int(node.split("_")[1])
             if time > max_time_stamp:
                 max_node = node
@@ -132,51 +131,34 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         max_nodes = [int(node.split("_")[0]) for node in nodes_not_place_holders if int(node.split("_")[1]) == max_time_stamp]
 
         return max_nodes
-
     
-    def draw(self, pos):
-        """This function prints the title of the figure and the graph"""
-
-        # node_sizes = nx.get_node_attributes(self._base_graph, 'size')
-        # scaling_factor = 0.5
-        # font_sizes = {n: int(size * scaling_factor) for n, size in node_sizes.items()}
-        plt.xlim([-2, 2])
-        plt.ylim([-1, 1])
-        plt.title(self._patient_name, fontsize=12)
-        nx.draw_networkx_nodes(G=self._base_graph,
-                               pos=pos,
-                               node_color=list(nx.get_node_attributes(self._base_graph, NodeAttr.COLOR).values()))
-        nx.draw_networkx_labels(G=self._base_graph,
-                                pos=pos,
-                                labels=self.set_nodes_labels())
-        
-        nodes_volume_labels = self.set_nodes_volume_labels()
-        nx.draw_networkx_labels(G=self._base_graph,
-                                pos={k: (v[0], v[1]+0.15) for k, v in pos.items()},
-                                labels=nodes_volume_labels, font_size=10, font_color='black')
-        
-        is_skip_edge = nx.get_edge_attributes(self._base_graph, EdgeAttr.IS_SKIP)
-        nx.draw_networkx_edges(G=self._base_graph,
-                               pos=pos,
-                               edgelist=[e for e, is_skip in is_skip_edge.items() if not is_skip],
-                               edge_color=[c for e, c in
-                                           nx.get_edge_attributes(self._base_graph, EdgeAttr.COLOR).items() if
-                                           not is_skip_edge[e]],
-                               connectionstyle='arc3')
-        nx.draw_networkx_edges(G=self._base_graph,
-                               pos=pos,
-                               edgelist=[e for e, is_skip in is_skip_edge.items() if is_skip],
-                               edge_color=[c for e, c in
-                                           nx.get_edge_attributes(self._base_graph, EdgeAttr.COLOR).items() if
-                                           is_skip_edge[e]],
-                               connectionstyle='arc3, rad=-0.1')
+    def color_edges(self, pos):
         edge_labels = nx.get_edge_attributes(self._base_graph, 'label')
         colors = get_edge_label_color(edge_labels)
-        nx.spring_layout(self._base_graph, scale=6.0)
         for edge, label in edge_labels.items():
             if edge in colors: ## added this bc of keyerror
                 color = colors[edge]
                 nx.draw_networkx_edge_labels(G=self._base_graph, pos=pos, edge_labels={edge: label}, font_color=color)
+
+    def draw_nodes_volume_labels(self, pos):
+        nodes_volume_labels = self.set_nodes_volume_labels()
+        nx.draw_networkx_labels(G=self._base_graph,
+                                pos={k: (v[0], v[1]+0.15) for k, v in pos.items()},
+                                labels=nodes_volume_labels, font_size=10, font_color='black')
+
+    
+    def draw_volume_related_attributes_on_graph(self, pos):
+        self.color_edges(pos)
+        self.draw_nodes_volume_labels(pos)
+
+    def draw(self, pos):
+        """This function prints the title of the figure and the graph"""
+        plt.xlim([-1.5, 1.5])
+        plt.ylim([-2, 2])
+        Drawer.draw(self, pos)
+        # todo : return
+        # self.draw_volume_related_attributes_on_graph(pos)
+        nx.spring_layout(self._base_graph, scale=6.0)
 
 
 

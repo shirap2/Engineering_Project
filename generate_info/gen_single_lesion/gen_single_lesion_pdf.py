@@ -8,9 +8,7 @@ import networkx as nx
 from volume.volume_calculation import get_percentage_diff_per_edge_dict, generate_longitudinal_volumes_array
 
 
-def get_file_title():
-    title_string = "Individual Lesion Changes"
-
+def get_title(title_string):
     title_style = getSampleStyleSheet()['Title']
     title = Paragraph(title_string, title_style)
 
@@ -54,46 +52,140 @@ def get_lesion_history_text(key, vol_list):
     # return get_note("Lesion "+ str(key)+ ": "+ text_to_add, True)
     return get_note(text_to_add, True)
 
+def find_max_time_stamp_per_cc_and_total(components):
+    max_total_time, max_cc_time = 0, 0
+    max_time_per_cc_dict = dict()
+    for cc in components:
+        max_cc_time = 0
+        for node in cc:
+            time = int(node.split("_")[1])
+            if time > max_cc_time:
+                max_cc_time = time
+        max_time_per_cc_dict[tuple(cc)] = max_cc_time
+        if max_cc_time > max_total_time:
+            max_total_time = max_cc_time
+    return max_time_per_cc_dict, max_total_time
+
+
+
+def devide_components(components, max_time_per_cc_dict, total_max_time):
+    disappeared_components, mew_single_components, components_to_draw = [], [], []
+    for cc in components:
+        if total_max_time == max_time_per_cc_dict[tuple(cc)]:
+            if len(cc) == 1:
+                # new & single
+                mew_single_components.append(cc)
+            else:
+                components_to_draw.append(cc)
+        else:
+            disappeared_components.append(cc)
+    return disappeared_components, mew_single_components, components_to_draw
+
+def get_new_lesions_text(new_single_components):
+    num_of_new = len(new_single_components)    
+
+    if num_of_new == 0:
+        return get_note("No new lesions had appeared.", True)
+    lesions_idx = []
+    for cc in new_single_components:
+        node = cc.pop()
+        lesions_idx.append(int(node.split("_")[0]))
+    as_strings = map(str, lesions_idx)
+    result_string = ", ".join(as_strings)
+    text_to_add = f"Lesions {result_string} appeared for the first time in the last scan."
+    if num_of_new == 1:
+        text_to_add = f"Lesion {result_string} appeared for the first time in the last scan."
+    return get_note(text_to_add, True)
+
+def get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, ):
+    num_of_disappeared = len(disappeared_components)
+
+    if num_of_disappeared == 0:
+        return get_note("Over time, no lesions disappeared.", True)
+    
+    if num_of_disappeared == 1:
+        elements = get_note(f"Over time, one lesion disappeared.", False)
+        cc = disappeared_components[0]
+        elements += get_note(f"It was last identified in t{max_time_per_cc_dict[tuple(cc)]} scan.", True)
+        return elements
+    
+    num_of_disappeared_lesions_per_time = dict() # key:time, value: num of desappeared lesion
+    for cc in disappeared_components:
+        time = max_time_per_cc_dict[tuple(cc)]
+        if time in num_of_disappeared_lesions_per_time:
+            num_of_disappeared_lesions_per_time[time] += 1
+        else:
+            num_of_disappeared_lesions_per_time[time] = 1
+
+        
+    elements = get_note(f"Over time, {num_of_disappeared} lesions disappeared.", False)
+
+    if len(num_of_disappeared_lesions_per_time) == 1:
+        # all disappeared in the same time
+        cc = disappeared_components[0]
+        elements += get_note(f"They were last identified in t{max_time_per_cc_dict[tuple(cc)]} scan.", False)
+    else:
+        num_of_disappeared_lesions_per_time = sorted(num_of_disappeared_lesions_per_time.items(), key=lambda item: item[0])
+        for tup in num_of_disappeared_lesions_per_time:
+            time, num_of_dis_lesions = tup
+            were_or_was = "s were"
+            if num_of_dis_lesions == 1:
+                were_or_was = " was"
+            elements += get_note(f"{num_of_dis_lesions} lesion{were_or_was} last identified in t{time} scan.", False)
+
+    elements.append(Spacer(1, 5))
+    return elements
+
 
 def create_single_lesion_pdf_page(patient_name : str, scan_name : str, patient_partial_path : str):
-
-    ld = LoaderSimpleFromJson(scan_name)
     png_name = "output/" + patient_name.replace(" ", "_") + "_lesion_changes.png"
     elements = []
 
-    # title
-    elements += get_file_title()
+    # file title
+    elements += get_title("Individual Lesion Changes")
     elements.append(Spacer(1,20))
 
     # graph image
-    elements += get_note("In the following graphs along each edge, the % change in volume between one scan and the next is shown in green/red; On top of each node, the actual volume is shown in cubic cm, and under each node the time stamp appears.")
-    elements.append(Spacer(1,20))
+    # elements += get_note("In the following graphs along each edge, the % change in volume between one scan and the next is shown in green/red; On top of each node, the actual volume is shown in cubic cm, and under each node the time stamp appears.")
+    # elements.append(Spacer(1,20))
     vol_list = generate_volume_list_single_lesion(patient_partial_path)
     cc_idx = 0
     ld = LoaderSimpleFromJson(scan_name)
     lg = LongitClassification(ld)
     G = lg.get_graph()
     components = list(nx.connected_components(G))
+    max_time_per_cc_dict, total_max_time = find_max_time_stamp_per_cc_and_total(components)
+    disappeared_components, new_single_components, components_to_draw = devide_components(components, max_time_per_cc_dict, total_max_time)
     longitudinal_volumes_array = generate_longitudinal_volumes_array(patient_partial_path)
     percentage_diff_per_edge_dict = get_percentage_diff_per_edge_dict(ld, patient_partial_path)
-    while True:
-        graph, lesions_idx = get_single_node_graph_image("output/single_labeled_lesion_graph", scan_name, cc_idx, lg, ld, components, longitudinal_volumes_array, percentage_diff_per_edge_dict)
 
+    # add section of new
+    elements += get_sub_title("New Lesions", False)
+    elements += get_new_lesions_text(new_single_components)
+    # add section of disappeared
+    elements += get_sub_title("Lesions that have disappeared over time", False)
+    elements += get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict)
+    # draw components to drw (existing in last scan + not new- no history)
+    elements += get_sub_title("Lesions appearing throughout several scans", False)
+    while True:
+        graph, lesions_idx = get_single_node_graph_image("output/single_labeled_lesion_graph",
+                                                          scan_name, cc_idx, lg, ld, components_to_draw, 
+                                                          longitudinal_volumes_array, percentage_diff_per_edge_dict)
         if not graph:
             break
-        print(f'final: {lesions_idx}')
         elements += get_graph_title(lesions_idx)
         elements += [graph]
-        elements += get_lesion_history_text(lesions_idx[0], vol_list)#todo
+        # elements += get_lesion_history_text(lesions_idx[0], vol_list)#todo
         elements.append(Spacer(1,20))
         cc_idx += 1
-    # elements += get_nodes_graph_image("output/single_labeled_lesion_graph" , patient_partial_path, scan_name)
+
+    
 
 
 
     # total lesion volume change text
-    elements+=get_sub_title("Total Lesion Growth History", False)
-    elements+=lesion_growth_percentage(patient_partial_path, len(vol_list))
+    # elements+=get_sub_title("Total Lesion Growth History", False)
+    # elements+=lesion_growth_percentage(patient_partial_path, len(vol_list))
        
     return elements
 
