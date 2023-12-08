@@ -6,7 +6,7 @@ from volume.lesion_volume_changes import check_single_lesion_growth, generate_vo
 from generate_info.gen_single_lesion.gen_single_lesion_graph import get_single_node_graph_image
 import networkx as nx
 from volume.volume_calculation import get_percentage_diff_per_edge_dict, generate_longitudinal_volumes_array
-
+from common_packages.LongGraphClassification import LongitClassification
 
 def get_title(title_string):
     title_style = getSampleStyleSheet()['Title']
@@ -178,6 +178,9 @@ def create_single_lesion_pdf_page(patient_name : str, scan_name : str, patient_p
         # elements += get_lesion_history_text(lesions_idx[0], vol_list)#todo
         elements.append(Spacer(1,20))
         cc_idx += 1
+
+    ## classification of nodes and cc from benny code
+    # lg.classify_cc()
 
     
 
