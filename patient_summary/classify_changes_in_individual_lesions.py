@@ -66,7 +66,7 @@ def classify_changes_in_individual_lesions(d_in_d_out_per_time_arr,ld):
         if node in classified_nodes:
             continue
         next_time =int(node.split("_")[1])+1
-        node_in_next_scan = node.split("_")[0]+"_"+str(next_time)
+        node_in_next_scan = node.split("_")[0]+"_"+str(next_time)+" "
         if node not in d_in_d_out_per_time_arr:
             if int(node.split("_")[1])!=0:
                 # node is lone in current scan. needs to be labeled as disappeared from next scan
