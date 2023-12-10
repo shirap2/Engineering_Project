@@ -7,6 +7,8 @@ from generate_info.gen_single_lesion.gen_single_lesion_graph import get_single_n
 import networkx as nx
 from volume.volume_calculation import get_percentage_diff_per_edge_dict, generate_longitudinal_volumes_array
 from common_packages.LongGraphClassification import LongitClassification
+from common_packages.BaseClasses import *
+
 
 def get_title(title_string):
     title_style = getSampleStyleSheet()['Title']
@@ -136,6 +138,21 @@ def get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, )
     elements.append(Spacer(1, 5))
     return elements
 
+"""
+this function genernates the text for classification of connnected component
+"""
+def cc_class_text(node2cc,nodes2cc_class,lesion_idx_in_last_scan:int):
+    lesion_cc_class = ""
+    max_time = max(int(key.split('_')[1]) for key in node2cc.keys())
+    node_key = f"{lesion_idx_in_last_scan}_{max_time}"
+    # for node in node2cc.keys():
+    #     if node2cc[node]==cc_idx:
+            # lesion_cc_class = nodes2cc_class[node]
+            # break
+    lesion_cc_class=nodes2cc_class[node_key]
+    elements=get_note("Classification of connected component: "+lesion_cc_class,True)
+    return elements
+    
 
 def create_single_lesion_pdf_page(patient_name : str, scan_name : str, patient_partial_path : str):
     png_name = "output/" + patient_name.replace(" ", "_") + "_lesion_changes.png"
@@ -165,6 +182,21 @@ def create_single_lesion_pdf_page(patient_name : str, scan_name : str, patient_p
     # add section of disappeared
     elements += get_sub_title("Lesions that have disappeared over time", False)
     elements += get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict)
+    
+    
+    ## classification of nodes and cc from benny code
+    lg.classify_nodes()
+    lg.classify_cc()
+
+    # dictionary of nodes-keys and the index of their cc- values
+    node2cc = nx.get_node_attributes(G, NodeAttr.CC_INDEX) 
+
+    # set of all cc indices
+    cc_set = set(node2cc.values())
+
+    # dictionary of node(key)'s class(value) when part of cc
+    nodes2cc_class =nx.get_node_attributes(G,NodeAttr.CC_PATTERNS)
+    
     # draw components to drw (existing in last scan + not new- no history)
     elements += get_sub_title("Lesions appearing throughout several scans", False)
     while True:
@@ -176,11 +208,12 @@ def create_single_lesion_pdf_page(patient_name : str, scan_name : str, patient_p
         elements += get_graph_title(lesions_idx)
         elements += [graph]
         # elements += get_lesion_history_text(lesions_idx[0], vol_list)#todo
+
+        ## shira added text for classification of connected component 
+        elements+=cc_class_text(node2cc,nodes2cc_class,lesions_idx[0])
+
         elements.append(Spacer(1,20))
         cc_idx += 1
-
-    ## classification of nodes and cc from benny code
-    # lg.classify_cc()
 
     
 
