@@ -145,12 +145,11 @@ def cc_class_text(node2cc,nodes2cc_class,lesion_idx_in_last_scan:int):
     lesion_cc_class = ""
     max_time = max(int(key.split('_')[1]) for key in node2cc.keys())
     node_key = f"{lesion_idx_in_last_scan}_{max_time}"
-    # for node in node2cc.keys():
-    #     if node2cc[node]==cc_idx:
-            # lesion_cc_class = nodes2cc_class[node]
-            # break
-    lesion_cc_class=nodes2cc_class[node_key]
-    elements=get_note("Classification of connected component: "+lesion_cc_class,True)
+    if node_key in nodes2cc_class:
+        lesion_cc_class=nodes2cc_class[node_key]
+        elements=get_note("Classification of connected component: "+lesion_cc_class,True)
+    else:
+        return "No information for classifiaction"
     return elements
     
 
