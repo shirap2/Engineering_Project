@@ -8,7 +8,8 @@ import networkx as nx
 from volume.volume_calculation import get_percentage_diff_per_edge_dict, generate_longitudinal_volumes_array
 from common_packages.LongGraphClassification import LongitClassification
 from common_packages.BaseClasses import *
-
+from datetime import datetime
+import re
 
 def get_title(title_string):
     title_style = getSampleStyleSheet()['Title']
@@ -151,6 +152,24 @@ def cc_class_text(node2cc,nodes2cc_class,lesion_idx_in_last_scan:int):
     else:
         return "No information for classifiaction"
     return elements
+
+def get_dates(patient_path):
+
+    date_pattern = r'(\d{2}_\d{2}_\d{4})'
+    formatted_dates = set()
+
+    for filename in os.listdir(patient_path):
+        match = re.search(date_pattern, filename)
+        if match:
+            date_str = match.group(1)
+            date_obj = datetime.strptime(date_str, '%d_%m_%Y')
+            
+            # Format the datetime object into "dd.mm.yyyy" and append to the list
+            formatted_date = date_obj.strftime('%d.%m.%y')
+            formatted_dates.add(formatted_date)
+
+    formatted_dates = sorted(formatted_dates, key=lambda x: datetime.strptime(x, '%d.%m.%y'))
+    return formatted_dates
     
 
 def create_single_lesion_pdf_page(patient_name : str, scan_name : str, patient_partial_path : str):
@@ -167,7 +186,7 @@ def create_single_lesion_pdf_page(patient_name : str, scan_name : str, patient_p
     vol_list = generate_volume_list_single_lesion(patient_partial_path)
     cc_idx = 0
     ld = LoaderSimpleFromJson(scan_name)
-    lg = LongitClassification(ld)
+    lg = LongitClassification(ld, patient_name, get_dates(patient_partial_path))
     G = lg.get_graph()
     components = list(nx.connected_components(G))
     max_time_per_cc_dict, total_max_time = find_max_time_stamp_per_cc_and_total(components)

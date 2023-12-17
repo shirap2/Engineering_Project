@@ -33,9 +33,9 @@ def create_pdf_file(patient_name : str, scan_name : str, patient_partial_path : 
 # PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_S_H_"
 
 # # A. S. S.
-# NAME = "A. S. S."
-# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/A_S_S_glong_gt.json"
-# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_S_S_"
+NAME = "A. S. S."
+JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/A_S_S_glong_gt.json"
+PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_S_S_"
 
 # # B. B. S.
 # NAME = "B. B. S."
@@ -48,15 +48,18 @@ def create_pdf_file(patient_name : str, scan_name : str, patient_partial_path : 
 # PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/B_T_"
 
 # C. A.
-NAME = "C. A."
-JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/C_A_glong_gt.json"
-PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/C_A_"
+# NAME = "C. A."
+# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/C_A_glong_gt.json"
+# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/C_A_"
 
 create_pdf_file(NAME, JSON_ADDRESS, PARTIAL_ADDRESS)
 
 # with open(JSON_ADDRESS, 'r') as json_file:
 #     loaded_data = json.load(json_file)
 
+#     # print(type(loaded_data))
+
 # for key, value in loaded_data.items():
-#     print(f'{key}: {value}')
+#     print(key)
+#     print(type(value))
 #     print()

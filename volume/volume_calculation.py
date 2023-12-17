@@ -7,6 +7,11 @@ from datetime import datetime
 from common_packages.LongGraphPackage import LoaderSimpleFromJson
 from general_utils import load_nifti_data, get_labeled_segmentation
 
+class edgeVolumeClassification:
+    LINEAR = 'linear'
+    MERGED = 'merged'
+    SPLITTING = 'splitting'
+    COMPLEX = 'complex'
 
 def get_voxels_count_per_label(scan):
     labels, counts = np.unique(scan, return_counts=True)
@@ -59,7 +64,7 @@ def get_volume_percentage_diff(longitudinal_volumes_array, root_idx, tail_idx, r
         tail_volume = longitudinal_volumes_array[tail_time][tail_idx]
 
     if root_volume ==0:
-        percentage_diff = tail_volume*100
+        percentage_diff = "+"
     else:
         percentage_diff = ((tail_volume / root_volume) - 1) * 100
 
@@ -79,6 +84,94 @@ def get_dict_of_volume_change_per_edge(ld: LoaderSimpleFromJson, longitudinal_vo
         tail_time = int(tail.split("_")[1])
         volume_change_per_edge_dict[edge] = get_volume_percentage_diff(longitudinal_volumes_array, root_idx, tail_idx,
                                                                        root_time, tail_time)
+    return volume_change_per_edge_dict
+
+def get_edges_to_node_dict(ld: LoaderSimpleFromJson):
+    edges_to_node_dict = {}
+
+    for edge in ld.get_edges():
+
+        dest_node = edge[1]
+
+        if dest_node not in edges_to_node_dict:
+            edges_to_node_dict[dest_node] = [edge]
+        else:
+            edges_to_node_dict[dest_node] += [edge]
+
+    return edges_to_node_dict
+
+def get_edges_from_node_dict(ld: LoaderSimpleFromJson):
+        edges_from_node_dict = {}
+
+        for edge in ld.get_edges():
+
+            src_node = edge[0]
+
+            if src_node not in edges_from_node_dict:
+                edges_from_node_dict[src_node] = [edge]
+            else:
+                edges_from_node_dict[src_node] += [edge]
+
+        return edges_from_node_dict
+
+def get_volume(longitudinal_volumes_array, node):
+    idx = int(node.split("_")[0])
+    time = int(node.split("_")[1])
+    if idx in longitudinal_volumes_array[time]:
+        return longitudinal_volumes_array[time][idx]
+    return 0
+
+def get_dict_of_volume_percentage_change_and_classification_per_edge(ld: LoaderSimpleFromJson, longitudinal_volumes_array):
+    volume_change_per_edge_dict = {} # return {edge : [volume percentage change, calssification]}
+
+    src_total_volume, dest_total_volume = 0, 0
+    percentage_diff = 0
+
+    edges_to_node_dict = get_edges_to_node_dict(ld) # {node : [edges to node]}
+    edges_from_node_dict = get_edges_from_node_dict(ld) # {node : [edges from node]}
+
+    for edge in ld.get_edges():
+        src_node, dest_node = edge
+
+        if len(edges_from_node_dict[src_node]) > 1: # splitted
+
+            src_total_volume = get_volume(longitudinal_volumes_array, src_node)
+            dest_total_volume = 0
+            for edge_from_src in edges_from_node_dict[src_node]:
+                temp_dest = edge_from_src[1]
+                dest_total_volume += get_volume(longitudinal_volumes_array, temp_dest)
+
+            if src_total_volume == 0:
+                percentage_diff = "+"
+            else:
+                percentage_diff = ((dest_total_volume/src_total_volume) - 1) * 100
+            volume_change_per_edge_dict[edge] = [percentage_diff, edgeVolumeClassification.SPLITTING]
+
+        elif len(edges_to_node_dict[dest_node]) > 1: # merged
+            dest_total_volume = get_volume(longitudinal_volumes_array, dest_node)
+            src_total_volume = 0
+            for edge_to_dest in edges_to_node_dict[dest_node]:
+                temp_src = edge_to_dest[0]
+                src_total_volume += get_volume(longitudinal_volumes_array, temp_src)
+                
+            if src_total_volume == 0:
+                percentage_diff = "+"
+            else:
+                percentage_diff = ((dest_total_volume/src_total_volume) - 1) * 100
+            if edge not in volume_change_per_edge_dict:
+                volume_change_per_edge_dict[edge] = [percentage_diff, edgeVolumeClassification.MERGED]
+            # else:
+            #     volume_change_per_edge_dict[edge] = [percentage_diff, edgeVolumeClassification.COMPLEX] # currently we dont deal with this case properly
+
+        else:
+            src_total_volume = get_volume(longitudinal_volumes_array, src_node)
+            dest_total_volume = get_volume(longitudinal_volumes_array, dest_node)
+            if src_total_volume == 0:
+                percentage_diff = "+"
+            else:
+                percentage_diff = ((dest_total_volume/src_total_volume) - 1) * 100
+            volume_change_per_edge_dict[edge] = [percentage_diff, edgeVolumeClassification.LINEAR]
+
     return volume_change_per_edge_dict
 
 
@@ -101,24 +194,28 @@ def get_diff_in_total(longitudinal_volumes_array):
 def get_percentage_diff_per_edge_dict(ld, partial_patient_path):
     longitudinal_volumes_array = generate_longitudinal_volumes_array(partial_patient_path)
     # remove the difference in cm^3, leave only difference in percentage
-    volume_change_per_edge = get_dict_of_volume_change_per_edge(ld,longitudinal_volumes_array)
-    return {edge: percentage for edge, (percentage, _) in volume_change_per_edge.items()}
+    # volume_change_per_edge = get_dict_of_volume_change_per_edge(ld,longitudinal_volumes_array)
+    # return {edge: percentage for edge, (percentage, _) in volume_change_per_edge.items()}
+    volume_change_and_class_per_edge = get_dict_of_volume_percentage_change_and_classification_per_edge(ld, longitudinal_volumes_array)
+    return {edge: percentage for edge, (percentage, _) in volume_change_and_class_per_edge.items()}
 
 def get_volumes():
     ld = LoaderSimpleFromJson(
-        f"/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/A_W_glong_gt.json")
+        f"/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/A_S_H_glong_gt.json")
 
     longitudinal_volumes_array = generate_longitudinal_volumes_array(
-        "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_W_")  # returns sorted (by date) array of
+        "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_S_H_")  # returns sorted (by date) array of
     # dictionaries (one for each time stamp), key - lesion idx, value - volume in cm^3
+
+    get_dict_of_volume_percentage_change_and_classification_per_edge(ld, longitudinal_volumes_array)
     
-    diff_in_total = get_diff_in_total(longitudinal_volumes_array)  # array of tuples: (diff in total percentage, diff in total cm^3), when the idx in the array represents the time stamp
+    # diff_in_total = get_diff_in_total(longitudinal_volumes_array)  # array of tuples: (diff in total percentage, diff in total cm^3), when the idx in the array represents the time stamp
 
     # print(diff_in_total)
     # print(get_dict_of_volume_change_per_edge(ld,
     #                                          longitudinal_volumes_array))  # returns a dictionary of key - edge, value - tuple of (difference in
     # percentage, difference in cm^3)
 
-    get_percentage_diff_per_edge_dict(ld, "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_W_")
+    # get_percentage_diff_per_edge_dict(ld, "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_W_")
 
-# get_volumes()
+get_volumes()

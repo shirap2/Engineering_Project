@@ -10,16 +10,20 @@ def edit_volume_percentage_data_to_str_and_color(vol_percentage_diff_per_edge: d
     edited_dict = dict()
     color_dict = dict()
     for edge, percentage in vol_percentage_diff_per_edge.items():
-        color = 'green'
-        diff_is_positive = (percentage > 0)
-        if math.isinf(percentage):
-            percentage = ""
-        else:
-            percentage = str(round(percentage)) + "%"
-
-        if diff_is_positive:
-            percentage = "+" + percentage
+        if percentage == "+":
             color = 'red'
+        
+        else:
+            color = 'green'
+            diff_is_positive = (percentage > 0)
+            if math.isinf(percentage):
+                percentage = ""
+            else:
+                percentage = str(round(percentage)) + "%"
+
+            if diff_is_positive:
+                percentage = "+" + percentage
+                color = 'red'
 
         edited_dict.update({edge: percentage})
         color_dict.update({edge: color})
@@ -42,7 +46,8 @@ def get_edge_label_color(edge_labels : dict):
 class DrawerLabelsAndLabeledEdges(Drawer):
     """Displays the Longit graph with the nodes' color as the ITKSNAP label color. With the parameter attr_to_show you
     can decide what text to print on the nodes. The default is label number"""
-    def __init__(self, longit: Longit, cc_idx: int, ld: Loader , components: list, longitudinal_volumes_array: list, percentage_diff_per_edge_dict, attr_to_print=None):
+    def __init__(self, longit: Longit, cc_idx: int, ld: Loader , components: list, longitudinal_volumes_array: list,
+                  percentage_diff_per_edge_dict, attr_to_print=None):
         self._attr_to_print = attr_to_print
         if self._attr_to_print is not None:
             longit.nodes_have_attribute(self._attr_to_print)
@@ -104,10 +109,9 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         
     def set_edges_drawing_attributes(self):
         super().set_edges_drawing_attributes()
-        # todo : return
-        # percentage_diff_per_edge_dict, color_dict = edit_volume_percentage_data_to_str_and_color(self.percentage_diff_per_edge_dict)
-        # nx.set_edge_attributes(self._base_graph, percentage_diff_per_edge_dict, name='label')
-        # nx.set_edge_attributes(self._base_graph, color_dict, name='color')
+        percentage_diff_per_edge_dict, color_dict = edit_volume_percentage_data_to_str_and_color(self.percentage_diff_per_edge_dict) # volume
+        nx.set_edge_attributes(self._base_graph, percentage_diff_per_edge_dict, name='label') # volume
+        nx.set_edge_attributes(self._base_graph, color_dict, name='color') # volume
 
     def set_nodes_volume_labels(self):
         is_place_holder_dict = nx.get_node_attributes(self._base_graph, NodeAttr.IS_PLACEHOLDER)
@@ -156,8 +160,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         plt.xlim([-1.5, 1.5])
         plt.ylim([-2, 2])
         Drawer.draw(self, pos)
-        # todo : return
-        # self.draw_volume_related_attributes_on_graph(pos)
+        self.draw_volume_related_attributes_on_graph(pos) # volume
         nx.spring_layout(self._base_graph, scale=6.0)
 
 
@@ -172,4 +175,19 @@ class DrawerLabelsAndLabeledEdges(Drawer):
             curr_cc_graph = self.fill_with_placeholders(cc_subgraphs[i])
             cc_graph = nx.compose(cc_graph, curr_cc_graph)
         self._base_graph = cc_graph
+
+
+    def write_dates(self, nodes_position):
+        """Prints the layers' dates at the bottom of the layers"""
+        # x position of layers:
+        nodes_pos_x = [pos[0] for pos in nodes_position.values()]
+        layer_pos_x = np.unique(nodes_pos_x)
+        nodes_pos_y = [pos[1] for pos in nodes_position.values()]
+        lower_node = np.min(nodes_pos_y)
+
+        text_positions = [(pos_x, lower_node - 0.2) for pos_x in layer_pos_x]
+        for layer_idx in range(self._num_of_layers):
+            current_text_pos = text_positions[layer_idx]
+            plt.text(current_text_pos[0], current_text_pos[1], self._patient_dates[layer_idx],
+                     horizontalalignment='center')
     
