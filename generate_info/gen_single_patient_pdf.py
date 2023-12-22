@@ -78,9 +78,8 @@ def replace_zeros_with_hyphen(value):
     return '-' if value == "0" else value
 
 def replace_zeros_in_table(table_data):
-    for row_idx, row in enumerate(table_data):
-        for col_idx, cell_value in enumerate(row):
-            table_data[row_idx][col_idx] = replace_zeros_with_hyphen(cell_value)
+    for col_idx, cell_value in enumerate(table_data[1]):
+        table_data[1][col_idx] = replace_zeros_with_hyphen(cell_value)
 
 
 def get_volume_changes_per_time_table(patient_partial_path : str):
