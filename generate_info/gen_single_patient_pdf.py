@@ -1,4 +1,4 @@
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.platypus import Table, TableStyle, Paragraph, Spacer, Image
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from volume.volume_calculation import get_diff_in_total, generate_longitudinal_volumes_array
@@ -107,11 +107,11 @@ def get_volume_changes_per_time_table(patient_partial_path : str):
 
     return [table]
 
-def get_nodes_graph_image(image_path : str, ld):
+def get_nodes_graph_image(image_path : str):
 
-    lg1 = LongitClassification(ld)
-    dr_2 = DrawerLabels(lg1)
-    dr_2.show_graph(image_path)
+    # lg1 = LongitClassification(ld)
+    # dr_2 = DrawerLabels(lg1)
+    # dr_2.show_graph(image_path)
 
     graph = Image(image_path, height=300, width=400)
 
@@ -122,10 +122,9 @@ def get_nodes_graph_image(image_path : str, ld):
     return [graph, credit]
 
 
-def create_single_patient_pdf_page(patient_name : str, scan_name : str, patient_partial_path : str):
+def create_single_patient_pdf_page(patient_name : str, scan_name : str, patient_partial_path : str, png_name : str):
 
     ld = LoaderSimpleFromJson(scan_name)
-    png_name = "output/" + patient_name.replace(" ", "_") + "_patient_summary.png"
     elements = []
 
     # title
@@ -134,7 +133,7 @@ def create_single_patient_pdf_page(patient_name : str, scan_name : str, patient_
 
     # graph image
     # elements += get_sub_title()
-    elements += get_nodes_graph_image(png_name, ld)
+    elements += get_nodes_graph_image(png_name)
     elements.append(Spacer(1,20))
 
     # table 1
