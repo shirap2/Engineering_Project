@@ -16,7 +16,6 @@ cs/casmip/bennydv/{ORGAN}_pipeline/gt_data/size_filtered/labeled_no_reg/{PATIENT
 D) Ground-truth longitudinal matching graphs, as json files
 cs/casmip/bennydv/{ORGAN}_pipeline/lesions_matching/longitudinal_gt/original/{PATIENT_NAME}glong_gt.json
 
-
 E) Ground-truth longitudinal matching graphs corrected with the workflow, as json files
 cs/casmip/bennydv/{ORGAN}_pipeline/lesions_matching/longitudinal_gt/original_corrected/{PATIENT_NAME}glong_gt.json
 

@@ -1,15 +1,14 @@
-from common_packages.LongGraphPackage import LoaderSimpleFromJson, LongitClassification
-from generate_info.generate_pdf_base import BasePDFGenerator
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from volume.lesion_volume_changes import check_single_lesion_growth, generate_volume_list_single_lesion, lesion_growth_percentage
+from common_packages.LongGraphPackage import LoaderSimpleFromJson
+from reportlab.platypus import Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from volume.lesion_volume_changes import check_single_lesion_growth, generate_volume_list_single_lesion
 from generate_info.gen_single_lesion.gen_single_lesion_graph import get_single_node_graph_image
 import networkx as nx
 from volume.volume_calculation import get_percentage_diff_per_edge_dict, generate_longitudinal_volumes_array
-from common_packages.LongGraphClassification import LongitClassification
 from common_packages.BaseClasses import *
 from datetime import datetime
 import re
+import pickle
 
 def get_title(title_string):
     title_style = getSampleStyleSheet()['Title']
@@ -172,7 +171,11 @@ def get_dates(patient_path):
     return formatted_dates
     
 
-def create_single_lesion_pdf_page(patient_name : str, scan_name : str, patient_partial_path : str):
+def create_single_lesion_pdf_page(patient_name : str, json_path : str, pkl_path : str, patient_partial_path : str):
+
+    with open(pkl_path, "rb") as file:
+        lg = pickle.load(file)
+
     png_name = "output/" + patient_name.replace(" ", "_") + "_lesion_changes.png"
     elements = []
 
@@ -181,14 +184,14 @@ def create_single_lesion_pdf_page(patient_name : str, scan_name : str, patient_p
     elements.append(Spacer(1,20))
 
     # graph image
-    # elements += get_note("In the following graphs along each edge, the % change in volume between one scan and the next is shown in green/red; On top of each node, the actual volume is shown in cubic cm, and under each node the time stamp appears.")
-    # elements.append(Spacer(1,20))
     vol_list = generate_volume_list_single_lesion(patient_partial_path)
     cc_idx = 0
-    ld = LoaderSimpleFromJson(scan_name)
-    lg = LongitClassification(ld, patient_name, get_dates(patient_partial_path))
+    ld = LoaderSimpleFromJson(json_path)
+
     G = lg.get_graph()
     components = list(nx.connected_components(G))
+
+
     max_time_per_cc_dict, total_max_time = find_max_time_stamp_per_cc_and_total(components)
     disappeared_components, new_single_components, components_to_draw = devide_components(components, max_time_per_cc_dict, total_max_time)
     longitudinal_volumes_array = generate_longitudinal_volumes_array(patient_partial_path)
@@ -219,13 +222,13 @@ def create_single_lesion_pdf_page(patient_name : str, scan_name : str, patient_p
     elements += get_sub_title("Lesions appearing throughout several scans", False)
     while True:
         graph, lesions_idx = get_single_node_graph_image("output/single_labeled_lesion_graph",
-                                                          scan_name, cc_idx, lg, ld, components_to_draw, 
+                                                          json_path, cc_idx, lg, ld, components_to_draw, 
                                                           longitudinal_volumes_array, percentage_diff_per_edge_dict)
         if not graph:
             break
         elements += get_graph_title(lesions_idx)
         elements += [graph]
-        # elements += get_lesion_history_text(lesions_idx[0], vol_list)#todo
+        elements += get_lesion_history_text(lesions_idx[0], vol_list)#todo
 
         ## shira added text for classification of connected component 
         elements+=cc_class_text(node2cc,nodes2cc_class,lesions_idx[0])
