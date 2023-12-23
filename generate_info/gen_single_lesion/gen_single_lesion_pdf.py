@@ -1,6 +1,7 @@
 from common_packages.LongGraphPackage import LoaderSimpleFromJson
 from reportlab.platypus import Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
+from patient_summary.classify_changes_in_individual_lesions import classify_changes_in_individual_lesions, count_d_in_d_out, gen_dict_classified_nodes_for_layers
 from volume.lesion_volume_changes import check_single_lesion_growth, generate_volume_list_single_lesion
 from generate_info.gen_single_lesion.gen_single_lesion_graph import get_single_node_graph_image
 import networkx as nx
@@ -73,6 +74,7 @@ def find_max_time_stamp_per_cc_and_total(components):
 def devide_components(components, max_time_per_cc_dict, total_max_time):
     disappeared_components, mew_single_components, components_to_draw = [], [], []
     for cc in components:
+        to_check = max_time_per_cc_dict[tuple(cc)]
         if total_max_time == max_time_per_cc_dict[tuple(cc)]:
             if len(cc) == 1:
                 # new & single
@@ -99,8 +101,9 @@ def get_new_lesions_text(new_single_components):
         text_to_add = f"Lesion {result_string} appeared for the first time in the last scan."
     return get_note(text_to_add, True)
 
-def get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, ):
+def get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, classifed_noes_dict):
     num_of_disappeared = len(disappeared_components)
+    sum_disappeared = sum(entry.get("disappeared", 0) for entry in classifed_noes_dict.values())
 
     if num_of_disappeared == 0:
         return get_note("Over time, no lesions disappeared.", True)
@@ -120,7 +123,7 @@ def get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, )
             num_of_disappeared_lesions_per_time[time] = 1
 
         
-    elements = get_note(f"Over time, {num_of_disappeared} lesions disappeared.", False)
+    elements = get_note(f"Over time, {sum_disappeared} lesions disappeared.", False)
 
     if len(num_of_disappeared_lesions_per_time) == 1:
         # all disappeared in the same time
@@ -128,8 +131,12 @@ def get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, )
         elements += get_note(f"They were last identified in t{max_time_per_cc_dict[tuple(cc)]} scan.", False)
     else:
         num_of_disappeared_lesions_per_time = sorted(num_of_disappeared_lesions_per_time.items(), key=lambda item: item[0])
-        for tup in num_of_disappeared_lesions_per_time:
-            time, num_of_dis_lesions = tup
+        # for tup in num_of_disappeared_lesions_per_time:
+        for time in sorted(classifed_noes_dict.keys()):
+            # time, num_of_dis_lesions = tup
+            if time+1 not in classifed_noes_dict:
+                continue
+            num_of_dis_lesions = classifed_noes_dict.get(time+1, {}).get("disappeared", 0)
             were_or_was = "s were"
             if num_of_dis_lesions == 1:
                 were_or_was = " was"
@@ -147,7 +154,7 @@ def cc_class_text(node2cc,nodes2cc_class,lesion_idx_in_last_scan:int):
     node_key = f"{lesion_idx_in_last_scan}_{max_time}"
     if node_key in nodes2cc_class:
         lesion_cc_class=nodes2cc_class[node_key]
-        elements=get_note("Classification of connected component: "+lesion_cc_class,True)
+        elements=get_note("Classification of connected component: "+lesion_cc_class[:-2],True)
     else:
         return "No information for classifiaction"
     return elements
@@ -202,7 +209,10 @@ def create_single_lesion_pdf_page(patient_name : str, json_path : str, pkl_path 
     elements += get_new_lesions_text(new_single_components)
     # add section of disappeared
     elements += get_sub_title("Lesions that have disappeared over time", False)
-    elements += get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict)
+    
+    classified_nodes_dict = gen_dict_classified_nodes_for_layers(classify_changes_in_individual_lesions(count_d_in_d_out(ld),ld))
+    # num_disappeared_nodes = classified_nodes_dict[]
+    elements += get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict,classified_nodes_dict)
     
     
     ## classification of nodes and cc from benny code
