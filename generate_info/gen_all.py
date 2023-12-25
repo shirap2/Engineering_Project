@@ -35,7 +35,6 @@ def create_pdf_file(patient_name : str):
         os.remove(pdf_name)
     doc = SimpleDocTemplate(pdf_name)
     
-
     elements = []
  
     elements += create_single_patient_pdf_page(patient_name, patient.json_input_address, patient.partial_scans_address, patient.praph_image_path)
@@ -47,6 +46,7 @@ def create_pdf_file(patient_name : str):
     doc.build(elements)
 
 
+<<<<<<< HEAD
 # NAME = "A. W."
 # create_pdf_file(NAME)
 # NAME = "A. S. H."
@@ -59,3 +59,17 @@ NAME = "B. T."
 create_pdf_file(NAME)
 NAME = "C. A."
 create_pdf_file(NAME)
+=======
+NAME = "A. W."
+create_pdf_file(NAME)
+NAME = "A. S. H."
+create_pdf_file(NAME)
+# NAME = "A. S. S."
+# create_pdf_file(NAME)
+# NAME = "B. B. S."
+# create_pdf_file(NAME)
+# NAME = "B. T."
+# create_pdf_file(NAME)
+# NAME = "C. A."
+# create_pdf_file(NAME)
+>>>>>>> c5c7eb7 (changed t_ to the actual date (in text) and reorganized titles)
