@@ -21,11 +21,11 @@ def get_file_title(patient_name: str):
 
 
 def get_sub_title(sub_title: str):
-    elements = []
-    title = Paragraph(sub_title, style=getSampleStyleSheet()['Normal'])
-    elements.append(title)
-    elements.append(Spacer(1, 5))
-    return elements
+    style = getSampleStyleSheet()['Title']
+    style.fontSize = 10
+    style.spaceAfter = 5
+    title = Paragraph(sub_title, style=style)
+    return [title]
 
 
 

@@ -18,10 +18,22 @@ def get_title(title_string):
 
 
 
-def get_sub_title(sub_title: str, spacer=True):
-    elements = []
+def get_sub_title(sub_title: str, no_spaceBefore=True):
     title_style = getSampleStyleSheet()['Title']
     title_style.fontSize = 10
+    title_style.spaceAfter = 0
+    title_style.spaceBefore = 20
+    if no_spaceBefore:
+        title_style.spaceBefore = 0
+    title = Paragraph(sub_title, style=title_style)
+    return [title]
+
+def get_sub_sub_title(sub_title: str, spacer=True):
+    elements = []
+    title_style = getSampleStyleSheet()['Heading1']
+    title_style.fontSize = 10
+    title_style.spaceAfter = 0
+    title_style.spaceBefore = 0
     title = Paragraph(sub_title, style=title_style)
     elements.append(title)
     if spacer:
@@ -46,7 +58,7 @@ def get_graph_title(lesions_idx: list):
         result_string = ", ".join(as_strings)
         text += f"The History of Lesions {result_string}"
 
-    return get_sub_title(text, False)
+    return get_sub_sub_title(f"&#8226; {text}", False)
 
 
 def get_lesion_history_text(key, vol_list):
@@ -99,16 +111,16 @@ def get_new_lesions_text(new_single_components):
         text_to_add = f"Lesion {result_string} appeared for the first time in the last scan."
     return get_note(text_to_add, True)
 
-def get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, ):
+def get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, lg):
     num_of_disappeared = len(disappeared_components)
-
+    dates = lg._patient_dates
     if num_of_disappeared == 0:
         return get_note("Over time, no lesions disappeared.", True)
     
     if num_of_disappeared == 1:
         elements = get_note(f"Over time, one lesion disappeared.", False)
         cc = disappeared_components[0]
-        elements += get_note(f"It was last identified in t{max_time_per_cc_dict[tuple(cc)]} scan.", True)
+        elements += get_note(f"It was last identified in {dates[max_time_per_cc_dict[tuple(cc)]]}.", True)
         return elements
     
     num_of_disappeared_lesions_per_time = dict() # key:time, value: num of desappeared lesion
@@ -125,7 +137,7 @@ def get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, )
     if len(num_of_disappeared_lesions_per_time) == 1:
         # all disappeared in the same time
         cc = disappeared_components[0]
-        elements += get_note(f"They were last identified in t{max_time_per_cc_dict[tuple(cc)]} scan.", False)
+        elements += get_note(f"They were last identified in {dates[max_time_per_cc_dict[tuple(cc)]]}.", False)
     else:
         num_of_disappeared_lesions_per_time = sorted(num_of_disappeared_lesions_per_time.items(), key=lambda item: item[0])
         for tup in num_of_disappeared_lesions_per_time:
@@ -133,7 +145,7 @@ def get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, )
             were_or_was = "s were"
             if num_of_dis_lesions == 1:
                 were_or_was = " was"
-            elements += get_note(f"{num_of_dis_lesions} lesion{were_or_was} last identified in t{time} scan.", False)
+            elements += get_note(f"{num_of_dis_lesions} lesion{were_or_was} last identified in {dates[time]}.", False)
 
     elements.append(Spacer(1, 5))
     return elements
@@ -198,11 +210,11 @@ def create_single_lesion_pdf_page(patient_name : str, json_path : str, pkl_path 
     percentage_diff_per_edge_dict = get_percentage_diff_per_edge_dict(ld, patient_partial_path)
 
     # add section of new
-    elements += get_sub_title("New Lesions", False)
+    elements += get_sub_title("New Lesions", True)
     elements += get_new_lesions_text(new_single_components)
     # add section of disappeared
     elements += get_sub_title("Lesions that have disappeared over time", False)
-    elements += get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict)
+    elements += get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, lg)
     
     
     ## classification of nodes and cc from benny code
@@ -236,20 +248,6 @@ def create_single_lesion_pdf_page(patient_name : str, json_path : str, pkl_path 
         elements.append(Spacer(1,20))
         cc_idx += 1
 
-    
-
-
-
-    # total lesion volume change text
-    # elements+=get_sub_title("Total Lesion Growth History", False)
-    # elements+=lesion_growth_percentage(patient_partial_path, len(vol_list))
-       
     return elements
-
-
-
-
-# create_single_lesion_pdf_page("A. W.", "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/A_W_glong_gt.json",
-#                 "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_W_")
 
 
