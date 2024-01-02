@@ -46,10 +46,10 @@ def create_pdf_file(patient_name : str):
     doc.build(elements)
 
 
-NAME = "A. W."
-create_pdf_file(NAME)
-# NAME = "A. S. H."
+# NAME = "A. W."
 # create_pdf_file(NAME)
+NAME = "A. S. H."
+create_pdf_file(NAME)
 # NAME = "A. S. S."
 # create_pdf_file(NAME)
 # NAME = "B. B. S."

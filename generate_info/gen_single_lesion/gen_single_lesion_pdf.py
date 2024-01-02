@@ -244,8 +244,10 @@ def create_single_lesion_pdf_page(patient_name : str, json_path : str, pkl_path 
                                                           longitudinal_volumes_array, percentage_diff_per_edge_dict)
         if not graph:
             break
+        
         elements += get_graph_title(lesions_idx)
         elements += [graph]
+
         elements += get_lesion_history_text(lesions_idx[0], vol_list)#todo
 
         ## shira added text for classification of connected component 
