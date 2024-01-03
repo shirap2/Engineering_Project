@@ -132,12 +132,11 @@ def create_single_patient_pdf_page(patient_name : str, scan_name : str, patient_
     elements.append(Spacer(1,20))
 
     # graph image
-    # elements += get_sub_title()
-    elements += get_nodes_graph_image(png_name)
-    elements.append(Spacer(1,20))
+    # elements += get_nodes_graph_image(png_name)
+    # elements.append(Spacer(1,20))
 
     # table 1
-    elements += get_sub_title("Lesion Counting According to Their Classification")
+    elements += get_sub_title("Lesion Count According to Classification")
     elements += get_lesion_counter_and_classifier_table(ld)
     elements.append(Spacer(1,20))
 

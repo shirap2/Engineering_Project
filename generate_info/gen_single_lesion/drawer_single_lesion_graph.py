@@ -147,7 +147,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
     def draw_nodes_volume_labels(self, pos):
         nodes_volume_labels = self.set_nodes_volume_labels()
         nx.draw_networkx_labels(G=self._base_graph,
-                                pos={k: (v[0], v[1]+0.15) for k, v in pos.items()},
+                                pos={k: (v[0], v[1]+0.3) for k, v in pos.items()},
                                 labels=nodes_volume_labels, font_size=10, font_color='black')
 
     
@@ -184,6 +184,9 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         layer_pos_x = np.unique(nodes_pos_x)
         nodes_pos_y = [pos[1] for pos in nodes_position.values()]
         lower_node = np.min(nodes_pos_y)
+
+        # lower date text
+        lower_node -=0.3
 
         text_positions = [(pos_x, lower_node - 0.2) for pos_x in layer_pos_x]
         for layer_idx in range(self._num_of_layers):

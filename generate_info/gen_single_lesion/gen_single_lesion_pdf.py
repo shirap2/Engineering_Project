@@ -1,7 +1,7 @@
 from common_packages.LongGraphPackage import LoaderSimpleFromJson
 from reportlab.platypus import Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
-from patient_summary.classify_changes_in_individual_lesions import classify_changes_in_individual_lesions,count_d_in_d_out, gen_dict_classified_nodes_for_layers
+from patient_summary.classify_changes_in_individual_lesions import classify_changes_in_individual_lesions, count_d_in_d_out, gen_dict_classified_nodes_for_layers
 from volume.lesion_volume_changes import check_single_lesion_growth, generate_volume_list_single_lesion
 from generate_info.gen_single_lesion.gen_single_lesion_graph import get_single_node_graph_image
 import networkx as nx
@@ -10,7 +10,6 @@ from common_packages.BaseClasses import *
 from datetime import datetime
 import re
 import pickle
-
 
 def get_title(title_string):
     title_style = getSampleStyleSheet()['Title']
@@ -21,8 +20,8 @@ def get_title(title_string):
 
 
 def get_sub_title(sub_title: str, no_spaceBefore=True):
-    title_style = getSampleStyleSheet()['Title']
-    title_style.fontSize = 10
+    title_style = getSampleStyleSheet()['Heading2']
+    # title_style.fontSize = 10
     title_style.spaceAfter = 0
     title_style.spaceBefore = 20
     if no_spaceBefore:
@@ -143,9 +142,7 @@ def get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, c
         elements += get_note(f"They were last identified in {dates[max_time_per_cc_dict[tuple(cc)]]}.", False)
     else:
         num_of_disappeared_lesions_per_time = sorted(num_of_disappeared_lesions_per_time.items(), key=lambda item: item[0])
-
         for time in sorted(classifed_nodes_dict.keys()):
-            # time, num_of_dis_lesions = tup
             if time+1 not in classifed_nodes_dict:
                 continue
             num_of_dis_lesions = classifed_nodes_dict.get(time+1, {}).get("disappeared", 0)
@@ -220,7 +217,8 @@ def create_single_lesion_pdf_page(patient_name : str, json_path : str, pkl_path 
     elements += get_sub_title("New Lesions", True)
     elements += get_new_lesions_text(new_single_components)
     # add section of disappeared
-    elements += get_sub_title("Lesions that have disappeared over time", False)
+    elements += get_sub_title("Disappeared Lesions", False)
+
     classified_nodes_dict = gen_dict_classified_nodes_for_layers(classify_changes_in_individual_lesions(count_d_in_d_out(ld),ld))
     elements += get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, classified_nodes_dict, lg)
     
@@ -239,13 +237,14 @@ def create_single_lesion_pdf_page(patient_name : str, json_path : str, pkl_path 
     nodes2cc_class =nx.get_node_attributes(G,NodeAttr.CC_PATTERNS)
     
     # draw components to drw (existing in last scan + not new- no history)
-    elements += get_sub_title("Lesions appearing throughout several scans", False)
+    elements += get_sub_title("Lesions Appearing in Multiple Scans", False)
     while True:
         graph, lesions_idx = get_single_node_graph_image("output/single_labeled_lesion_graph",
                                                           json_path, cc_idx, lg, ld, components_to_draw, 
                                                           longitudinal_volumes_array, percentage_diff_per_edge_dict)
         if not graph:
             break
+        
         elements += get_graph_title(lesions_idx)
         elements += [graph]
         elements += get_lesion_history_text(lesions_idx[0], vol_list)#todo
