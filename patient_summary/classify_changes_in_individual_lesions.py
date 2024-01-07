@@ -84,14 +84,20 @@ def classify_changes_in_individual_lesions(d_in_d_out_per_time_arr,ld):
         if d_in == 0 and d_out == 0:
             classified_nodes[node] = changes_in_individual_lesions.LONE
             continue
+        if d_in == 1 and d_out == 0 and node in filtered_keys :
+            classified_nodes[node] = changes_in_individual_lesions.PERSISTENT
+            continue
+
         if (d_in == 0 or d_in == 1) and d_out >= 2:
             classified_nodes[node] = changes_in_individual_lesions.SPLIT
             continue
-        
+
         if d_in == 0 and d_out == 1:
             classified_nodes[node] = changes_in_individual_lesions.NEW
             continue
 
+        if d_in ==1 and d_out==0:
+            classified_nodes[node]=changes_in_individual_lesions.DISAPPEARED
         # if d_in == 1 and d_out == 0 and node not in filtered_keys:
         # if d_in == 1 and d_out == 0 :
         #     classified_nodes[node] = changes_in_individual_lesions.PERSISTENT
@@ -110,9 +116,7 @@ def classify_changes_in_individual_lesions(d_in_d_out_per_time_arr,ld):
         if d_in >= 2 and d_out >= 2:
             classified_nodes[node] = changes_in_individual_lesions.COMPLEX
 
-        if d_in == 1 and d_out == 0 and node in filtered_keys :
-            classified_nodes[node] = changes_in_individual_lesions.PERSISTENT
-            continue
+        
 
     return classified_nodes
 
