@@ -71,30 +71,33 @@ def classify_changes_in_individual_lesions(d_in_d_out_per_time_arr,ld):
             if int(node.split("_")[1])!=0:
                 # node is lone in current scan. needs to be labeled as disappeared from next scan
                 classified_nodes[node]=changes_in_individual_lesions.LONE
-                if next_time<=highest_t and node_in_next_scan not in classified_nodes:
-                    classified_nodes[node_in_next_scan] =changes_in_individual_lesions.DISAPPEARED
+                # if next_time<=highest_t and node_in_next_scan not in classified_nodes:
+                #     classified_nodes[node_in_next_scan] =changes_in_individual_lesions.DISAPPEARED
                 continue
             if int(node.split("_")[1])==0:
-                classified_nodes[node]=changes_in_individual_lesions.NEW
-                if next_time<=highest_t and node_in_next_scan not in classified_nodes:
-                    classified_nodes[node_in_next_scan] =changes_in_individual_lesions.DISAPPEARED
+                classified_nodes[node]=changes_in_individual_lesions.LONE
+                # if next_time<=highest_t and node_in_next_scan not in classified_nodes:
+                #     classified_nodes[node_in_next_scan] =changes_in_individual_lesions.DISAPPEARED
                 continue  
 
         [d_in, d_out] = d_in_d_out_per_time_arr.get(node)
         if d_in == 0 and d_out == 0:
             classified_nodes[node] = changes_in_individual_lesions.LONE
             continue
-
+        if (d_in == 0 or d_in == 1) and d_out >= 2:
+            classified_nodes[node] = changes_in_individual_lesions.SPLIT
+            continue
+        
         if d_in == 0 and d_out == 1:
             classified_nodes[node] = changes_in_individual_lesions.NEW
             continue
 
         # if d_in == 1 and d_out == 0 and node not in filtered_keys:
-        if d_in == 1 and d_out == 0 :
-            classified_nodes[node] = changes_in_individual_lesions.PERSISTENT
-            if next_time<=highest_t and node_in_next_scan not in classified_nodes:
-                classified_nodes[node_in_next_scan]=changes_in_individual_lesions.DISAPPEARED
-            continue
+        # if d_in == 1 and d_out == 0 :
+        #     classified_nodes[node] = changes_in_individual_lesions.PERSISTENT
+        #     if next_time<=highest_t and node_in_next_scan not in classified_nodes:
+        #         classified_nodes[node_in_next_scan]=changes_in_individual_lesions.DISAPPEARED
+        #     continue
 
         if d_in == 1 and d_out == 1:
             classified_nodes[node] = changes_in_individual_lesions.PERSISTENT
@@ -102,10 +105,6 @@ def classify_changes_in_individual_lesions(d_in_d_out_per_time_arr,ld):
 
         if d_in >= 2 and (d_out == 0 or d_out == 1):
             classified_nodes[node] = changes_in_individual_lesions.MERGED
-            continue
-
-        if (d_in == 0 or d_in == 1) and d_out >= 2:
-            classified_nodes[node] = changes_in_individual_lesions.SPLIT
             continue
 
         if d_in >= 2 and d_out >= 2:
