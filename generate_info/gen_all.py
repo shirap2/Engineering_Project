@@ -56,5 +56,5 @@ def create_pdf_file(patient_name : str):
 # create_pdf_file(NAME)
 NAME = "B. T."
 create_pdf_file(NAME)
-NAME = "C. A."
-create_pdf_file(NAME)
+# NAME = "C. A."
+# create_pdf_file(NAME)
