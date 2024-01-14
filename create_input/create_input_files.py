@@ -38,12 +38,12 @@ def save_patient_input(name, partial_scans_adress, json_input_address):
 
 
 
-# A. W.
-NAME = "A. W."
-JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/A_W_glong_gt.json"
-PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_W_"
+# # A. W.
+# NAME = "A. W."
+# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/A_W_glong_gt.json"
+# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_W_"
 
-save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
 
 # A. S. H.
 NAME = "A. S. H."
@@ -52,30 +52,30 @@ PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/label
 
 save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
 
-# # A. S. S.
-NAME = "A. S. S."
-JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/A_S_S_glong_gt.json"
-PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_S_S_"
+# # # A. S. S.
+# NAME = "A. S. S."
+# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/A_S_S_glong_gt.json"
+# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_S_S_"
 
-save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
 
-# B. B. S.
-NAME = "B. B. S."
-JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/B_B_S_glong_gt.json"
-PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/B_B_S_"
+# # B. B. S.
+# NAME = "B. B. S."
+# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/B_B_S_glong_gt.json"
+# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/B_B_S_"
 
-save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
 
-# B. T.
-NAME = "B. T."
-JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/B_T_glong_gt.json"
-PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/B_T_"
+# # B. T.
+# NAME = "B. T."
+# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/B_T_glong_gt.json"
+# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/B_T_"
 
-save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
 
-# C. A.
-NAME = "C. A."
-JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/C_A_glong_gt.json"
-PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/C_A_"
+# # C. A.
+# NAME = "C. A."
+# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/C_A_glong_gt.json"
+# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/C_A_"
 
-save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)

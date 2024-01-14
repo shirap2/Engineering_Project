@@ -148,7 +148,3 @@ def create_single_patient_pdf_page(patient_name : str, scan_name : str, patient_
     return elements
 
 
-
-# create_single_pdf_pdf_page("A. W.", "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/A_W_glong_gt.json",
-#                 "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_W_")
-

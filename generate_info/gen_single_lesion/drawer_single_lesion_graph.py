@@ -4,26 +4,26 @@ import networkx as nx
 from typing import Dict
 import numpy as np
 from common_packages.BaseClasses import Longit, NodeAttr, EdgeAttr, Colors, Drawer, Loader
-from volume.volume_calculation import get_percentage_diff_per_edge_dict
 
 def edit_volume_percentage_data_to_str_and_color(vol_percentage_diff_per_edge: dict):
     edited_dict = dict()
     color_dict = dict()
     for edge, percentage in vol_percentage_diff_per_edge.items():
-        if percentage == "+":
-            color = 'red'
-        
-        else:
-            color = 'green'
-            diff_is_positive = (percentage > 0)
-            if math.isinf(percentage):
-                percentage = ""
-            else:
-                percentage = str(round(percentage)) + "%"
-
-            if diff_is_positive:
-                percentage = "+" + percentage
+        if percentage is not None:
+            if percentage == "+inf":
                 color = 'red'
+            
+            else:
+                color = 'green'
+                diff_is_positive = (percentage > 0)
+                if math.isinf(percentage):
+                    percentage = ""
+                else:
+                    percentage = str(round(percentage)) + "%"
+
+                if diff_is_positive:
+                    percentage = "+" + percentage
+                    color = 'red'
 
         edited_dict.update({edge: percentage})
         color_dict.update({edge: color})
@@ -83,7 +83,8 @@ class DrawerLabelsAndLabeledEdges(Drawer):
 
         self.longitudinal_volumes_array = longitudinal_volumes_array
         self.percentage_diff_per_edge_dict = percentage_diff_per_edge_dict
-        # get_percentage_diff_per_edge_dict(self.ld, self.partial_patient_path)
+
+        self.nodes_volume_labels = self.set_nodes_volume_labels()
 
     def set_nodes_drawing_attributes(self):
         """Add to each node the color attribute GRAY"""
@@ -97,9 +98,10 @@ class DrawerLabelsAndLabeledEdges(Drawer):
 
     def get_node_volume(self, node_str : str):
         idx, time = node_str.split('_')
-        if int(idx) in self.longitudinal_volumes_array[int(time)]:
-            return round(self.longitudinal_volumes_array[int(time)][int(idx)], 2)
-        return 0
+        if int(idx) in self.longitudinal_volumes_array[int(time)]: 
+            return round(self.longitudinal_volumes_array[int(time)][int(idx)], 2), True
+            # return self.longitudinal_volumes_array[int(time)][int(idx)] # todo talia check
+        return 0, False
 
     def attr_to_print_on_nodes(self):
         if self._attr_to_print is None:
@@ -108,17 +110,100 @@ class DrawerLabelsAndLabeledEdges(Drawer):
             return self._attr_to_print
         
     def set_edges_drawing_attributes(self):
-        super().set_edges_drawing_attributes()
+
+        nx.set_edge_attributes(self._base_graph, values=Colors.BLACK, name=EdgeAttr.COLOR)
+        edge_is_skip = nx.get_edge_attributes(self._base_graph, name=EdgeAttr.IS_SKIP)
+
+        connectivity = dict()
+        for edge, is_skip in edge_is_skip.items():
+            if not is_skip:
+                connectivity.update({edge: {EdgeAttr.CONNECTION_STYLE: 'arc3'}})
+            else:
+                connectivity.update({edge: {EdgeAttr.CONNECTION_STYLE: 'arc3,rad=0.3'}})
+        nx.set_edge_attributes(self._base_graph, connectivity)
+
         percentage_diff_per_edge_dict, color_dict = edit_volume_percentage_data_to_str_and_color(self.percentage_diff_per_edge_dict) # volume
         nx.set_edge_attributes(self._base_graph, percentage_diff_per_edge_dict, name='label') # volume
         nx.set_edge_attributes(self._base_graph, color_dict, name='color') # volume
+
+    def add_volume_labels_to_skipping_edges(self):
+        percentage_diff = "+inf"
+        edge_is_skip = nx.get_edge_attributes(self._base_graph, name=EdgeAttr.IS_SKIP)
+        for edge, is_skip in edge_is_skip.items():
+            if is_skip:
+                # direct edge
+                node1, node2 = edge
+                node1_time = node1.split("_")[1]
+                node2_time = node2.split("_")[1]
+                if node1_time > node2_time:
+                    edge = (node2, node1)
+                else:
+                    edge = (node1, node2)
+                
+                src, dest = edge
+                src_vol, _ = self.get_node_volume(src)
+                dest_vol, _ = self.get_node_volume(dest)
+
+                if src_vol != 0:
+                    percentage_diff = ((dest_vol/src_vol) - 1) * 100
+                self.percentage_diff_per_edge_dict[edge] = percentage_diff
+
+    def add_edge_skipping_over_node(self, node):
+        # find edge before and after
+        prev_node = ""
+        next_node = ""
+        edge_is_skip = nx.get_edge_attributes(self._base_graph, name=EdgeAttr.IS_SKIP)
+        node_time = node.split("_")[1]
+        for edge, _ in edge_is_skip.items():
+            node1, node2 = edge
+
+            if node2 == node:
+                node1_time = node1.split("_")[1]
+                if node1_time > node_time:
+                    if next_node != "":
+                       print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT") 
+                    next_node = node1
+                else:
+                    if prev_node != "":
+                       print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT") 
+                    prev_node = node1
+
+            if node1 == node:
+                node2_time = node2.split("_")[1]
+                if node2_time > node_time:
+                    if next_node != "":
+                       print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT") 
+                    next_node = node2
+                else:
+                    if prev_node != "":
+                       print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT") 
+                    prev_node = node2
+        if (prev_node == "") or (next_node == ""):
+            print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
+        else:
+            mutable_graph = nx.Graph(self._base_graph)
+            mutable_graph.add_edge(prev_node, next_node)
+            mutable_graph.edges[(prev_node, next_node)][EdgeAttr.IS_SKIP] = True
+            edge_is_skip = nx.get_edge_attributes(mutable_graph, name=EdgeAttr.IS_SKIP)
+            self._base_graph = mutable_graph
+
+            self.add_volume_labels_to_skipping_edges()
+
+
 
     def set_nodes_volume_labels(self):
         is_place_holder_dict = nx.get_node_attributes(self._base_graph, NodeAttr.IS_PLACEHOLDER)
         nodes_volume_labels_dict = dict()
         for node, is_place_holder in is_place_holder_dict.items():
             if not is_place_holder:
-                nodes_volume_labels_dict[node] = f'{self.get_node_volume(node)}[cm³]'
+                vol, is_existing = self.get_node_volume(node)
+                if is_existing:
+                    nodes_volume_labels_dict[node] = f'{vol}cm³'
+                else:
+                    nodes_volume_labels_dict[node] = "doesn't\nappear"
+                    self.add_edge_skipping_over_node(node)  # add edge skipping over this node
+                    
+
         return nodes_volume_labels_dict
     
     def get_lesion_idx(self):
@@ -137,6 +222,28 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         return max_nodes
     
     def color_edges(self, pos):
+        vol_edge_label_pos = dict()
+        edge_is_skip = nx.get_edge_attributes(self._base_graph, name=EdgeAttr.IS_SKIP)
+
+        # for edge, is_skip in edge_is_skip.items():
+        #     if is_skip:
+        #         v = pos[edge[0]]
+        #         vol_edge_label_pos[edge[0]] = (v[0], v[1]+0.3)
+        #     else:
+        #         vol_edge_label_pos[edge[0]] = pos[edge[0]]
+
+        #     k1, v1 = pos[edge[0]]
+        #     if is_skip:
+        #         vol_edge_label_pos[edge[0]] = [k1, v1+1]
+        #     else:
+        #         vol_edge_label_pos[edge[0]] = pos[edge[0]]
+
+        # # print(vol_edge_label_pos)
+        # for k, v in pos.items():
+        #     print(k)
+        #     print((v[0], v[1]+0.3))
+    
+
         edge_labels = nx.get_edge_attributes(self._base_graph, 'label')
         colors = get_edge_label_color(edge_labels)
         for edge, label in edge_labels.items():
@@ -145,10 +252,9 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                 nx.draw_networkx_edge_labels(G=self._base_graph, pos=pos, edge_labels={edge: label}, font_color=color)
 
     def draw_nodes_volume_labels(self, pos):
-        nodes_volume_labels = self.set_nodes_volume_labels()
         nx.draw_networkx_labels(G=self._base_graph,
                                 pos={k: (v[0], v[1]+0.3) for k, v in pos.items()},
-                                labels=nodes_volume_labels, font_size=10, font_color='black')
+                                labels=self.nodes_volume_labels, font_size=10, font_color='black')
 
     
     def draw_volume_related_attributes_on_graph(self, pos):

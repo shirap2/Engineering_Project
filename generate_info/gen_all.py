@@ -48,13 +48,24 @@ def create_pdf_file(patient_name : str):
 
 # NAME = "A. W."
 # create_pdf_file(NAME)
-# NAME = "A. S. H."
-# create_pdf_file(NAME)
+NAME = "A. S. H."
+create_pdf_file(NAME)
 # NAME = "A. S. S."
 # create_pdf_file(NAME)
 # NAME = "B. B. S."
 # create_pdf_file(NAME)
-NAME = "B. T."
-create_pdf_file(NAME)
+# NAME = "B. T."
+# create_pdf_file(NAME)
 # NAME = "C. A."
 # create_pdf_file(NAME)
+
+
+# json_file_path = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original/A_S_S_glong_gt.json"
+# with open(json_file_path, 'r') as file:
+#     data = json.load(file)
+
+# # Print the content
+# print("Nodes:")
+# print(data.get("nodes", []))  # Using get() to handle missing key gracefully
+# print("\nEdges:")
+# print(data.get("edges", []))
