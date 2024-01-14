@@ -1,0 +1,69 @@
+* [33md10fccb[m[33m ([m[1;31morigin/master[m[33m)[m added pdfs
+* [33m1b8b05c[m fixing classification table
+* [33m8c4da8d[m fixed lesion classification table
+*   [33m31c9abb[m after merge
+[32m|[m[33m\[m  
+[32m|[m * [33m7c4d26a[m changedspacing, still needs work
+[32m|[m * [33mf133258[m change text spacing on cc images
+[32m|[m * [33m090ad10[m increased size of headings
+[32m|[m * [33med1c002[m changed title of first table
+[32m|[m * [33m787c607[m shiras code
+[32m|[m * [33mde60fa2[m added Shira's commit manually
+[32m|[m * [33m94c7ea5[m take mine
+[32m|[m * [33m529c88e[m serialization
+* [33m|[m [33m9195227[m added Shira's last commit manually
+* [33m|[m   [33ma57c174[m after merge
+[34m|[m[35m\[m [33m\[m  
+[34m|[m * [33m|[m [33mb022b00[m removed p from classifiaction. fixed text  - disappeared lesions
+* [35m|[m [33m|[m [33mc5c7eb7[m changed t_ to the actual date (in text) and reorganized titles
+[35m|[m[35m/[m [33m/[m  
+* [33m|[m [33m8871182[m after merge
+* [33m|[m [33mdc050f8[m fixed "-" in volume percent chart
+[33m|[m[33m/[m  
+* [33m79be368[m changed 0 to "-" in volume chart
+* [33m53760a8[m added dates, made some changes in volume calculation for special cases
+* [33mce184d6[m added check for no classification in dictionary
+* [33m3b810ec[m implemented classification for cc
+* [33mcc8df1a[m todo use bennys code
+* [33m56de1b2[m working for all liver scans
+* [33ma2982ff[m removed volume related prints, fixed graphics, added new and disappeared sections
+* [33m674c62d[m after merge
+* [33m058dfbf[m classifiaction chart correct for aw and ash
+[35m|[m * [33m131c5e3[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m)[m after zoom- small changes in pdf
+[35m|[m[35m/[m  
+* [33md4a6370[m added ca patient pdf file
+* [33mc3378c9[m runs on ca patient
+* [33m99aab88[m fixed text
+* [33mb78379c[m seperated graph and text by connected components
+* [33m066754f[m fixed
+* [33me5137d3[m added summary for each lesion. need to fix volume percentage caluclation. it is different in graph and generated text
+* [33md012798[m fixed chart with node classe
+* [33m45b1a00[m fixed chart with node classes so last time stamp is persistent instead of dissappeared. changed lesion volume text
+* [33m64d7d51[m first level of changes after 2nd meeting with Leo
+* [33m510d5c6[m merged the volume changes graph into the lession changed pdf
+* [33m8b8b7ef[m generated pdf with text about volume changes
+* [33m44ddfc5[m volume changes over time text
+* [33mbcd99ff[m working on pdf generate class
+* [33m5821a50[m added base class to generate pdf
+* [33m0674007[m added function that prints volume increase/decrease
+* [33m3e76408[m after successful merge
+* [33md79bdfb[m organized all the generated info into pdf in the gen_single_patient_pdf.py
+* [33m6d0d0ac[m added gen_single)patient|_pdf
+* [33m5a5beaa[m in the middle of writing function that generates entences descirbing status of a single lesion changes in consecutive scans
+* [33m34390d7[m added chart with lesion classes for each layer
+[36m|[m *   [33m984880e[m[33m ([m[1;35mrefs/stash[m[33m)[m WIP on master: b4b2ff6 added gen_single)patient|_pdf
+[36m|[m [1;31m|[m[1;32m\[m  
+[36m|[m [1;31m|[m * [33mda7570e[m index on master: b4b2ff6 added gen_single)patient|_pdf
+[36m|[m [1;31m|[m[1;31m/[m  
+[36m|[m * [33mb4b2ff6[m added gen_single)patient|_pdf
+[36m|[m[36m/[m  
+* [33m8ac9c5b[m added classify_changes_in_individual_lesions.py classifies nodes based on table in thesis. needs to be added as chart to pdf. added volume calculation of nodes and total volume - need to add to chart
+* [33m1bee9aa[m 1) lesion_counter_per_layer: generated pdf with table including number of lesions in each scan and number of new appeared lesions in consecutive scans 2) volume_calculation: volume of lesion calculation from mask to mm^3 volume
+* [33m7214a66[m Rename DATASETS.md to DATASETS_README.md
+* [33md005bae[m Create DATASETS.md
+* [33m5ed962c[m Update display_long_graph.py
+* [33m7ead7b0[m Update README3_HowToRunMatching.txt
+* [33m9ade1e1[m Rename README2_EvalutationClasses.txt to README2_Classes_intro.txt
+* [33m7dd98b2[m Update README1_GraphsDatabase.txt
+* [33m829c628[m Add files via upload
+* [33mecbe520[m Summary of benny's code. The READMEs are in common_packages folder. Read them according to the order!
