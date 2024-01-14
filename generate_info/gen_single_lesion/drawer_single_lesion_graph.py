@@ -89,11 +89,17 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         """Add to each node the color attribute GRAY"""
         nx.set_node_attributes(self._base_graph, values=Colors.GRAY, name=NodeAttr.COLOR)
 
+    # def find_max_time_for_colour_funct()
     def set_nodes_drawing_attributes(self):
         labels = nx.get_node_attributes(self._base_graph, name=NodeAttr.LABEL)
-        last_node_colour = list(labels.values())[-1]
-        colors = {node: {NodeAttr.COLOR: Colors.itk_colors(last_node_colour)} for node, node_label in
-                  labels.items()}
+        highest_time = max(int(key.split('_')[1]) for key in labels.keys())
+        last_node_color_key = max(labels, key=lambda k: int(k.split('_')[1]))
+        color_to_apply = Colors.itk_colors(labels[last_node_color_key])
+        # colors = {node: {NodeAttr.COLOR: Colors.itk_colors(node_label)} for node, node_label in labels.items()}
+        colors = {node: {NodeAttr.COLOR: color_to_apply} for node in labels.keys()}
+        # last_node_colour =
+        # same_colors = {node: {colors(node_label)} for node, node_label in
+        #           labels.items()}
         nx.set_node_attributes(self._base_graph, colors)
 
     def get_node_volume(self, node_str : str):
