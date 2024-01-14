@@ -91,7 +91,8 @@ class DrawerLabelsAndLabeledEdges(Drawer):
 
     def set_nodes_drawing_attributes(self):
         labels = nx.get_node_attributes(self._base_graph, name=NodeAttr.LABEL)
-        colors = {node: {NodeAttr.COLOR: Colors.itk_colors(node_label)} for node, node_label in
+        last_node_colour = list(labels.values())[-1]
+        colors = {node: {NodeAttr.COLOR: Colors.itk_colors(last_node_colour)} for node, node_label in
                   labels.items()}
         nx.set_node_attributes(self._base_graph, colors)
 
@@ -118,7 +119,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         nodes_volume_labels_dict = dict()
         for node, is_place_holder in is_place_holder_dict.items():
             if not is_place_holder:
-                nodes_volume_labels_dict[node] = f'{self.get_node_volume(node)}[cm³]'
+                nodes_volume_labels_dict[node] = f'{self.get_node_volume(node)} cm³'
         return nodes_volume_labels_dict
     
     def get_lesion_idx(self):

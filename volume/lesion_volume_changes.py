@@ -52,7 +52,7 @@ def check_single_lesion_growth(vol_list,lesion_idx):
     if lesion_idx in vol_list:
         lesion_volumes = vol_list[lesion_idx]
     if not lesion_volumes:
-        return "No volume data available for the lesion."
+        return "No volume data available for the lesion. "
         
     increasing = decreasing = True
 
@@ -65,11 +65,11 @@ def check_single_lesion_growth(vol_list,lesion_idx):
             increasing = False
     change_percentage = round(abs((lesion_volumes[-1]/lesion_volumes[0])-1)*100)
     if increasing:
-        text +=f"Volume consistently increased over time by {change_percentage}% from first scan to last scan."
+       text += f"Volume monotonically increased over time by {change_percentage}% from first scan to last scan. "
     elif decreasing:
-        text+= f"Volume consistently decreased over time by {change_percentage}% from first scan to last scan."
+        text += f"Volume monotonically decreased over time by {change_percentage}% from first scan to last scan. "
     else:
-        text +=f"Volume shows both increases and decreases over time from first scan to last scan."
+        text += f"Volume shows both increases and decreases over time from first scan to last scan. "
     return text
 
 """

@@ -18,12 +18,10 @@ def get_patient_input(patient_name : str):
     name_for_path = patient_name.replace(" ", "_").replace(".", "")
     partial_scans_address = f"/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/{name_for_path}_"
     json_input_address = f"/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/{name_for_path}_glong_gt.json"
-    pickle_input_address = f"/cs/usr/talia.dym/Documents/Engineering_Project/input/pkl_files/{name_for_path}_graph_class_data.pkl"
-    praph_image_path = f"/cs/usr/talia.dym/Documents/Engineering_Project/input/graph_images/{name_for_path}_graph_image.png"
+    pickle_input_address = f"/cs/usr/shira_p/Desktop/Engineering_Project/input/pkl_files/{name_for_path}_graph_class_data.pkl"
+    praph_image_path = f"/cs/usr/shira_p/Desktop/Engineering_Project/input/graph_images/{name_for_path}_graph_image.png"
 
     return PatientInput(patient_name, partial_scans_address, json_input_address, pickle_input_address, praph_image_path)
-
-
 
 
 def create_pdf_file(patient_name : str):
@@ -46,14 +44,14 @@ def create_pdf_file(patient_name : str):
     doc.build(elements)
 
 
-# NAME = "A. W."
-# create_pdf_file(NAME)
-# NAME = "A. S. H."
-# create_pdf_file(NAME)
-# NAME = "A. S. S."
-# create_pdf_file(NAME)
-# NAME = "B. B. S."
-# create_pdf_file(NAME)
+NAME = "A. W."
+create_pdf_file(NAME)
+NAME = "A. S. H."
+create_pdf_file(NAME)
+NAME = "A. S. S."
+create_pdf_file(NAME)
+NAME = "B. B. S."
+create_pdf_file(NAME)
 NAME = "B. T."
 create_pdf_file(NAME)
 # NAME = "C. A."
