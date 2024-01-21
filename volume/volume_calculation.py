@@ -64,7 +64,7 @@ def get_volume_percentage_diff(longitudinal_volumes_array, root_idx, tail_idx, r
         tail_volume = longitudinal_volumes_array[tail_time][tail_idx]
 
     if root_volume ==0:
-        percentage_diff = "+"
+        percentage_diff = "+inf"
     else:
         percentage_diff = ((tail_volume / root_volume) - 1) * 100
 
@@ -118,8 +118,8 @@ def get_volume(longitudinal_volumes_array, node):
     idx = int(node.split("_")[0])
     time = int(node.split("_")[1])
     if idx in longitudinal_volumes_array[time]:
-        return longitudinal_volumes_array[time][idx]
-    return 0
+        return longitudinal_volumes_array[time][idx], True
+    return 0, False
 
 def get_dict_of_volume_percentage_change_and_classification_per_edge(ld: LoaderSimpleFromJson, longitudinal_volumes_array):
     volume_change_per_edge_dict = {} # return {edge : [volume percentage change, calssification]}
@@ -135,27 +135,41 @@ def get_dict_of_volume_percentage_change_and_classification_per_edge(ld: LoaderS
 
         if len(edges_from_node_dict[src_node]) > 1: # splitted
 
-            src_total_volume = get_volume(longitudinal_volumes_array, src_node)
+            src_total_volume, is_existing = get_volume(longitudinal_volumes_array, src_node)
+            if not is_existing:
+                print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
+                return {}
             dest_total_volume = 0
             for edge_from_src in edges_from_node_dict[src_node]:
                 temp_dest = edge_from_src[1]
-                dest_total_volume += get_volume(longitudinal_volumes_array, temp_dest)
+                vol, is_existing = get_volume(longitudinal_volumes_array, temp_dest)
+                if not is_existing:
+                    print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
+                    return {}
+                dest_total_volume += vol
 
             if src_total_volume == 0:
-                percentage_diff = "+"
+                percentage_diff = "+inf"
             else:
                 percentage_diff = ((dest_total_volume/src_total_volume) - 1) * 100
             volume_change_per_edge_dict[edge] = [percentage_diff, edgeVolumeClassification.SPLITTING]
 
         elif len(edges_to_node_dict[dest_node]) > 1: # merged
-            dest_total_volume = get_volume(longitudinal_volumes_array, dest_node)
+            dest_total_volume, is_existing = get_volume(longitudinal_volumes_array, dest_node)
+            if not is_existing:
+                    print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
+                    return {}
             src_total_volume = 0
             for edge_to_dest in edges_to_node_dict[dest_node]:
                 temp_src = edge_to_dest[0]
-                src_total_volume += get_volume(longitudinal_volumes_array, temp_src)
+                vol, is_existing = get_volume(longitudinal_volumes_array, temp_src)
+                if not is_existing:
+                    print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
+                    return {}
+                src_total_volume += vol
                 
             if src_total_volume == 0:
-                percentage_diff = "+"
+                percentage_diff = "+inf"
             else:
                 percentage_diff = ((dest_total_volume/src_total_volume) - 1) * 100
             if edge not in volume_change_per_edge_dict:
@@ -163,14 +177,17 @@ def get_dict_of_volume_percentage_change_and_classification_per_edge(ld: LoaderS
             # else:
             #     volume_change_per_edge_dict[edge] = [percentage_diff, edgeVolumeClassification.COMPLEX] # currently we dont deal with this case properly
 
-        else:
-            src_total_volume = get_volume(longitudinal_volumes_array, src_node)
-            dest_total_volume = get_volume(longitudinal_volumes_array, dest_node)
-            if src_total_volume == 0:
-                percentage_diff = "+"
+        else: # linear
+            src_total_volume, is_existing1 = get_volume(longitudinal_volumes_array, src_node)
+            dest_total_volume, is_existing2 = get_volume(longitudinal_volumes_array, dest_node)
+            if (not is_existing1) or (not is_existing2):
+                [None, edgeVolumeClassification.LINEAR]
             else:
-                percentage_diff = ((dest_total_volume/src_total_volume) - 1) * 100
-            volume_change_per_edge_dict[edge] = [percentage_diff, edgeVolumeClassification.LINEAR]
+                if src_total_volume == 0:
+                    percentage_diff = "+inf"
+                else:
+                    percentage_diff = ((dest_total_volume/src_total_volume) - 1) * 100
+                volume_change_per_edge_dict[edge] = [percentage_diff, edgeVolumeClassification.LINEAR]
 
     return volume_change_per_edge_dict
 
@@ -199,23 +216,3 @@ def get_percentage_diff_per_edge_dict(ld, partial_patient_path):
     volume_change_and_class_per_edge = get_dict_of_volume_percentage_change_and_classification_per_edge(ld, longitudinal_volumes_array)
     return {edge: percentage for edge, (percentage, _) in volume_change_and_class_per_edge.items()}
 
-def get_volumes():
-    ld = LoaderSimpleFromJson(
-        f"/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/A_S_H_glong_gt.json")
-
-    longitudinal_volumes_array = generate_longitudinal_volumes_array(
-        "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_S_H_")  # returns sorted (by date) array of
-    # dictionaries (one for each time stamp), key - lesion idx, value - volume in cm^3
-
-    get_dict_of_volume_percentage_change_and_classification_per_edge(ld, longitudinal_volumes_array)
-    
-    # diff_in_total = get_diff_in_total(longitudinal_volumes_array)  # array of tuples: (diff in total percentage, diff in total cm^3), when the idx in the array represents the time stamp
-
-    # print(diff_in_total)
-    # print(get_dict_of_volume_change_per_edge(ld,
-    #                                          longitudinal_volumes_array))  # returns a dictionary of key - edge, value - tuple of (difference in
-    # percentage, difference in cm^3)
-
-    # get_percentage_diff_per_edge_dict(ld, "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_W_")
-
-get_volumes()
