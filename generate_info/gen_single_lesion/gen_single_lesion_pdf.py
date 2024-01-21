@@ -1,11 +1,13 @@
 from common_packages.LongGraphPackage import LoaderSimpleFromJson
 from reportlab.platypus import Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
-from patient_summary.classify_changes_in_individual_lesions import classify_changes_in_individual_lesions, count_d_in_d_out, gen_dict_classified_nodes_for_layers
+from patient_summary.classify_changes_in_individual_lesions import (classify_changes_in_individual_lesions,
+                                                                    count_d_in_d_out, gen_dict_classified_nodes_for_layers)
 from volume.lesion_volume_changes import check_single_lesion_growth, generate_volume_list_single_lesion
 from generate_info.gen_single_lesion.gen_single_lesion_graph import get_single_node_graph_image
 import networkx as nx
-from volume.volume_calculation import get_percentage_diff_per_edge_dict, generate_longitudinal_volumes_array
+from volume.volume_calculation import (get_percentage_diff_per_edge_dict, generate_longitudinal_volumes_array,
+                                       get_edges_to_node_dict, get_edges_from_node_dict)
 from common_packages.BaseClasses import *
 from datetime import datetime
 import re
@@ -185,7 +187,6 @@ def get_dates(patient_path):
 
     formatted_dates = sorted(formatted_dates, key=lambda x: datetime.strptime(x, '%d.%m.%y'))
     return formatted_dates
-    
 
 def create_single_lesion_pdf_page(patient_name : str, json_path : str, pkl_path : str, patient_partial_path : str):
 
@@ -235,7 +236,8 @@ def create_single_lesion_pdf_page(patient_name : str, json_path : str, pkl_path 
 
     # dictionary of node(key)'s class(value) when part of cc
     nodes2cc_class =nx.get_node_attributes(G,NodeAttr.CC_PATTERNS)
-    
+
+
     # draw components to drw (existing in last scan + not new- no history)
     elements += get_sub_title("Lesions Appearing in Multiple Scans", False)
     while True:
