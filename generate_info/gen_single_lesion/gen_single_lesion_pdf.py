@@ -239,7 +239,7 @@ def create_single_lesion_pdf_page(patient_name : str, json_path : str, pkl_path 
     # draw components to drw (existing in last scan + not new- no history)
     elements += get_sub_title("Lesions Appearing in Multiple Scans", False)
     while True:
-        graph, lesions_idx = get_single_node_graph_image("output/single_labeled_lesion_graph",
+        graph, lesions_idx = get_single_node_graph_image("/cs/usr/talia.dym/Desktop/Engineering_Project/output/single_labeled_lesion_graph",
                                                           json_path, cc_idx, lg, ld, components_to_draw, 
                                                           longitudinal_volumes_array, percentage_diff_per_edge_dict)
         if not graph:

@@ -121,17 +121,17 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         nx.set_edge_attributes(self._base_graph, values=Colors.BLACK, name=EdgeAttr.COLOR)
         edge_is_skip = nx.get_edge_attributes(self._base_graph, name=EdgeAttr.IS_SKIP)
 
-        connectivity = dict()
-        for edge, is_skip in edge_is_skip.items():
-            if not is_skip:
-                connectivity.update({edge: {EdgeAttr.CONNECTION_STYLE: 'arc3'}})
-            else:
-                connectivity.update({edge: {EdgeAttr.CONNECTION_STYLE: 'arc3,rad=0.3'}})
-        nx.set_edge_attributes(self._base_graph, connectivity)
+        # connectivity = dict()
+        # for edge, is_skip in edge_is_skip.items():
+        #     if not is_skip:
+        #         connectivity.update({edge: {EdgeAttr.CONNECTION_STYLE: 'arc3'}})
+        #     else:
+        #         connectivity.update({edge: {EdgeAttr.CONNECTION_STYLE: 'arc3,rad=0.3'}})
+        # nx.set_edge_attributes(self._base_graph, connectivity)
 
-        percentage_diff_per_edge_dict, color_dict = edit_volume_percentage_data_to_str_and_color(self.percentage_diff_per_edge_dict) # volume
-        nx.set_edge_attributes(self._base_graph, percentage_diff_per_edge_dict, name='label') # volume
-        nx.set_edge_attributes(self._base_graph, color_dict, name='color') # volume
+        percentage_diff_per_edge_dict, color_dict = edit_volume_percentage_data_to_str_and_color(self.percentage_diff_per_edge_dict)  # volume
+        nx.set_edge_attributes(self._base_graph, percentage_diff_per_edge_dict, name='label')  # volume
+        nx.set_edge_attributes(self._base_graph, color_dict, name='color')  # volume
 
     def add_volume_labels_to_skipping_edges(self):
         percentage_diff = "+inf"
@@ -249,14 +249,23 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         # for k, v in pos.items():
         #     print(k)
         #     print((v[0], v[1]+0.3))
-    
+        import copy
+        pos_of_skip_edges = copy.deepcopy(pos)
+        for node in pos:
+            pos_of_skip_edges[node][1] = pos_of_skip_edges[node][1] + 0.7
+
+        is_skip_edge = nx.get_edge_attributes(self._base_graph, EdgeAttr.IS_SKIP)
 
         edge_labels = nx.get_edge_attributes(self._base_graph, 'label')
         colors = get_edge_label_color(edge_labels)
         for edge, label in edge_labels.items():
-            if edge in colors: ## added this bc of keyerror
+            if edge in colors:  # added this bc of keyerror
                 color = colors[edge]
-                nx.draw_networkx_edge_labels(G=self._base_graph, pos=pos, edge_labels={edge: label}, font_color=color)
+                if not is_skip_edge[edge]:
+                    nx.draw_networkx_edge_labels(G=self._base_graph, pos=pos, edge_labels={edge: label}, font_color=color)
+                else:
+                    nx.draw_networkx_edge_labels(G=self._base_graph, pos=pos_of_skip_edges, edge_labels={edge: label},
+                                                 font_color=color)
 
     def draw_nodes_volume_labels(self, pos):
         nx.draw_networkx_labels(G=self._base_graph,
@@ -272,7 +281,28 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         """This function prints the title of the figure and the graph"""
         plt.xlim([-1.5, 1.5])
         plt.ylim([-2, 2])
-        Drawer.draw(self, pos)
+        plt.title(self._patient_name, fontsize=12)
+        nx.draw_networkx_nodes(G=self._base_graph,
+                               pos=pos,
+                               node_color=list(nx.get_node_attributes(self._base_graph, NodeAttr.COLOR).values()))
+        nx.draw_networkx_labels(G=self._base_graph,
+                                pos=pos,
+                                labels=self.set_nodes_labels())
+        is_skip_edge = nx.get_edge_attributes(self._base_graph, EdgeAttr.IS_SKIP)
+        nx.draw_networkx_edges(G=self._base_graph,
+                               pos=pos,
+                               edgelist=[e for e, is_skip in is_skip_edge.items() if not is_skip],
+                               edge_color=[c for e, c in
+                                           nx.get_edge_attributes(self._base_graph, EdgeAttr.COLOR).items() if
+                                           not is_skip_edge[e]],
+                               connectionstyle='arc3')
+        nx.draw_networkx_edges(G=self._base_graph,
+                               pos=pos,
+                               edgelist=[e for e, is_skip in is_skip_edge.items() if is_skip],
+                               edge_color=[c for e, c in
+                                           nx.get_edge_attributes(self._base_graph, EdgeAttr.COLOR).items() if
+                                           is_skip_edge[e]],
+                               connectionstyle='arc3, rad=-0.5')
         self.draw_volume_related_attributes_on_graph(pos) # volume
         nx.spring_layout(self._base_graph, scale=6.0)
 

@@ -28,7 +28,7 @@ def create_pdf_file(patient_name : str):
 
     patient = get_patient_input(patient_name)
 
-    pdf_name = "output/" + patient_name.replace(" ", "_") + "_patient_summary.pdf"
+    pdf_name = "/cs/usr/talia.dym/Desktop/Engineering_Project/output/" + patient_name.replace(" ", "_") + "_patient_summary.pdf"
     if os.path.exists(pdf_name):
         os.remove(pdf_name)
     doc = SimpleDocTemplate(pdf_name)
