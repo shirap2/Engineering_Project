@@ -378,7 +378,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         """This function prints the title of the figure and the graph"""
         plt.xlim([-1.5, 1.5])
         plt.ylim([-2, 2])
-        plt.title(self._patient_name, fontsize=12)
+        # plt.title(self._patient_name, fontsize=12)
 
         split_and_merge_summing_arrows, add_to_pos = self.add_split_and_merge_summing_arrows(pos)
 
