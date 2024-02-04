@@ -370,7 +370,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         size_list = []
         for node, color in colors.items():
             if color == Colors.WHITE:
-                size_list.append(5)
+                size_list.append(0)
             else:
                 size_list.append(300)
 
@@ -399,7 +399,6 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                                            is_skip_edge[e]],
                                connectionstyle='arc3, rad=-0.5')
 
-
         # add the summing edges in the split and merge cases
         for edge, label in add_to_labels.items():
             if edge in add_to_colors:
@@ -407,7 +406,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                 nx.draw_networkx_edge_labels(G=self._base_graph, pos=pos, edge_labels={edge: label}, font_color=color)
         nx.draw_networkx_edges(self._base_graph, pos, edgelist=split_and_merge_summing_arrows,
                                arrowstyle='|-|', width=2.0, edge_color=[c for e, c in
-                                           add_to_colors.items()], node_size=20)  # actual white node size is 5, set edge as if it is 20
+                                           add_to_colors.items()], node_size=0)  # actual white node size is 5, set edge as if it is 20
 
         self.draw_volume_related_attributes_on_graph(pos)  # volume
         nx.spring_layout(self._base_graph, scale=6.0)
