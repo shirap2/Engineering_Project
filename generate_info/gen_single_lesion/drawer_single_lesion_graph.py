@@ -5,6 +5,7 @@ from typing import Dict
 import numpy as np
 from common_packages.BaseClasses import Longit, NodeAttr, EdgeAttr, Colors, Drawer, Loader
 
+
 def edit_volume_percentage_data_to_str_and_color(vol_percentage_diff_per_edge: dict):
     edited_dict = dict()
     color_dict = dict()
@@ -12,7 +13,7 @@ def edit_volume_percentage_data_to_str_and_color(vol_percentage_diff_per_edge: d
         if percentage is not None:
             if percentage == "+inf":
                 color = 'red'
-            
+
             else:
                 color = 'green'
                 diff_is_positive = (percentage > 0)
@@ -27,40 +28,42 @@ def edit_volume_percentage_data_to_str_and_color(vol_percentage_diff_per_edge: d
 
         edited_dict.update({edge: percentage})
         color_dict.update({edge: color})
-    
+
     return edited_dict, color_dict
 
 
-
-def get_edge_label_color(edge_labels : dict):
+def get_edge_label_color(edge_labels: dict):
     color_dict = dict()
     for edge, vol_percent_str in edge_labels.items():
         sign = vol_percent_str[0]
         if sign == '+':
-            color_dict.update({edge : 'red'})
+            color_dict.update({edge: 'red'})
         elif sign == '-':
-            color_dict.update({edge : 'green'})
+            color_dict.update({edge: 'green'})
     return color_dict
 
 
 class DrawerLabelsAndLabeledEdges(Drawer):
     """Displays the Longit graph with the nodes' color as the ITKSNAP label color. With the parameter attr_to_show you
     can decide what text to print on the nodes. The default is label number"""
-    def __init__(self, longit: Longit, cc_idx: int, ld: Loader , components: list, longitudinal_volumes_array: list,
-                  percentage_diff_per_edge_dict, attr_to_print=None):
+
+    def __init__(self, longit: Longit, cc_idx: int, ld: Loader, components: list, nodes_to_put,
+                 longitudinal_volumes_array: list,
+                 percentage_diff_per_edge_dict, attr_to_print=None):
         self._attr_to_print = attr_to_print
         if self._attr_to_print is not None:
             longit.nodes_have_attribute(self._attr_to_print)
 
         # self.partial_patient_path = partial_patient_path
-        self.ld = ld
+        # self.ld = ld
         G = longit.get_graph()
 
         self._is_graph_empty = False
         if cc_idx >= len(components):
             self._is_graph_empty = True
             return
-        subgraph = G.subgraph(components[cc_idx])
+        # subgraph = G.subgraph(components[cc_idx])
+        subgraph = G.subgraph([n for n in G if n in nodes_to_put])
         self._base_graph = subgraph
 
         longit.nodes_have_attribute(NodeAttr.LAYER)
@@ -103,9 +106,9 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         #           labels.items()}
         nx.set_node_attributes(self._base_graph, colors)
 
-    def get_node_volume(self, node_str : str):
+    def get_node_volume(self, node_str: str):
         idx, time = node_str.split('_')
-        if int(idx) in self.longitudinal_volumes_array[int(time)]: 
+        if int(idx) in self.longitudinal_volumes_array[int(time)]:
             return round(self.longitudinal_volumes_array[int(time)][int(idx)], 2), True
             # return self.longitudinal_volumes_array[int(time)][int(idx)] # todo talia check
         return 0, False
@@ -115,7 +118,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
             return NodeAttr.LABEL
         else:
             return self._attr_to_print
-        
+
     def set_edges_drawing_attributes(self):
 
         nx.set_edge_attributes(self._base_graph, values=Colors.BLACK, name=EdgeAttr.COLOR)
@@ -129,7 +132,8 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         #         connectivity.update({edge: {EdgeAttr.CONNECTION_STYLE: 'arc3,rad=0.3'}})
         # nx.set_edge_attributes(self._base_graph, connectivity)
 
-        percentage_diff_per_edge_dict, color_dict = edit_volume_percentage_data_to_str_and_color(self.percentage_diff_per_edge_dict)  # volume
+        percentage_diff_per_edge_dict, color_dict = edit_volume_percentage_data_to_str_and_color(
+            self.percentage_diff_per_edge_dict)  # volume
         nx.set_edge_attributes(self._base_graph, percentage_diff_per_edge_dict, name='label')  # volume
         nx.set_edge_attributes(self._base_graph, color_dict, name='color')  # volume
 
@@ -146,13 +150,13 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                     edge = (node2, node1)
                 else:
                     edge = (node1, node2)
-                
+
                 src, dest = edge
                 src_vol, _ = self.get_node_volume(src)
                 dest_vol, _ = self.get_node_volume(dest)
 
                 if src_vol != 0:
-                    percentage_diff = ((dest_vol/src_vol) - 1) * 100
+                    percentage_diff = ((dest_vol / src_vol) - 1) * 100
                 self.percentage_diff_per_edge_dict[edge] = percentage_diff
 
     def add_edge_skipping_over_node(self, node):
@@ -168,22 +172,22 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                 node1_time = node1.split("_")[1]
                 if node1_time > node_time:
                     if next_node != "":
-                       print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT") 
+                        print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
                     next_node = node1
                 else:
                     if prev_node != "":
-                       print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT") 
+                        print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
                     prev_node = node1
 
             if node1 == node:
                 node2_time = node2.split("_")[1]
                 if node2_time > node_time:
                     if next_node != "":
-                       print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT") 
+                        print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
                     next_node = node2
                 else:
                     if prev_node != "":
-                       print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT") 
+                        print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
                     prev_node = node2
         if (prev_node == "") or (next_node == ""):
             print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
@@ -196,8 +200,6 @@ class DrawerLabelsAndLabeledEdges(Drawer):
 
             self.add_volume_labels_to_skipping_edges()
 
-
-
     def set_nodes_volume_labels(self):
         is_place_holder_dict = nx.get_node_attributes(self._base_graph, NodeAttr.IS_PLACEHOLDER)
         nodes_volume_labels_dict = dict()
@@ -209,13 +211,13 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                 else:
                     nodes_volume_labels_dict[node] = "doesn't\nappear"
                     self.add_edge_skipping_over_node(node)  # add edge skipping over this node
-                    
 
         return nodes_volume_labels_dict
-    
+
     def get_lesion_idx(self):
         is_place_holder_dict = nx.get_node_attributes(self._base_graph, NodeAttr.IS_PLACEHOLDER)
-        nodes_not_place_holders = [node for node, is_place_holder in is_place_holder_dict.items() if not is_place_holder]
+        nodes_not_place_holders = [node for node, is_place_holder in is_place_holder_dict.items() if
+                                   not is_place_holder]
         max_node = list(nodes_not_place_holders)[0]
         max_time_stamp = int(max_node.split("_")[1])
         for node in nodes_not_place_holders:
@@ -224,10 +226,11 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                 max_node = node
                 max_time_stamp = time
 
-        max_nodes = [int(node.split("_")[0]) for node in nodes_not_place_holders if int(node.split("_")[1]) == max_time_stamp]
+        max_nodes = [int(node.split("_")[0]) for node in nodes_not_place_holders if
+                     int(node.split("_")[1]) == max_time_stamp]
 
         return max_nodes
-    
+
     def color_edges(self, pos):
         vol_edge_label_pos = dict()
         edge_is_skip = nx.get_edge_attributes(self._base_graph, name=EdgeAttr.IS_SKIP)
@@ -262,17 +265,17 @@ class DrawerLabelsAndLabeledEdges(Drawer):
             if edge in colors:  # added this bc of keyerror
                 color = colors[edge]
                 if not is_skip_edge[edge]:
-                    nx.draw_networkx_edge_labels(G=self._base_graph, pos=pos, edge_labels={edge: label}, font_color=color)
+                    nx.draw_networkx_edge_labels(G=self._base_graph, pos=pos, edge_labels={edge: label},
+                                                 font_color=color)
                 else:
                     nx.draw_networkx_edge_labels(G=self._base_graph, pos=pos_of_skip_edges, edge_labels={edge: label},
                                                  font_color=color)
 
     def draw_nodes_volume_labels(self, pos):
         nx.draw_networkx_labels(G=self._base_graph,
-                                pos={k: (v[0], v[1]+0.3) for k, v in pos.items()},
+                                pos={k: (v[0], v[1] + 0.3) for k, v in pos.items()},
                                 labels=self.nodes_volume_labels, font_size=10, font_color='black')
 
-    
     def draw_volume_related_attributes_on_graph(self, pos):
         self.color_edges(pos)
         self.draw_nodes_volume_labels(pos)
@@ -303,10 +306,8 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                                            nx.get_edge_attributes(self._base_graph, EdgeAttr.COLOR).items() if
                                            is_skip_edge[e]],
                                connectionstyle='arc3, rad=-0.5')
-        self.draw_volume_related_attributes_on_graph(pos) # volume
+        self.draw_volume_related_attributes_on_graph(pos)  # volume
         nx.spring_layout(self._base_graph, scale=6.0)
-
-
 
     def set_graph_layout(self):
         """Stack graph's connected components one upon the other and fill the blanks with placeholders"""
@@ -319,7 +320,6 @@ class DrawerLabelsAndLabeledEdges(Drawer):
             cc_graph = nx.compose(cc_graph, curr_cc_graph)
         self._base_graph = cc_graph
 
-
     def write_dates(self, nodes_position):
         """Prints the layers' dates at the bottom of the layers"""
         # x position of layers:
@@ -329,11 +329,10 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         lower_node = np.min(nodes_pos_y)
 
         # lower date text
-        lower_node -=0.3
+        lower_node -= 0.3
 
         text_positions = [(pos_x, lower_node - 0.2) for pos_x in layer_pos_x]
         for layer_idx in range(self._num_of_layers):
             current_text_pos = text_positions[layer_idx]
             plt.text(current_text_pos[0], current_text_pos[1], self._patient_dates[layer_idx],
                      horizontalalignment='center')
-    

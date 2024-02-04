@@ -4,7 +4,7 @@ from common_packages.LongGraphPackage import LoaderSimpleFromJson, DrawerLabels
 from common_packages.LongGraphClassification import LongitClassification
 from generate_info.gen_single_lesion.gen_single_lesion_pdf import get_dates
 import matplotlib.pyplot as plt
-
+USR = "/cs/usr/shira_p/PycharmProjects/engineering_project/matching/input/pkl_files"
 
 def save_patient_input_into_pickle_file(name, name_for_path, partial_scans_adress, ld):
 
@@ -12,7 +12,7 @@ def save_patient_input_into_pickle_file(name, name_for_path, partial_scans_adres
     lg = LongitClassification(ld, name, get_dates(partial_scans_adress))
 
     # save
-    path_to_save_in = f"/cs/usr/talia.dym/Desktop/Engineering_Project/input/pkl_files/{name_for_path}_graph_class_data.pkl"
+    path_to_save_in = f"/cs/usr/{USR}/input/pkl_files/{name_for_path}_graph_class_data.pkl"
     if os.path.exists(path_to_save_in):
         os.remove(path_to_save_in)
 
@@ -26,7 +26,7 @@ def save_patient_input_graph_image(ld, name_for_path):
     lg1 = LongitClassification(ld)
     dr_2 = DrawerLabels(lg1)
 
-    image_path = f"/cs/usr/talia.dym/Desktop/Engineering_Project/input/graph_images/{name_for_path}_graph_image.png"
+    image_path = f"/cs/usr/{USR}/input/graph_images/{name_for_path}_graph_image.png"
     dr_2.show_graph(image_path)
 
 

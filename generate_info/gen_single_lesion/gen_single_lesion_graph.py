@@ -7,9 +7,10 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import PIL as pil
 
+
 def crop_middle_of_image(input_path, output_path, crop_dimensions):
     original_image = pil.Image.open(input_path)
-    
+
     # Get the dimensions of the original image
     width, height = original_image.size
 
@@ -24,25 +25,18 @@ def crop_middle_of_image(input_path, output_path, crop_dimensions):
     cropped_image.save(output_path)
 
 
-
-def get_single_node_graph_image(image_path : str, scan_name: str, cc_idx: int, lg, ld,
-                                 components: list, longitudinal_volumes_array: list, percentage_diff_per_edge_dict):
-
-    dr = DrawerLabelsAndLabeledEdges(lg, cc_idx, ld, components, longitudinal_volumes_array, percentage_diff_per_edge_dict)
+def get_single_node_graph_image(image_path: str, scan_name: str, cc_idx: int, lg, ld,
+                                components: list, nodes_to_put, longitudinal_volumes_array: list,
+                                percentage_diff_per_edge_dict):
+    dr = DrawerLabelsAndLabeledEdges(lg, cc_idx, ld, components, nodes_to_put, longitudinal_volumes_array,
+                                     percentage_diff_per_edge_dict)
 
     if dr._is_graph_empty:
-         return [None, None]
-    
-    # current_scan_appearing_lesions_idx_arr = dr.get_lesion_idx()
+        return [None, None]
 
-    # # check if a lesion exists in the current scan
-    # if int(current_scan_appearing_lesions_idx_arr[0].split("_")[1]) != current_time:
-    #      if 
-
-    
     full_path = f"{image_path}_{cc_idx}.png"
     if os.path.exists(full_path):
-            os.remove(full_path)
+        os.remove(full_path)
     plt.figure()
     dr.show_graph(full_path)
     crop_dimensions = (450, 300)
@@ -70,7 +64,7 @@ def get_single_node_graph_image(image_path : str, scan_name: str, cc_idx: int, l
 #         crop_dimensions = (600, 200)
 #         crop_middle_of_image(full_path, full_path, crop_dimensions)
 #         graphs.append(ply.Image(full_path, height=200, width=600))
-        
+
 #         cc_idx += 1
 #         ld = LoaderSimpleFromJson(scan_name)
 #         lg = LongitClassification(ld)
