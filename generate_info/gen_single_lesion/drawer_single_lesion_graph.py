@@ -5,6 +5,12 @@ from typing import Dict
 import numpy as np
 from common_packages.BaseClasses import Longit, NodeAttr, EdgeAttr, Colors, Drawer, Loader
 from volume.volume_calculation import get_edges_to_node_dict, get_edges_from_node_dict
+from enum import Enum
+class BottomEdgeDesign(Enum):
+    TOTAL_CHANGE = 'total'
+    SPLIT_MERGE_CHANGE = 'split_merge_change'
+    NONE = 'none'
+
 
 def edit_volume_percentage_data_to_str_and_color(vol_percentage_diff_per_edge: dict):
     edited_dict = dict()
@@ -88,6 +94,8 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         self.process_merge_and_split_edges_labels(percentage_diff_per_edge_dict)  # {edge: true/false}, {(t1, t2): label}
 
         self.nodes_volume_labels = self.set_nodes_volume_labels()
+
+        self.bottom_arrow_design = BottomEdgeDesign.SPLIT_MERGE_CHANGE
 
     def process_merge_and_split_edges_labels(self, percentage_diff_per_edge_dict):
         should_print_label_on_edge = {}  # {edge: true/false}
@@ -358,11 +366,11 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         plt.xlim([-1.5, 1.5])
         plt.ylim([-2, 2])
         # plt.title(self._patient_name, fontsize=12)
+        if self.bottom_arrow_design == BottomEdgeDesign.SPLIT_MERGE_CHANGE:
+            split_and_merge_summing_arrows, add_to_pos, add_to_colors, add_to_labels = self.add_split_and_merge_summing_arrows(pos)
 
-        split_and_merge_summing_arrows, add_to_pos, add_to_colors, add_to_labels = self.add_split_and_merge_summing_arrows(pos)
-
-        # add add_to_pos to pos
-        pos = {**pos, **add_to_pos}
+            # add add_to_pos to pos
+            pos = {**pos, **add_to_pos}
 
         # set the nodes size to default (300) and only the white nodes (for the split&merge arrows)
         # are small (so to not intifear the arrows)
@@ -399,14 +407,15 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                                            is_skip_edge[e]],
                                connectionstyle='arc3, rad=-0.5')
 
-        # add the summing edges in the split and merge cases
-        for edge, label in add_to_labels.items():
-            if edge in add_to_colors:
-                color = add_to_colors[edge]
-                nx.draw_networkx_edge_labels(G=self._base_graph, pos=pos, edge_labels={edge: label}, font_color=color)
-        nx.draw_networkx_edges(self._base_graph, pos, edgelist=split_and_merge_summing_arrows,
-                               arrowstyle='|-|', width=2.0, edge_color=[c for e, c in
-                                           add_to_colors.items()], node_size=0)  # actual white node size is 5, set edge as if it is 20
+        if self.bottom_arrow_design == BottomEdgeDesign.SPLIT_MERGE_CHANGE:
+            # add the summing edges in the split and merge cases
+            for edge, label in add_to_labels.items():
+                if edge in add_to_colors:
+                    color = add_to_colors[edge]
+                    nx.draw_networkx_edge_labels(G=self._base_graph, pos=pos, edge_labels={edge: label}, font_color=color)
+            nx.draw_networkx_edges(self._base_graph, pos, edgelist=split_and_merge_summing_arrows,
+                                   arrowstyle='|-|', width=2.0, edge_color=[c for e, c in
+                                               add_to_colors.items()], node_size=0)  # actual white node size is 5, set edge as if it is 20
 
         self.draw_volume_related_attributes_on_graph(pos)  # volume
         nx.spring_layout(self._base_graph, scale=6.0)
