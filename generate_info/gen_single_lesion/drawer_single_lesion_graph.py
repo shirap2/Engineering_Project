@@ -91,19 +91,71 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         self.longitudinal_volumes_array = longitudinal_volumes_array
         self.percentage_diff_per_edge_dict = percentage_diff_per_edge_dict
 
-        self.process_merge_and_split_edges_labels(percentage_diff_per_edge_dict)  # {edge: true/false}, {(t1, t2): label}
+        self.bottom_arrow_design = BottomEdgeDesign.TOTAL_CHANGE
+
+        self.should_print_label_on_edge = dict()
+        edge_is_skip = nx.get_edge_attributes(self._base_graph, name=EdgeAttr.IS_SKIP)
+        for edge in edge_is_skip.keys():
+            head, tail = edge
+            if int(head.split("_")[1]) > int(tail.split("_")[1]):
+                edge = tail, head
+            self.should_print_label_on_edge[edge] = True
+
+        self.edges_to_node_dict = get_edges_to_node_dict(self.ld)  # {node : [edges to node]}
+        self.edges_from_node_dict = get_edges_from_node_dict(self.ld)  # {node : [edges from node]}
+
+        if self.bottom_arrow_design == BottomEdgeDesign.SPLIT_MERGE_CHANGE:
+            self.process_merge_and_split_bottom_arrows_edges_labels(percentage_diff_per_edge_dict)
+        elif self.bottom_arrow_design == BottomEdgeDesign.TOTAL_CHANGE:
+            self.process_none_bottom_arrows_edges_labels(percentage_diff_per_edge_dict)
+            self.process_total_bottom_arrows_edges_labels(percentage_diff_per_edge_dict)
+        elif self.bottom_arrow_design == BottomEdgeDesign.NONE:
+            self.process_none_bottom_arrows_edges_labels(percentage_diff_per_edge_dict)
 
         self.nodes_volume_labels = self.set_nodes_volume_labels()
 
-        self.bottom_arrow_design = BottomEdgeDesign.SPLIT_MERGE_CHANGE
-
-    def process_merge_and_split_edges_labels(self, percentage_diff_per_edge_dict):
-        should_print_label_on_edge = {}  # {edge: true/false}
+    def process_total_bottom_arrows_edges_labels(self, percentage_diff_per_edge_dict):
+        # should_print_label_on_edge = {}  # {edge: true/false}
         total_edges_to_add_dict = {}  # {(t1, t2): label}
+        total_vol_list = [0 for _ in range(self._num_of_layers)]  # total_vol_list[i] is the total vol in layer i
 
-        # todo : move these two rows outside
-        edges_to_node_dict = get_edges_to_node_dict(self.ld)  # {node : [edges to node]}
-        edges_from_node_dict = get_edges_from_node_dict(self.ld)  # {node : [edges from node]}
+        # fill in total_vol_list
+        is_place_holder_dict = nx.get_node_attributes(self._base_graph, NodeAttr.IS_PLACEHOLDER)
+        for node, is_place_holder in is_place_holder_dict.items():
+            layer = int(node.split("_")[1])
+            if not is_place_holder:
+                vol, is_existing = self.get_node_volume(node)
+                if is_existing:
+                    total_vol_list[layer] += vol
+
+        for i in range(0, self._num_of_layers - 1):
+            percentage_diff = "+inf"
+            if total_vol_list[i] != 0:
+                percentage_diff = ((total_vol_list[i + 1]/total_vol_list[i]) - 1) * 100
+
+            total_edges_to_add_dict[(i, i + 1)] = percentage_diff
+
+        self.summing_edges_to_add_dict = total_edges_to_add_dict
+
+    def process_none_bottom_arrows_edges_labels(self, percentage_diff_per_edge_dict):
+
+        edge_is_skip = nx.get_edge_attributes(self._base_graph, name=EdgeAttr.IS_SKIP)
+        for edge in edge_is_skip.keys():
+            head, tail = edge
+            if int(head.split("_")[1]) > int(tail.split("_")[1]):
+                edge = tail, head
+                head, tail = edge
+
+            if tail in self.edges_to_node_dict:
+                if len(self.edges_to_node_dict[tail]) > 1:  # merge
+                    self.should_print_label_on_edge[edge] = False
+
+            if head in self.edges_from_node_dict:
+                if len(self.edges_from_node_dict[head]) > 1:  # split
+                    self.should_print_label_on_edge[edge] = False
+
+    def process_merge_and_split_bottom_arrows_edges_labels(self, percentage_diff_per_edge_dict):
+        total_edges_to_add_dict = {}  # {(t1, t2): label}
 
         edge_is_skip = nx.get_edge_attributes(self._base_graph, name=EdgeAttr.IS_SKIP)
         for edge in edge_is_skip.keys():
@@ -113,24 +165,21 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                 edge = tail, head
                 head, tail = edge
 
-            should_print_label_on_edge[edge] = True
-
-            if tail in edges_to_node_dict:
-                if len(edges_to_node_dict[tail]) > 1:  # merge
-                    should_print_label_on_edge[edge] = False
+            if tail in self.edges_to_node_dict:
+                if len(self.edges_to_node_dict[tail]) > 1:  # merge
+                    self.should_print_label_on_edge[edge] = False
 
                     t2 = int(tail.split("_")[1])
                     t1 = t2 - 1
                     total_edges_to_add_dict[(t1, t2)] = percentage_diff_per_edge_dict[edge]
 
-            if head in edges_from_node_dict:
-                if len(edges_from_node_dict[head]) > 1:  # split
-                    should_print_label_on_edge[edge] = False
+            if head in self.edges_from_node_dict:
+                if len(self.edges_from_node_dict[head]) > 1:  # split
+                    self.should_print_label_on_edge[edge] = False
 
                     t1 = int(head.split("_")[1])
                     t2 = t1 + 1
                     total_edges_to_add_dict[(t1, t2)] = percentage_diff_per_edge_dict[edge]
-        self.should_print_label_on_edge = should_print_label_on_edge
         self.summing_edges_to_add_dict = total_edges_to_add_dict
 
     def set_nodes_drawing_attributes(self):
@@ -169,6 +218,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         # remove edges that we dont want to print their label
         self.percentage_diff_per_edge_dict = {edge: vol for edge, vol in self.percentage_diff_per_edge_dict.items() if
                                               self.should_print_label_on_edge.get(edge)}
+        # self.percentage_diff_per_edge_dict = {edge: vol for edge, vol in self.percentage_diff_per_edge_dict.items()}
 
         percentage_diff_per_edge_dict, color_dict = edit_volume_percentage_data_to_str_and_color(self.percentage_diff_per_edge_dict)  # volume
 
@@ -252,7 +302,6 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                 else:
                     nodes_volume_labels_dict[node] = "doesn't\nappear"
                     self.add_edge_skipping_over_node(node)  # add edge skipping over this node
-                    
 
         return nodes_volume_labels_dict
     
@@ -297,10 +346,12 @@ class DrawerLabelsAndLabeledEdges(Drawer):
 
     
     def draw_volume_related_attributes_on_graph(self, pos):
-        self.color_edges_labels(pos)
+        if not self.bottom_arrow_design == BottomEdgeDesign.TOTAL_CHANGE:
+            self.color_edges_labels(pos)
         self.draw_nodes_volume_labels(pos)
 
-    def add_split_and_merge_summing_arrows(self, nodes_position):
+
+    def add_bottom_arrows(self, nodes_position):
         add_to_pos = dict()
         add_to_edges = list()
         add_to_colors = dict()
@@ -352,12 +403,6 @@ class DrawerLabelsAndLabeledEdges(Drawer):
             add_to_edges.append(edge)
             add_to_colors.update(color_dict)
             add_to_labels.update(percentage_diff_dict)
-            # total_label_dict = nx.get_edge_attributes(self._base_graph, EdgeAttr.LABEL)
-            # nx.set_edge_attributes(self._base_graph, percentage_diff_dict, name='label')
-            # total_color_dict = nx.get_edge_attributes(self._base_graph, EdgeAttr.COLOR)
-            # total_color_dict.update(color_dict)
-            # nx.set_edge_attributes(self._base_graph, total_color_dict, name=EdgeAttr.COLOR)
-            # nx.set_edge_attributes(self._base_graph, {edge: False}, name=EdgeAttr.IS_SKIP)
 
         return add_to_edges, add_to_pos, add_to_colors, add_to_labels
 
@@ -366,9 +411,8 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         plt.xlim([-1.5, 1.5])
         plt.ylim([-2, 2])
         # plt.title(self._patient_name, fontsize=12)
-        if self.bottom_arrow_design == BottomEdgeDesign.SPLIT_MERGE_CHANGE:
-            split_and_merge_summing_arrows, add_to_pos, add_to_colors, add_to_labels = self.add_split_and_merge_summing_arrows(pos)
-
+        if not self.bottom_arrow_design == BottomEdgeDesign.NONE:
+            add_to_edges, add_to_pos, add_to_colors, add_to_labels = self.add_bottom_arrows(pos)
             # add add_to_pos to pos
             pos = {**pos, **add_to_pos}
 
@@ -392,28 +436,38 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                                 labels=self.set_nodes_labels())
 
         is_skip_edge = nx.get_edge_attributes(self._base_graph, EdgeAttr.IS_SKIP)
-        nx.draw_networkx_edges(G=self._base_graph,
-                               pos=pos,
-                               edgelist=[e for e, is_skip in is_skip_edge.items() if not is_skip],
-                               edge_color=[c for e, c in
-                                           nx.get_edge_attributes(self._base_graph, EdgeAttr.COLOR).items() if
-                                           not is_skip_edge[e]],
-                               connectionstyle='arc3')
-        nx.draw_networkx_edges(G=self._base_graph,
-                               pos=pos,
-                               edgelist=[e for e, is_skip in is_skip_edge.items() if is_skip],
-                               edge_color=[c for e, c in
-                                           nx.get_edge_attributes(self._base_graph, EdgeAttr.COLOR).items() if
-                                           is_skip_edge[e]],
-                               connectionstyle='arc3, rad=-0.5')
+        if not self.bottom_arrow_design == BottomEdgeDesign.TOTAL_CHANGE:
+            nx.draw_networkx_edges(G=self._base_graph,
+                                   pos=pos,
+                                   edgelist=[e for e, is_skip in is_skip_edge.items() if not is_skip],
+                                   edge_color=[c for e, c in
+                                               nx.get_edge_attributes(self._base_graph, EdgeAttr.COLOR).items() if
+                                               not is_skip_edge[e]],
+                                   connectionstyle='arc3')
+            nx.draw_networkx_edges(G=self._base_graph,
+                                   pos=pos,
+                                   edgelist=[e for e, is_skip in is_skip_edge.items() if is_skip],
+                                   edge_color=[c for e, c in
+                                               nx.get_edge_attributes(self._base_graph, EdgeAttr.COLOR).items() if
+                                               is_skip_edge[e]],
+                                   connectionstyle='arc3, rad=-0.5')
+        else:  # no color
+            nx.draw_networkx_edges(G=self._base_graph,
+                                   pos=pos,
+                                   edgelist=[e for e, is_skip in is_skip_edge.items() if not is_skip],
+                                   connectionstyle='arc3')
+            nx.draw_networkx_edges(G=self._base_graph,
+                                   pos=pos,
+                                   edgelist=[e for e, is_skip in is_skip_edge.items() if is_skip],
+                                   connectionstyle='arc3, rad=-0.5')
 
-        if self.bottom_arrow_design == BottomEdgeDesign.SPLIT_MERGE_CHANGE:
+        if not self.bottom_arrow_design == BottomEdgeDesign.NONE:
             # add the summing edges in the split and merge cases
             for edge, label in add_to_labels.items():
                 if edge in add_to_colors:
                     color = add_to_colors[edge]
                     nx.draw_networkx_edge_labels(G=self._base_graph, pos=pos, edge_labels={edge: label}, font_color=color)
-            nx.draw_networkx_edges(self._base_graph, pos, edgelist=split_and_merge_summing_arrows,
+            nx.draw_networkx_edges(self._base_graph, pos, edgelist=add_to_edges,
                                    arrowstyle='|-|', width=2.0, edge_color=[c for e, c in
                                                add_to_colors.items()], node_size=0)  # actual white node size is 5, set edge as if it is 20
 
