@@ -84,7 +84,7 @@ def save_patient_input(name, partial_scans_adress, json_input_address):
 # PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/E_N_"
 # save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
 
-NAME = "F. Y."
+NAME = "F. Y. Ga."
 JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/F_Y_Ga_glong_gt.json"
 PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/F_Y_Ga_"
 save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)

@@ -107,7 +107,7 @@ def get_new_lesions_text(new_single_components):
     num_of_new = len(new_single_components)
 
     if num_of_new == 0:
-        return get_note("No new lesions had appeared.", True)
+        return get_note("No new lesions have appeared.", True)
     lesions_idx = []
     for cc in new_single_components:
         node = cc.pop()
@@ -123,6 +123,12 @@ def get_new_lesions_text(new_single_components):
 def get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, classifed_nodes_dict, lg):
     num_of_disappeared = len(disappeared_components)
     sum_disappeared = sum(entry.get("disappeared", 0) for entry in classifed_nodes_dict.values())
+
+    ### add lone nodes that arent in last time stamp to sum of disappeared
+    max_time = max(classifed_nodes_dict.keys())
+    sum_lone = sum(val.get("lone", 0) for key, val in classifed_nodes_dict.items() if key != max_time)
+    sum_disappeared += sum_lone
+
     dates = lg._patient_dates
     if num_of_disappeared == 0:
         return get_note("Over time, no lesions disappeared.", True)
@@ -153,7 +159,11 @@ def get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, c
         for time in sorted(classifed_nodes_dict.keys()):
             if time + 1 not in classifed_nodes_dict:
                 continue
-            num_of_dis_lesions = classifed_nodes_dict.get(time + 1, {}).get("disappeared", 0)
+            num_of_dis_lesions = classifed_nodes_dict.get(time, {}).get("disappeared", 0)
+            if time < max_time:
+                num_of_dis_lesions += classifed_nodes_dict.get(time, {}).get("lone", 0)
+            if num_of_dis_lesions == 0:
+                continue
             were_or_was = "s were"
             if num_of_dis_lesions == 1:
                 were_or_was = " was"
