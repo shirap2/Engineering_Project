@@ -7,26 +7,25 @@ import matplotlib.pyplot as plt
 
 
 def save_patient_input_into_pickle_file(name, name_for_path, partial_scans_adress, ld):
-
     # data to dump
     lg = LongitClassification(ld, name, get_dates(partial_scans_adress))
 
     # save
-    path_to_save_in = f"/cs/usr/talia.dym/Desktop/Engineering_Project/input/pkl_files/{name_for_path}_graph_class_data.pkl"
+    path_to_save_in = f"/cs/usr/shira_p/PycharmProjects/engineering_project/matching/input/pkl_files/{name_for_path}_graph_class_data.pkl"
     if os.path.exists(path_to_save_in):
         os.remove(path_to_save_in)
 
-    
     with open(path_to_save_in, "wb") as file:
         # pickle.dump(ld, file)
         pickle.dump(lg, file)
+
 
 def save_patient_input_graph_image(ld, name_for_path):
     plt.figure()
     lg1 = LongitClassification(ld)
     dr_2 = DrawerLabels(lg1)
 
-    image_path = f"/cs/usr/talia.dym/Desktop/Engineering_Project/input/graph_images/{name_for_path}_graph_image.png"
+    image_path = f"/cs/usr/shira_p/PycharmProjects/engineering_project/matching/input/graph_images/{name_for_path}_graph_image.png"
     dr_2.show_graph(image_path)
 
 
@@ -37,7 +36,6 @@ def save_patient_input(name, partial_scans_adress, json_input_address):
     save_patient_input_into_pickle_file(name, name_for_path, partial_scans_adress, ld)
 
 
-
 # # A. W.
 # NAME = "A. W."
 # JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/A_W_glong_gt.json"
@@ -46,11 +44,11 @@ def save_patient_input(name, partial_scans_adress, json_input_address):
 # save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
 
 # A. S. H.
-NAME = "A. S. H."
-JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/A_S_H_glong_gt.json"
-PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_S_H_"
-
-save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+# NAME = "A. S. H."
+# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/A_S_H_glong_gt.json"
+# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_S_H_"
+#
+# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
 
 # # # A. S. S.
 # NAME = "A. S. S."
@@ -79,3 +77,14 @@ save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
 # PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/C_A_"
 
 # save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+
+# # E. N.
+# NAME = "E. N."
+# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/E_N_glong_gt.json"
+# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/E_N_"
+# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+
+NAME = "F. Y."
+JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/F_Y_Ga_glong_gt.json"
+PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/F_Y_Ga_"
+save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)

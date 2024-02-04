@@ -2,7 +2,8 @@ from common_packages.LongGraphPackage import LoaderSimpleFromJson
 from reportlab.platypus import Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from patient_summary.classify_changes_in_individual_lesions import (classify_changes_in_individual_lesions,
-                                                                    count_d_in_d_out, gen_dict_classified_nodes_for_layers)
+                                                                    count_d_in_d_out,
+                                                                    gen_dict_classified_nodes_for_layers)
 from volume.lesion_volume_changes import check_single_lesion_growth, generate_volume_list_single_lesion
 from generate_info.gen_single_lesion.gen_single_lesion_graph import get_single_node_graph_image
 import networkx as nx
@@ -13,12 +14,12 @@ from datetime import datetime
 import re
 import pickle
 
+
 def get_title(title_string):
     title_style = getSampleStyleSheet()['Title']
     title = Paragraph(title_string, title_style)
 
     return [title]
-
 
 
 def get_sub_title(sub_title: str, no_spaceBefore=True):
@@ -30,6 +31,7 @@ def get_sub_title(sub_title: str, no_spaceBefore=True):
         title_style.spaceBefore = 0
     title = Paragraph(sub_title, style=title_style)
     return [title]
+
 
 def get_sub_sub_title(sub_title: str, spacer=True):
     elements = []
@@ -52,12 +54,14 @@ def get_note(note: str, spacer=False):
         elements.append(Spacer(1, 5))
     return elements
 
+
 def get_graph_title(lesions_idx: list):
+    filtered_list = [lesion for lesion in lesions_idx if lesion != 2000]
     text = ""
-    if len(lesions_idx) == 1:
-        text += f"The History of Lesion {lesions_idx[0]}"
+    if len(filtered_list) == 1:
+        text += f"The History of Lesion {filtered_list[0]}"
     else:
-        as_strings = map(str, lesions_idx)
+        as_strings = map(str, filtered_list)
         result_string = ", ".join(as_strings)
         text += f"The History of Lesions {result_string}"
 
@@ -65,9 +69,10 @@ def get_graph_title(lesions_idx: list):
 
 
 def get_lesion_history_text(key, vol_list):
-    text_to_add = check_single_lesion_growth(vol_list,key)
+    text_to_add = check_single_lesion_growth(vol_list, key)
     # return get_note("Lesion "+ str(key)+ ": "+ text_to_add, True)
     return get_note(text_to_add, True)
+
 
 def find_max_time_stamp_per_cc_and_total(components):
     max_total_time, max_cc_time = 0, 0
@@ -84,7 +89,6 @@ def find_max_time_stamp_per_cc_and_total(components):
     return max_time_per_cc_dict, max_total_time
 
 
-
 def devide_components(components, max_time_per_cc_dict, total_max_time):
     disappeared_components, mew_single_components, components_to_draw = [], [], []
     for cc in components:
@@ -98,8 +102,9 @@ def devide_components(components, max_time_per_cc_dict, total_max_time):
             disappeared_components.append(cc)
     return disappeared_components, mew_single_components, components_to_draw
 
+
 def get_new_lesions_text(new_single_components):
-    num_of_new = len(new_single_components)    
+    num_of_new = len(new_single_components)
 
     if num_of_new == 0:
         return get_note("No new lesions had appeared.", True)
@@ -114,20 +119,21 @@ def get_new_lesions_text(new_single_components):
         text_to_add = f"Lesion {result_string} appeared for the first time in the last scan."
     return get_note(text_to_add, True)
 
+
 def get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, classifed_nodes_dict, lg):
     num_of_disappeared = len(disappeared_components)
     sum_disappeared = sum(entry.get("disappeared", 0) for entry in classifed_nodes_dict.values())
     dates = lg._patient_dates
     if num_of_disappeared == 0:
         return get_note("Over time, no lesions disappeared.", True)
-    
+
     if num_of_disappeared == 1:
         elements = get_note(f"Over time, one lesion disappeared.", False)
         cc = disappeared_components[0]
         elements += get_note(f"It was last identified in {dates[max_time_per_cc_dict[tuple(cc)]]}.", True)
         return elements
-    
-    num_of_disappeared_lesions_per_time = dict() # key:time, value: num of desappeared lesion
+
+    num_of_disappeared_lesions_per_time = dict()  # key:time, value: num of desappeared lesion
     for cc in disappeared_components:
         time = max_time_per_cc_dict[tuple(cc)]
         if time in num_of_disappeared_lesions_per_time:
@@ -135,7 +141,6 @@ def get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, c
         else:
             num_of_disappeared_lesions_per_time[time] = 1
 
-        
     elements = get_note(f"Over time, {sum_disappeared} lesions disappeared.", False)
 
     if len(num_of_disappeared_lesions_per_time) == 1:
@@ -143,11 +148,12 @@ def get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, c
         cc = disappeared_components[0]
         elements += get_note(f"They were last identified in {dates[max_time_per_cc_dict[tuple(cc)]]}.", False)
     else:
-        num_of_disappeared_lesions_per_time = sorted(num_of_disappeared_lesions_per_time.items(), key=lambda item: item[0])
+        num_of_disappeared_lesions_per_time = sorted(num_of_disappeared_lesions_per_time.items(),
+                                                     key=lambda item: item[0])
         for time in sorted(classifed_nodes_dict.keys()):
-            if time+1 not in classifed_nodes_dict:
+            if time + 1 not in classifed_nodes_dict:
                 continue
-            num_of_dis_lesions = classifed_nodes_dict.get(time+1, {}).get("disappeared", 0)
+            num_of_dis_lesions = classifed_nodes_dict.get(time + 1, {}).get("disappeared", 0)
             were_or_was = "s were"
             if num_of_dis_lesions == 1:
                 were_or_was = " was"
@@ -156,22 +162,25 @@ def get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, c
     elements.append(Spacer(1, 5))
     return elements
 
+
 """
 this function genernates the text for classification of connnected component
 """
-def cc_class_text(node2cc,nodes2cc_class,lesion_idx_in_last_scan:int):
+
+
+def cc_class_text(node2cc, nodes2cc_class, lesion_idx_in_last_scan: int):
     lesion_cc_class = ""
     max_time = max(int(key.split('_')[1]) for key in node2cc.keys())
     node_key = f"{lesion_idx_in_last_scan}_{max_time}"
     if node_key in nodes2cc_class:
-        lesion_cc_class=nodes2cc_class[node_key]
-        elements=get_note("Classification of connected component: "+lesion_cc_class[:-2] + ".",True)
+        lesion_cc_class = nodes2cc_class[node_key]
+        elements = get_note("Classification of connected component: " + lesion_cc_class[:-2] + ".", True)
     else:
         return "No information for classifiaction"
     return elements
 
-def get_dates(patient_path):
 
+def get_dates(patient_path):
     date_pattern = r'(\d{2}_\d{2}_\d{4})'
     formatted_dates = set()
 
@@ -180,7 +189,7 @@ def get_dates(patient_path):
         if match:
             date_str = match.group(1)
             date_obj = datetime.strptime(date_str, '%d_%m_%Y')
-            
+
             # Format the datetime object into "dd.mm.yyyy" and append to the list
             formatted_date = date_obj.strftime('%d.%m.%y')
             formatted_dates.add(formatted_date)
@@ -188,8 +197,8 @@ def get_dates(patient_path):
     formatted_dates = sorted(formatted_dates, key=lambda x: datetime.strptime(x, '%d.%m.%y'))
     return formatted_dates
 
-def create_single_lesion_pdf_page(patient_name : str, json_path : str, pkl_path : str, patient_partial_path : str):
 
+def create_single_lesion_pdf_page(patient_name: str, json_path: str, pkl_path: str, patient_partial_path: str):
     with open(pkl_path, "rb") as file:
         lg = pickle.load(file)
 
@@ -198,7 +207,7 @@ def create_single_lesion_pdf_page(patient_name : str, json_path : str, pkl_path 
 
     # file title
     elements += get_title("Individual Lesion Changes")
-    elements.append(Spacer(1,20))
+    elements.append(Spacer(1, 20))
 
     # graph image
     vol_list = generate_volume_list_single_lesion(patient_partial_path)
@@ -208,9 +217,10 @@ def create_single_lesion_pdf_page(patient_name : str, json_path : str, pkl_path 
     G = lg.get_graph()
     components = list(nx.connected_components(G))
 
-
     max_time_per_cc_dict, total_max_time = find_max_time_stamp_per_cc_and_total(components)
-    disappeared_components, new_single_components, components_to_draw = devide_components(components, max_time_per_cc_dict, total_max_time)
+    disappeared_components, new_single_components, components_to_draw = devide_components(components,
+                                                                                          max_time_per_cc_dict,
+                                                                                          total_max_time)
     longitudinal_volumes_array = generate_longitudinal_volumes_array(patient_partial_path)
     percentage_diff_per_edge_dict = get_percentage_diff_per_edge_dict(ld, patient_partial_path)
 
@@ -220,43 +230,41 @@ def create_single_lesion_pdf_page(patient_name : str, json_path : str, pkl_path 
     # add section of disappeared
     elements += get_sub_title("Disappeared Lesions", False)
 
-    classified_nodes_dict = gen_dict_classified_nodes_for_layers(classify_changes_in_individual_lesions(count_d_in_d_out(ld),ld))
+    classified_nodes_dict = gen_dict_classified_nodes_for_layers(
+        classify_changes_in_individual_lesions(count_d_in_d_out(ld), ld))
     elements += get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, classified_nodes_dict, lg)
-    
-    
+
     ## classification of nodes and cc from benny code
     lg.classify_nodes()
     lg.classify_cc()
 
     # dictionary of nodes-keys and the index of their cc- values
-    node2cc = nx.get_node_attributes(G, NodeAttr.CC_INDEX) 
+    node2cc = nx.get_node_attributes(G, NodeAttr.CC_INDEX)
 
     # set of all cc indices
     cc_set = set(node2cc.values())
 
     # dictionary of node(key)'s class(value) when part of cc
-    nodes2cc_class =nx.get_node_attributes(G,NodeAttr.CC_PATTERNS)
-
+    nodes2cc_class = nx.get_node_attributes(G, NodeAttr.CC_PATTERNS)
 
     # draw components to drw (existing in last scan + not new- no history)
     elements += get_sub_title("Lesions Appearing in Multiple Scans", False)
     while True:
-        graph, lesions_idx = get_single_node_graph_image("/cs/usr/talia.dym/Desktop/Engineering_Project/output/single_labeled_lesion_graph",
-                                                          json_path, cc_idx, lg, ld, components_to_draw, 
-                                                          longitudinal_volumes_array, percentage_diff_per_edge_dict)
+        graph, lesions_idx = get_single_node_graph_image(
+            "/cs/usr/shira_p/PycharmProjects/engineering_project/matching/output/single_labeled_lesion_graph",
+            json_path, cc_idx, lg, ld, components_to_draw,
+            longitudinal_volumes_array, percentage_diff_per_edge_dict)
         if not graph:
             break
-        
+
         elements += get_graph_title(lesions_idx)
         elements += [graph]
-        elements += get_lesion_history_text(lesions_idx[0], vol_list)#todo
+        elements += get_lesion_history_text(lesions_idx[0], vol_list)  # todo
 
         ## shira added text for classification of connected component 
-        elements+=cc_class_text(node2cc,nodes2cc_class,lesions_idx[0])
+        elements += cc_class_text(node2cc, nodes2cc_class, lesions_idx[0])
 
-        elements.append(Spacer(1,20))
+        elements.append(Spacer(1, 20))
         cc_idx += 1
 
     return elements
-
-

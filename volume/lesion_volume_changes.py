@@ -29,7 +29,7 @@ def check_lesion_growth_from_last_scan(lesion_volumes):
         return "No volume data available for the lesion."
     cur_volume = lesion_volumes[-1]
     if len(lesion_volumes)<2:
-        return "No volume data available for the lesion from previous scans"
+        return "No volume data available for the lesion from previous scan. "
     
     prev_volume = lesion_volumes[-2]
     vol_change_type =""
