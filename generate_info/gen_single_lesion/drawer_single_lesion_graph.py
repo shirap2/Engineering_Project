@@ -263,27 +263,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
 
         return max_nodes
     
-    def color_edges(self, pos):
-        vol_edge_label_pos = dict()
-        edge_is_skip = nx.get_edge_attributes(self._base_graph, name=EdgeAttr.IS_SKIP)
-
-        # for edge, is_skip in edge_is_skip.items():
-        #     if is_skip:
-        #         v = pos[edge[0]]
-        #         vol_edge_label_pos[edge[0]] = (v[0], v[1]+0.3)
-        #     else:
-        #         vol_edge_label_pos[edge[0]] = pos[edge[0]]
-
-        #     k1, v1 = pos[edge[0]]
-        #     if is_skip:
-        #         vol_edge_label_pos[edge[0]] = [k1, v1+1]
-        #     else:
-        #         vol_edge_label_pos[edge[0]] = pos[edge[0]]
-
-        # # print(vol_edge_label_pos)
-        # for k, v in pos.items():
-        #     print(k)
-        #     print((v[0], v[1]+0.3))
+    def color_edges_labels(self, pos):
         import copy
         pos_of_skip_edges = copy.deepcopy(pos)
         for node in pos:
@@ -309,12 +289,14 @@ class DrawerLabelsAndLabeledEdges(Drawer):
 
     
     def draw_volume_related_attributes_on_graph(self, pos):
-        self.color_edges(pos)
+        self.color_edges_labels(pos)
         self.draw_nodes_volume_labels(pos)
 
     def add_split_and_merge_summing_arrows(self, nodes_position):
         add_to_pos = dict()
         add_to_edges = list()
+        add_to_colors = dict()
+        add_to_labels = dict()
 
         nodes_pos_x = [pos[0] for pos in nodes_position.values()]
         layer_pos_x = np.unique(nodes_pos_x)
@@ -360,19 +342,16 @@ class DrawerLabelsAndLabeledEdges(Drawer):
             edge = (node1, node2)
             percentage_diff_dict, color_dict = edit_volume_percentage_data_to_str_and_color({edge: vol})
             add_to_edges.append(edge)
-            nx.set_edge_attributes(self._base_graph, percentage_diff_dict, name='label')
-            nx.set_edge_attributes(self._base_graph, color_dict, name=EdgeAttr.COLOR)
-            nx.set_edge_attributes(self._base_graph, {edge: False}, name=EdgeAttr.IS_SKIP)
+            add_to_colors.update(color_dict)
+            add_to_labels.update(percentage_diff_dict)
+            # total_label_dict = nx.get_edge_attributes(self._base_graph, EdgeAttr.LABEL)
+            # nx.set_edge_attributes(self._base_graph, percentage_diff_dict, name='label')
+            # total_color_dict = nx.get_edge_attributes(self._base_graph, EdgeAttr.COLOR)
+            # total_color_dict.update(color_dict)
+            # nx.set_edge_attributes(self._base_graph, total_color_dict, name=EdgeAttr.COLOR)
+            # nx.set_edge_attributes(self._base_graph, {edge: False}, name=EdgeAttr.IS_SKIP)
 
-        # for (t1, t2) in self.summing_edges_to_add_dict:
-        #     arrow_pos1 = arrow_positions[t1]
-        #     arrow_pos2 = arrow_positions[t2]
-        #     fictive_nodes_pos = {str(t1): arrow_pos1, str(t2): arrow_pos2}
-        #     # nx.draw_networkx_nodes(self._base_graph, fictive_nodes_pos)
-        #     nx.draw_networkx_edges(self._base_graph, fictive_nodes_pos, connectionstyle="arc3,rad=0.3",
-        #                            arrowstyle='|-|', width=2.0)
-
-        return add_to_edges, add_to_pos
+        return add_to_edges, add_to_pos, add_to_colors, add_to_labels
 
     def draw(self, pos):
         """This function prints the title of the figure and the graph"""
@@ -380,14 +359,26 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         plt.ylim([-2, 2])
         # plt.title(self._patient_name, fontsize=12)
 
-        split_and_merge_summing_arrows, add_to_pos = self.add_split_and_merge_summing_arrows(pos)
+        split_and_merge_summing_arrows, add_to_pos, add_to_colors, add_to_labels = self.add_split_and_merge_summing_arrows(pos)
 
         # add add_to_pos to pos
         pos = {**pos, **add_to_pos}
 
+        # set the nodes size to default (300) and only the white nodes (for the split&merge arrows)
+        # are small (so to not intifear the arrows)
+        colors = nx.get_node_attributes(self._base_graph, NodeAttr.COLOR)
+        size_list = []
+        for node, color in colors.items():
+            if color == Colors.WHITE:
+                size_list.append(5)
+            else:
+                size_list.append(300)
+
         nx.draw_networkx_nodes(G=self._base_graph,
                                pos=pos,
-                               node_color=list(nx.get_node_attributes(self._base_graph, NodeAttr.COLOR).values()))
+                               node_color=list(nx.get_node_attributes(self._base_graph, NodeAttr.COLOR).values()),
+                               node_size=size_list)
+
         nx.draw_networkx_labels(G=self._base_graph,
                                 pos=pos,
                                 labels=self.set_nodes_labels())
@@ -407,20 +398,16 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                                            nx.get_edge_attributes(self._base_graph, EdgeAttr.COLOR).items() if
                                            is_skip_edge[e]],
                                connectionstyle='arc3, rad=-0.5')
-        # add the summing edges in the split and merge cases
-        nx.draw_networkx_edges(G=self._base_graph,
-                               pos=pos,
-                               edgelist=split_and_merge_summing_arrows,
-                               edge_color=[c for e, c in
-                                           nx.get_edge_attributes(self._base_graph, EdgeAttr.COLOR).items()],
-                               connectionstyle='arc3')
 
-        # nx.draw_networkx_edge_labels(G=self._base_graph, pos=add_to_pos, edge_labels=percentage_diff_dict,
-        #                              font_color='red')
-        nx.draw_networkx_edges(self._base_graph, pos, connectionstyle="arc3", edgelist=split_and_merge_summing_arrows,
-                               arrowstyle='|-|', width=2.0)
-        # for edge in split_and_merge_summing_arrows:
-        #     nx.draw_networkx_edge_labels(G=self._base_graph, pos=pos, edge_labels={edge: label}, font_color=color)
+
+        # add the summing edges in the split and merge cases
+        for edge, label in add_to_labels.items():
+            if edge in add_to_colors:
+                color = add_to_colors[edge]
+                nx.draw_networkx_edge_labels(G=self._base_graph, pos=pos, edge_labels={edge: label}, font_color=color)
+        nx.draw_networkx_edges(self._base_graph, pos, edgelist=split_and_merge_summing_arrows,
+                               arrowstyle='|-|', width=2.0, edge_color=[c for e, c in
+                                           add_to_colors.items()], node_size=20)  # actual white node size is 5, set edge as if it is 20
 
         self.draw_volume_related_attributes_on_graph(pos)  # volume
         nx.spring_layout(self._base_graph, scale=6.0)
