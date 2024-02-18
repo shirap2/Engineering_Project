@@ -2,8 +2,7 @@ from gen_single_patient_pdf import create_single_patient_pdf_page
 from gen_single_lesion.gen_single_lesion_pdf import create_single_lesion_pdf_page
 from reportlab.platypus import SimpleDocTemplate, PageBreak
 import os
-import json
-
+from create_input.create_input_files import USR
 
 class PatientInput:
     def __init__(self, name, partial_scans_address, json_input_address, pickle_input_address, praph_image_path):
@@ -18,8 +17,8 @@ def get_patient_input(patient_name: str):
     name_for_path = patient_name.replace(" ", "_").replace(".", "")
     partial_scans_address = f"/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/{name_for_path}_"
     json_input_address = f"/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/{name_for_path}_glong_gt.json"
-    pickle_input_address = f"/cs/usr/shira_p/PycharmProjects/engineering_project/matching/input/pkl_files/{name_for_path}_graph_class_data.pkl"
-    praph_image_path = f"/cs/usr/shira_p/PycharmProjects/engineering_project/matching/input/graph_images/{name_for_path}_graph_image.png"
+    pickle_input_address = f"/cs/usr/{USR}/input/pkl_files/{name_for_path}_graph_class_data.pkl"
+    praph_image_path = f"/cs/usr/{USR}/input/graph_images/{name_for_path}_graph_image.png"
 
     return PatientInput(patient_name, partial_scans_address, json_input_address, pickle_input_address, praph_image_path)
 
@@ -27,7 +26,7 @@ def get_patient_input(patient_name: str):
 def create_pdf_file(patient_name: str):
     patient = get_patient_input(patient_name)
 
-    pdf_name = "/cs/usr/shira_p/PycharmProjects/engineering_project/matching/output/" + patient_name.replace(" ",
+    pdf_name = F"/cs/usr/{USR}/output/" + patient_name.replace(" ",
                                                                                                              "_") + "_patient_summary.pdf"
     if os.path.exists(pdf_name):
         os.remove(pdf_name)
@@ -48,8 +47,8 @@ def create_pdf_file(patient_name: str):
 
 # NAME = "A. W."
 # create_pdf_file(NAME)
-# NAME = "A. S. H."
-# create_pdf_file(NAME)
+NAME = "A. S. H."
+create_pdf_file(NAME)
 # NAME = "A. S. S."
 # create_pdf_file(NAME)
 # NAME = "B. B. S."
@@ -60,8 +59,8 @@ def create_pdf_file(patient_name: str):
 # create_pdf_file(NAME)
 
 
-NAME = "E. N."
-create_pdf_file(NAME)
-
-NAME = "F. Y. Ga."
-create_pdf_file(NAME)
+# NAME = "E. N."
+# create_pdf_file(NAME)
+#
+# NAME = "F. Y. Ga."
+# create_pdf_file(NAME)

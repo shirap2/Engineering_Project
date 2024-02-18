@@ -14,6 +14,8 @@ from datetime import datetime
 import re
 import pickle
 
+# USR = "shira_p/PycharmProjects/engineering_project/matching"
+USR = "talia.dym/Desktop/Engineering_Project"
 
 def get_title(title_string):
     title_style = getSampleStyleSheet()['Title']
@@ -261,7 +263,7 @@ def create_single_lesion_pdf_page(patient_name: str, json_path: str, pkl_path: s
     elements += get_sub_title("Lesions Appearing in Multiple Scans", False)
     while True:
         graph, lesions_idx = get_single_node_graph_image(
-            "/cs/usr/shira_p/PycharmProjects/engineering_project/matching/output/single_labeled_lesion_graph",
+            f"/cs/usr/{USR}/output/single_labeled_lesion_graph",
             json_path, cc_idx, lg, ld, components_to_draw,
             longitudinal_volumes_array, percentage_diff_per_edge_dict)
         if not graph:
