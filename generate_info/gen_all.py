@@ -1,6 +1,7 @@
 from gen_single_patient_pdf import create_single_patient_pdf_page
 from gen_single_lesion.gen_single_lesion_pdf import create_single_lesion_pdf_page
 from reportlab.platypus import SimpleDocTemplate, PageBreak
+from volume.volume_calculation import generate_longitudinal_volumes_array
 import os
 from create_input.create_input_files import USR
 
@@ -34,18 +35,21 @@ def create_pdf_file(patient_name: str):
 
     elements = []
 
+    volumes_dict = generate_longitudinal_volumes_array(patient.partial_scans_address)  # returns sorted (by date)
+    # array of dictionaries (one for each time stamp), key - lesion idx, value - volume in cm^3
     elements += create_single_patient_pdf_page(patient_name, patient.json_input_address, patient.partial_scans_address,
-                                               patient.praph_image_path)
+                                               patient.praph_image_path, volumes_dict)
 
     elements.append(PageBreak())
 
     elements += create_single_lesion_pdf_page(patient_name, patient.json_input_address, patient.pickle_input_address,
-                                              patient.partial_scans_address)
+                                              patient.partial_scans_address, volumes_dict)
 
     doc.build(elements)
 
 
-# NAME = "A. W."
+#
+# NAME = "Z. Aa."
 # create_pdf_file(NAME)
 NAME = "A. S. H."
 create_pdf_file(NAME)
@@ -64,3 +68,9 @@ create_pdf_file(NAME)
 #
 # NAME = "F. Y. Ga."
 # create_pdf_file(NAME)
+#
+# NAME = "AA0"
+# create_pdf_file(NAME)
+
+NAME = "A. W."
+create_pdf_file(NAME)

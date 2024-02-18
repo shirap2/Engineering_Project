@@ -86,7 +86,67 @@ def save_patient_input(name, partial_scans_adress, json_input_address):
 # PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/E_N_"
 # save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
 
-NAME = "F. Y. Ga."
-JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/F_Y_Ga_glong_gt.json"
-PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/F_Y_Ga_"
+# NAME = "F. Y. Ga."
+# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/F_Y_Ga_glong_gt.json"
+# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/F_Y_Ga_"
+# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+
+
+## next batch ###
+# NAME = "G. B."
+# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/G_B_glong_gt.json"
+# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/G_B_"
+# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+#
+#
+# NAME = "G. Y."
+# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/G_Y_glong_gt.json"
+# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/G_Y_"
+# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+#
+# NAME = "H. G."
+# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/H_G_glong_gt.json"
+# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/H_G_"
+# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+#
+# NAME = "M. I."
+# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/M_I_glong_gt.json"
+# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/M_I_"
+# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+#
+# NAME = "M. N."
+# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/M_N_glong_gt.json"
+# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/M_N_"
+# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+
+### next batch ###
+# NAME = "N. M."
+# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/N_M_glong_gt.json"
+# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/N_M_"
+# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+#
+# NAME = "S. I."
+# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/S_I_glong_gt.json"
+# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/S_I_"
+# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+#
+# NAME = "S. N."
+# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/S_N_glong_gt.json"
+# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/S_N_"
+# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+#
+# NAME = "T. N."
+# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/T_N_glong_gt.json"
+# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/T_N_"
+# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+
+# NAME = "Z. Aa."
+# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/Z_Aa_glong_gt.json"
+# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/Z_Aa_"
+# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+
+
+NAME = "AA0"
+JSON_ADDRESS = "/cs/casmip/bennydv/brain_pipeline/lesions_matching/longitudinal_gt/original_corrected/AA0glong_gt.json"
+PARTIAL_ADDRESS = "/cs/casmip/bennydv/brain_pipeline/gt_data/size_filtered/labeled_no_reg/AA0"
 save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
