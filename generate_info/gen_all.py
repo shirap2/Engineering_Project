@@ -2,9 +2,9 @@ from gen_single_patient_pdf import create_single_patient_pdf_page
 from gen_single_lesion.gen_single_lesion_pdf import create_single_lesion_pdf_page
 from reportlab.platypus import SimpleDocTemplate, PageBreak
 import os
-import json
 
-USR = "shira_p/PycharmProjects/engineering_project/matching"
+# USR = "shira_p/PycharmProjects/engineering_project/matching"
+USR = "talia.dym/Desktop/Engineering_Project"
 
 
 class PatientInput:

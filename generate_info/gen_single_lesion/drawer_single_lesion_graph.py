@@ -5,6 +5,29 @@ from typing import Dict
 import numpy as np
 from common_packages.BaseClasses import Longit, NodeAttr, EdgeAttr, Colors, Drawer, Loader
 
+colors_dict = {
+    0: "lightskyblue",
+    1: "lightgoldenrodyellow",
+    2: "lightcyan",
+    3: "lightpink",
+    4: "lightseagreen",
+    5: "lavender",
+    6: "lightsteelblue",
+    7: "lightcoral",
+    8: "lightblue",
+    9: "lightyellow",
+    10: "lightgray",
+    11: "lightseagreen",
+    12: "lightcoral",
+    13: "lightpink",
+    14: "lightblue",
+    15: "lightgoldenrodyellow",
+    16: "lightcyan",
+    17: "lavender",
+    18: "lightsteelblue",
+    19: "lightgray"
+}
+
 
 def edit_volume_percentage_data_to_str_and_color(vol_percentage_diff_per_edge: dict):
     edited_dict = dict()
@@ -43,19 +66,29 @@ def get_edge_label_color(edge_labels: dict):
     return color_dict
 
 
+def get_nodes_for_graph(nodes_list, range_min, range_max):
+    nodes_to_return = []
+    for n in nodes_list:
+        node_time = n.split("_")[1]
+        if int(node_time) > int(range_max) or int(node_time) < int(range_min):
+            continue
+        nodes_to_return.append(n)
+    return nodes_to_return
+
+
 class DrawerLabelsAndLabeledEdges(Drawer):
     """Displays the Longit graph with the nodes' color as the ITKSNAP label color. With the parameter attr_to_show you
     can decide what text to print on the nodes. The default is label number"""
 
-    def __init__(self, longit: Longit, cc_idx: int, ld: Loader, components: list, nodes_to_put,
+    def __init__(self, longit: Longit, cc_idx: int, ld: Loader, components: list,
                  longitudinal_volumes_array: list,
-                 percentage_diff_per_edge_dict, attr_to_print=None):
+                 percentage_diff_per_edge_dict, start: int, end_of_patient_dates: int, attr_to_print=None):
         self._attr_to_print = attr_to_print
         if self._attr_to_print is not None:
             longit.nodes_have_attribute(self._attr_to_print)
 
         # self.partial_patient_path = partial_patient_path
-        # self.ld = ld
+        self.ld = ld
         G = longit.get_graph()
 
         self._is_graph_empty = False
@@ -63,6 +96,12 @@ class DrawerLabelsAndLabeledEdges(Drawer):
             self._is_graph_empty = True
             return
         # subgraph = G.subgraph(components[cc_idx])
+        nodes_to_put = get_nodes_for_graph(components[cc_idx], start, end_of_patient_dates - 1)
+        if len(nodes_to_put) == 0:
+            self._is_graph_empty = True
+            return
+        self.cc_idx = cc_idx
+        self.starting_node_idx = start
         subgraph = G.subgraph([n for n in G if n in nodes_to_put])
         self._base_graph = subgraph
 
@@ -98,7 +137,8 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         labels = nx.get_node_attributes(self._base_graph, name=NodeAttr.LABEL)
         highest_time = max(int(key.split('_')[1]) for key in labels.keys())
         last_node_color_key = max(labels, key=lambda k: int(k.split('_')[1]))
-        color_to_apply = Colors.itk_colors(labels[last_node_color_key])
+        # color_to_apply = Colors.itk_colors(labels[last_node_color_key])
+        color_to_apply = colors_dict[self.cc_idx % 20]
         # colors = {node: {NodeAttr.COLOR: Colors.itk_colors(node_label)} for node, node_label in labels.items()}
         colors = {node: {NodeAttr.COLOR: color_to_apply} for node in labels.keys()}
         # last_node_colour =
@@ -310,7 +350,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         nx.spring_layout(self._base_graph, scale=6.0)
 
     def set_graph_layout(self):
-        """Stack graph's connected components one upon the other and fill the blanks with placeholders"""
+        """ Stack graph's connected components one upon the other and fill the blanks with placeholders """
         cc_subgraphs = [self._base_graph.subgraph(cc) for cc in nx.connected_components(self._base_graph)]
         if len(cc_subgraphs) == 0:
             return
@@ -319,6 +359,30 @@ class DrawerLabelsAndLabeledEdges(Drawer):
             curr_cc_graph = self.fill_with_placeholders(cc_subgraphs[i])
             cc_graph = nx.compose(cc_graph, curr_cc_graph)
         self._base_graph = cc_graph
+
+    def fill_with_placeholders(self, sub_graph_init: nx.Graph):
+        """For each layer, fill the layer with placeholder nodes, such that all the layers will have the same number of
+         nodes"""
+
+        sub_graph = nx.Graph(sub_graph_init)
+        # count how many nodes in each layer
+        nodes_layers = list(nx.get_node_attributes(sub_graph, name=NodeAttr.LAYER).values())
+        num_nodes_in_layer = \
+            [nodes_layers.count(layer + self.starting_node_idx) for layer in range(self._num_of_layers)]
+        max_num_nodes_in_layer = max(num_nodes_in_layer) + 1
+
+        # extract the names of the attributes of a node
+        node_attributes_names = sub_graph.nodes[list(sub_graph.nodes())[0]].keys()
+
+        # fill with placeholders
+        for layer in range(self._num_of_layers):
+            for i in range(max_num_nodes_in_layer - num_nodes_in_layer[layer]):
+                place_holder, ph_attr = \
+                    self.create_placeholder(attributes=node_attributes_names, layer=layer + self.starting_node_idx)
+                sub_graph.add_node(place_holder)
+                nx.set_node_attributes(sub_graph, {place_holder: ph_attr})
+        return sub_graph
+
 
     def write_dates(self, nodes_position):
         """Prints the layers' dates at the bottom of the layers"""

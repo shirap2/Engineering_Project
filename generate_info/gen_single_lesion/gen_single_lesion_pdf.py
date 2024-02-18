@@ -12,7 +12,12 @@ from datetime import datetime
 import re
 import pickle
 
-USR = "shira_p/PycharmProjects/engineering_project/matching"
+# USR = "shira_p/PycharmProjects/engineering_project/matching"
+USR = "talia.dym/Desktop/Engineering_Project"
+
+
+MAX_SCANS_PER_GRAPH = 5
+OVERLAP_BETWEEN_GRAPHS = 1
 
 
 def get_title(title_string):
@@ -165,8 +170,6 @@ def get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, c
 """
 this function genernates the text for classification of connnected component
 """
-
-
 def cc_class_text(node2cc, nodes2cc_class, lesion_idx_in_last_scan: int):
     lesion_cc_class = ""
     max_time = max(int(key.split('_')[1]) for key in node2cc.keys())
@@ -175,7 +178,7 @@ def cc_class_text(node2cc, nodes2cc_class, lesion_idx_in_last_scan: int):
         lesion_cc_class = nodes2cc_class[node_key]
         elements = get_note("Classification of connected component: " + lesion_cc_class[:-2] + ".", True)
     else:
-        return "No information for classifiaction"
+        elements = get_note("No information for classifiaction", True)
     return elements
 
 
@@ -195,16 +198,6 @@ def get_dates(patient_path):
 
     formatted_dates = sorted(formatted_dates, key=lambda x: datetime.strptime(x, '%d.%m.%y'))
     return formatted_dates
-
-
-def get_nodes_for_graph(nodes_list, range_min, range_max):
-    nodes_to_return = []
-    for n in nodes_list:
-        node_time = n.split("_")[1]
-        if int(node_time) > int(range_max) or int(node_time) < int(range_min):
-            continue
-        nodes_to_return.append(n)
-    return nodes_to_return
 
 
 def create_single_lesion_pdf_page(patient_name: str, json_path: str, pkl_path: str, patient_partial_path: str):
@@ -258,27 +251,30 @@ def create_single_lesion_pdf_page(patient_name: str, json_path: str, pkl_path: s
     lesions_idx = 0
     # draw components to drw (existing in last scan + not new- no history)
     elements += get_sub_title("Lesions Appearing in Multiple Scans", False)
+    all_patient_dates = lg.get_patient_dates()
     while True:
         count = 0
-        all_patient_dates = lg.get_patient_dates()
-        while count < len(all_patient_dates):
+        ran_through_all_scans = False
+        while not ran_through_all_scans:
 
             start = count
-            end_of_patient_dates = start + 3
+            end_of_patient_dates = start + MAX_SCANS_PER_GRAPH
 
-            if end_of_patient_dates > len(all_patient_dates):
+            if end_of_patient_dates >= len(all_patient_dates):
                 end_of_patient_dates = len(all_patient_dates)
+                ran_through_all_scans = True
             lg._patient_dates = all_patient_dates[start:end_of_patient_dates]
+
             lg._num_of_layers = end_of_patient_dates - start
-            nodes_to_put = get_nodes_for_graph(components_to_draw[cc_idx], start, end_of_patient_dates - 1)
+            # lg._num_of_layers = MAX_SCANS_PER_GRAPH
             graph, lesions_idx = get_single_node_graph_image(f"/cs/usr/{USR}/output/single_labeled_lesion_graph",
                                                              json_path, cc_idx, lg, ld, components_to_draw,
-                                                             nodes_to_put,
-                                                             longitudinal_volumes_array, percentage_diff_per_edge_dict)
+                                                             longitudinal_volumes_array, percentage_diff_per_edge_dict,
+                                                             start, end_of_patient_dates)
             if not graph:
                 return elements
 
-            elements += get_graph_title(lesions_idx)
+            # elements += get_graph_title(lesions_idx)
             elements += [graph]
             # elements += get_lesion_history_text(lesions_idx[0], vol_list)  # todo
             #
@@ -286,12 +282,14 @@ def create_single_lesion_pdf_page(patient_name: str, json_path: str, pkl_path: s
             # elements += cc_class_text(node2cc, nodes2cc_class, lesions_idx[0])
 
             elements.append(Spacer(1, 20))
-            count += 3
-        elements += get_lesion_history_text(lesions_idx[0], vol_list)  # todo
+            count += MAX_SCANS_PER_GRAPH - OVERLAP_BETWEEN_GRAPHS
 
-        ## shira added text for classification of connected component
-        elements += cc_class_text(node2cc, nodes2cc_class, lesions_idx[0])
+        # elements += get_lesion_history_text(lesions_idx[0], vol_list)  # todo
+
+        # shira added text for classification of connected component
+        # elements += cc_class_text(node2cc, nodes2cc_class, lesions_idx[0])
 
         cc_idx += 1
+        # return elements #todo remove
 
     # return elements

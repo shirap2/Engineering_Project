@@ -4,7 +4,9 @@ from common_packages.LongGraphPackage import LoaderSimpleFromJson, DrawerLabels
 from common_packages.LongGraphClassification import LongitClassification
 from generate_info.gen_single_lesion.gen_single_lesion_pdf import get_dates
 import matplotlib.pyplot as plt
-USR = "/cs/usr/shira_p/PycharmProjects/engineering_project/matching/input/pkl_files"
+
+# USR = "shira_p/PycharmProjects/engineering_project/matching"
+USR = "talia.dym/Desktop/Engineering_Project"
 
 def save_patient_input_into_pickle_file(name, name_for_path, partial_scans_adress, ld):
 
