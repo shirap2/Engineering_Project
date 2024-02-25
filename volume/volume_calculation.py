@@ -122,18 +122,15 @@ def get_volume(longitudinal_volumes_array, node):
     return 0, False
 
 def get_dict_of_volume_percentage_change_and_classification_per_edge(ld: LoaderSimpleFromJson, longitudinal_volumes_array):
-    volume_change_per_edge_dict = {} # return {edge : [volume percentage change, calssification]}
+    volume_change_per_edge_dict = {}  # return {edge : [volume percentage change, calssification]}
 
-    src_total_volume, dest_total_volume = 0, 0
-    percentage_diff = 0
-
-    edges_to_node_dict = get_edges_to_node_dict(ld) # {node : [edges to node]}
-    edges_from_node_dict = get_edges_from_node_dict(ld) # {node : [edges from node]}
+    edges_to_node_dict = get_edges_to_node_dict(ld)  # {node : [edges to node]}
+    edges_from_node_dict = get_edges_from_node_dict(ld)  # {node : [edges from node]}
 
     for edge in ld.get_edges():
         src_node, dest_node = edge
 
-        if len(edges_from_node_dict[src_node]) > 1: # splitted
+        if len(edges_from_node_dict[src_node]) > 1:  # split
 
             src_total_volume, is_existing = get_volume(longitudinal_volumes_array, src_node)
             if not is_existing:
@@ -154,7 +151,8 @@ def get_dict_of_volume_percentage_change_and_classification_per_edge(ld: LoaderS
                 percentage_diff = ((dest_total_volume/src_total_volume) - 1) * 100
             volume_change_per_edge_dict[edge] = [percentage_diff, edgeVolumeClassification.SPLITTING]
 
-        elif len(edges_to_node_dict[dest_node]) > 1: # merged
+
+        elif len(edges_to_node_dict[dest_node]) > 1:  # merged
             dest_total_volume, is_existing = get_volume(longitudinal_volumes_array, dest_node)
             if not is_existing:
                     print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")

@@ -32,12 +32,6 @@ def get_single_node_graph_image(image_path : str, scan_name: str, cc_idx: int, l
 
     if dr._is_graph_empty:
          return [None, None]
-    
-    # current_scan_appearing_lesions_idx_arr = dr.get_lesion_idx()
-
-    # # check if a lesion exists in the current scan
-    # if int(current_scan_appearing_lesions_idx_arr[0].split("_")[1]) != current_time:
-    #      if 
 
     
     full_path = f"{image_path}_{cc_idx}.png"
@@ -46,8 +40,8 @@ def get_single_node_graph_image(image_path : str, scan_name: str, cc_idx: int, l
     plt.figure()
     dr.show_graph(full_path)
     crop_dimensions = (450, 300)
-    crop_middle_of_image(full_path, full_path, crop_dimensions)
-    graph = ply.Image(full_path, height=200, width=300)
+    # crop_middle_of_image(full_path, full_path, crop_dimensions)
+    graph = ply.Image(full_path, height=240, width=320)
 
     return [graph, dr.get_lesion_idx()]
 
