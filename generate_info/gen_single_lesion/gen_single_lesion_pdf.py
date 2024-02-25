@@ -93,6 +93,18 @@ def find_max_time_stamp_per_cc_and_total(components):
     return max_time_per_cc_dict, max_total_time
 
 
+def find_min_time_stamp_per_cc(components, max_total_time):
+    min_time_per_cc_dict = dict()
+    for cc in components:
+        min_cc_time = max_total_time
+        for node in cc:
+            time = int(node.split("_")[1])
+            if time <= min_cc_time:
+                min_cc_time = time
+        min_time_per_cc_dict[tuple(cc)] = min_cc_time
+    return min_time_per_cc_dict
+
+
 def devide_components(components, max_time_per_cc_dict, total_max_time):
     disappeared_components, mew_single_components, components_to_draw = [], [], []
     for cc in components:
@@ -220,6 +232,8 @@ def create_single_lesion_pdf_page(patient_name: str, json_path: str, pkl_path: s
     components = list(nx.connected_components(G))
 
     max_time_per_cc_dict, total_max_time = find_max_time_stamp_per_cc_and_total(components)
+    min_time_per_cc_dict = find_min_time_stamp_per_cc(components, total_max_time)
+
     disappeared_components, new_single_components, components_to_draw = devide_components(components,
                                                                                           max_time_per_cc_dict,
                                                                                           total_max_time)
@@ -252,12 +266,17 @@ def create_single_lesion_pdf_page(patient_name: str, json_path: str, pkl_path: s
     # draw components to drw (existing in last scan + not new- no history)
     elements += get_sub_title("Lesions Appearing in Multiple Scans", False)
     all_patient_dates = lg.get_patient_dates()
+    num_of_CCS_to_draw = len(components_to_draw)
     while True:
+        if cc_idx >= num_of_CCS_to_draw:
+            return elements
         count = 0
         ran_through_all_scans = False
+        CC_first_appeared_in = min_time_per_cc_dict[tuple(components_to_draw[cc_idx])]
+        print(CC_first_appeared_in)
         while not ran_through_all_scans:
 
-            start = count
+            start = count + CC_first_appeared_in
             end_of_patient_dates = start + MAX_SCANS_PER_GRAPH
 
             if end_of_patient_dates >= len(all_patient_dates):

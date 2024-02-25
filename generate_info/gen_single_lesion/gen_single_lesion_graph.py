@@ -28,8 +28,7 @@ def crop_middle_of_image(input_path, output_path, crop_dimensions):
 def get_single_node_graph_image(image_path: str, scan_name: str, cc_idx: int, lg, ld,
                                 components: list, longitudinal_volumes_array: list,
                                 percentage_diff_per_edge_dict, start: int, end_of_patient_dates: int):
-    if cc_idx == 4:
-        a = 1
+
     dr = DrawerLabelsAndLabeledEdges(lg, cc_idx, ld, components, longitudinal_volumes_array,
                                      percentage_diff_per_edge_dict, start, end_of_patient_dates)
 
