@@ -4,6 +4,13 @@ import networkx as nx
 from typing import Dict
 import numpy as np
 from common_packages.BaseClasses import Longit, NodeAttr, EdgeAttr, Colors, Drawer, Loader
+from volume.volume_calculation import get_edges_to_node_dict, get_edges_from_node_dict
+from enum import Enum
+class BottomEdgeDesign(Enum):
+    TOTAL_CHANGE = 'total'
+    SPLIT_MERGE_CHANGE = 'split_merge_change'
+    NONE = 'none'
+
 
 colors_dict = {
     0: "lightskyblue",
@@ -126,13 +133,103 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         self.longitudinal_volumes_array = longitudinal_volumes_array
         self.percentage_diff_per_edge_dict = percentage_diff_per_edge_dict
 
+        self.bottom_arrow_design = BottomEdgeDesign.NONE
+
+        self.should_print_label_on_edge = dict()
+        edge_is_skip = nx.get_edge_attributes(self._base_graph, name=EdgeAttr.IS_SKIP)
+        for edge in edge_is_skip.keys():
+            head, tail = edge
+            if int(head.split("_")[1]) > int(tail.split("_")[1]):
+                edge = tail, head
+            self.should_print_label_on_edge[edge] = True
+
+        self.edges_to_node_dict = get_edges_to_node_dict(self.ld)  # {node : [edges to node]}
+        self.edges_from_node_dict = get_edges_from_node_dict(self.ld)  # {node : [edges from node]}
+
+        if self.bottom_arrow_design == BottomEdgeDesign.SPLIT_MERGE_CHANGE:
+            self.process_merge_and_split_bottom_arrows_edges_labels(percentage_diff_per_edge_dict)
+        elif self.bottom_arrow_design == BottomEdgeDesign.TOTAL_CHANGE:
+            self.process_none_bottom_arrows_edges_labels(percentage_diff_per_edge_dict)
+            self.process_total_bottom_arrows_edges_labels(percentage_diff_per_edge_dict)
+        elif self.bottom_arrow_design == BottomEdgeDesign.NONE:
+            self.process_none_bottom_arrows_edges_labels(percentage_diff_per_edge_dict)
+
         self.nodes_volume_labels = self.set_nodes_volume_labels()
+
+    def process_total_bottom_arrows_edges_labels(self, percentage_diff_per_edge_dict):
+        # should_print_label_on_edge = {}  # {edge: true/false}
+        total_edges_to_add_dict = {}  # {(t1, t2): label}
+        total_vol_list = [0 for _ in range(self._num_of_layers)]  # total_vol_list[i] is the total vol in layer i
+
+        # fill in total_vol_list
+        is_place_holder_dict = nx.get_node_attributes(self._base_graph, NodeAttr.IS_PLACEHOLDER)
+        for node, is_place_holder in is_place_holder_dict.items():
+            layer = int(node.split("_")[1])
+            if not is_place_holder:
+                vol, is_existing = self.get_node_volume(node)
+                if is_existing:
+                    total_vol_list[layer] += vol
+
+        for i in range(0, self._num_of_layers - 1):
+            percentage_diff = "+inf"
+            if total_vol_list[i] != 0:
+                percentage_diff = ((total_vol_list[i + 1]/total_vol_list[i]) - 1) * 100
+
+            total_edges_to_add_dict[(i, i + 1)] = percentage_diff
+
+        self.summing_edges_to_add_dict = total_edges_to_add_dict
+
+    def process_none_bottom_arrows_edges_labels(self, percentage_diff_per_edge_dict):
+        edge_is_skip = nx.get_edge_attributes(self._base_graph, name=EdgeAttr.IS_SKIP)
+        for edge in edge_is_skip.keys():
+            head, tail = edge
+            if int(head.split("_")[1]) > int(tail.split("_")[1]):
+                edge = tail, head
+                head, tail = edge
+
+            if tail in self.edges_to_node_dict:
+                if len(self.edges_to_node_dict[tail]) > 1:  # merge
+                    self.should_print_label_on_edge[edge] = False
+
+            if head in self.edges_from_node_dict:
+                if len(self.edges_from_node_dict[head]) > 1:  # split
+                    self.should_print_label_on_edge[edge] = False
+
+
+    def process_merge_and_split_bottom_arrows_edges_labels(self, percentage_diff_per_edge_dict):
+        total_edges_to_add_dict = {}  # {(t1, t2): label}
+
+        edge_is_skip = nx.get_edge_attributes(self._base_graph, name=EdgeAttr.IS_SKIP)
+        for edge in edge_is_skip.keys():
+
+            head, tail = edge
+            if int(head.split("_")[1]) > int(tail.split("_")[1]):
+                edge = tail, head
+                head, tail = edge
+
+            if tail in self.edges_to_node_dict:
+                if len(self.edges_to_node_dict[tail]) > 1:  # merge
+                    self.should_print_label_on_edge[edge] = False
+
+                    t2 = int(tail.split("_")[1])
+                    t1 = t2 - 1
+                    total_edges_to_add_dict[(t1, t2)] = percentage_diff_per_edge_dict[edge]
+
+            if head in self.edges_from_node_dict:
+                if len(self.edges_from_node_dict[head]) > 1:  # split
+                    self.should_print_label_on_edge[edge] = False
+
+                    t1 = int(head.split("_")[1])
+                    t2 = t1 + 1
+                    total_edges_to_add_dict[(t1, t2)] = percentage_diff_per_edge_dict[edge]
+        self.summing_edges_to_add_dict = total_edges_to_add_dict
+
 
     def set_nodes_drawing_attributes(self):
         """Add to each node the color attribute GRAY"""
         nx.set_node_attributes(self._base_graph, values=Colors.GRAY, name=NodeAttr.COLOR)
 
-    # def find_max_time_for_colour_funct()
+
     def set_nodes_drawing_attributes(self):
         labels = nx.get_node_attributes(self._base_graph, name=NodeAttr.LABEL)
         highest_time = max(int(key.split('_')[1]) for key in labels.keys())
@@ -146,12 +243,14 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         #           labels.items()}
         nx.set_node_attributes(self._base_graph, colors)
 
+
     def get_node_volume(self, node_str: str):
         idx, time = node_str.split('_')
         if int(idx) in self.longitudinal_volumes_array[int(time)]:
             return round(self.longitudinal_volumes_array[int(time)][int(idx)], 2), True
             # return self.longitudinal_volumes_array[int(time)][int(idx)] # todo talia check
         return 0, False
+
 
     def attr_to_print_on_nodes(self):
         if self._attr_to_print is None:
@@ -160,17 +259,12 @@ class DrawerLabelsAndLabeledEdges(Drawer):
             return self._attr_to_print
 
     def set_edges_drawing_attributes(self):
-
         nx.set_edge_attributes(self._base_graph, values=Colors.BLACK, name=EdgeAttr.COLOR)
-        edge_is_skip = nx.get_edge_attributes(self._base_graph, name=EdgeAttr.IS_SKIP)
 
-        # connectivity = dict()
-        # for edge, is_skip in edge_is_skip.items():
-        #     if not is_skip:
-        #         connectivity.update({edge: {EdgeAttr.CONNECTION_STYLE: 'arc3'}})
-        #     else:
-        #         connectivity.update({edge: {EdgeAttr.CONNECTION_STYLE: 'arc3,rad=0.3'}})
-        # nx.set_edge_attributes(self._base_graph, connectivity)
+        # remove edges that we dont want to print their label
+        self.percentage_diff_per_edge_dict = {edge: vol for edge, vol in self.percentage_diff_per_edge_dict.items() if
+                                              self.should_print_label_on_edge.get(edge)}
+        # self.percentage_diff_per_edge_dict = {edge: vol for edge, vol in self.percentage_diff_per_edge_dict.items()}
 
         percentage_diff_per_edge_dict, color_dict = edit_volume_percentage_data_to_str_and_color(
             self.percentage_diff_per_edge_dict)  # volume
@@ -198,6 +292,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                 if src_vol != 0:
                     percentage_diff = ((dest_vol / src_vol) - 1) * 100
                 self.percentage_diff_per_edge_dict[edge] = percentage_diff
+                self.should_print_label_on_edge[edge] = True
 
     def add_edge_skipping_over_node(self, node):
         # find edge before and after
@@ -271,27 +366,8 @@ class DrawerLabelsAndLabeledEdges(Drawer):
 
         return max_nodes
 
-    def color_edges(self, pos):
-        vol_edge_label_pos = dict()
-        edge_is_skip = nx.get_edge_attributes(self._base_graph, name=EdgeAttr.IS_SKIP)
 
-        # for edge, is_skip in edge_is_skip.items():
-        #     if is_skip:
-        #         v = pos[edge[0]]
-        #         vol_edge_label_pos[edge[0]] = (v[0], v[1]+0.3)
-        #     else:
-        #         vol_edge_label_pos[edge[0]] = pos[edge[0]]
-
-        #     k1, v1 = pos[edge[0]]
-        #     if is_skip:
-        #         vol_edge_label_pos[edge[0]] = [k1, v1+1]
-        #     else:
-        #         vol_edge_label_pos[edge[0]] = pos[edge[0]]
-
-        # # print(vol_edge_label_pos)
-        # for k, v in pos.items():
-        #     print(k)
-        #     print((v[0], v[1]+0.3))
+    def color_edges_labels(self, pos):
         import copy
         pos_of_skip_edges = copy.deepcopy(pos)
         for node in pos:
@@ -317,37 +393,135 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                                 labels=self.nodes_volume_labels, font_size=10, font_color='black')
 
     def draw_volume_related_attributes_on_graph(self, pos):
-        self.color_edges(pos)
+        if not self.bottom_arrow_design == BottomEdgeDesign.TOTAL_CHANGE:
+            self.color_edges_labels(pos)
         self.draw_nodes_volume_labels(pos)
+
+
+    def add_bottom_arrows(self, nodes_position):
+        add_to_pos = dict()
+        add_to_edges = list()
+        add_to_colors = dict()
+        add_to_labels = dict()
+
+        nodes_pos_x = [pos[0] for pos in nodes_position.values()]
+        layer_pos_x = np.unique(nodes_pos_x)
+        nodes_pos_y = [pos[1] for pos in nodes_position.values()]
+        lower_node = np.min(nodes_pos_y)
+
+        # lower date text
+        lower_node -= 0.2
+
+        arrow_positions = [[pos_x, lower_node - 0.2] for pos_x in layer_pos_x]
+
+        attributes = self._base_graph.nodes[list(self._base_graph.nodes())[0]].keys()
+
+        for (t1, t2), vol in self.summing_edges_to_add_dict.items():
+            node1_attributes = {att: '' for att in attributes}
+            node2_attributes = {att: '' for att in attributes}
+
+            node1 = f'2000_{t1}'
+            node2 = f'2000_{t2}'
+
+            self._base_graph.add_node(node1)
+            self._base_graph.add_node(node2)
+
+            arrow_pos1 = arrow_positions[t1]
+            arrow_pos2 = arrow_positions[t2]
+
+            add_to_pos[node1] = np.array(arrow_pos1)
+            add_to_pos[node2] = np.array(arrow_pos2)
+
+            node1_attributes[NodeAttr.IS_PLACEHOLDER] = False
+            node1_attributes[NodeAttr.LAYER] = t1
+            node1_attributes[NodeAttr.LABEL] = ''
+            node1_attributes[NodeAttr.COLOR] = Colors.WHITE
+
+            node2_attributes[NodeAttr.IS_PLACEHOLDER] = False
+            node2_attributes[NodeAttr.LAYER] = t1
+            node2_attributes[NodeAttr.LABEL] = ''
+            node2_attributes[NodeAttr.COLOR] = Colors.WHITE
+
+            nx.set_node_attributes(self._base_graph, {node1: node1_attributes})
+            nx.set_node_attributes(self._base_graph, {node2: node2_attributes})
+
+            edge = (node1, node2)
+            percentage_diff_dict, color_dict = edit_volume_percentage_data_to_str_and_color({edge: vol})
+            add_to_edges.append(edge)
+            add_to_colors.update(color_dict)
+            add_to_labels.update(percentage_diff_dict)
+
+        return add_to_edges, add_to_pos, add_to_colors, add_to_labels
 
     def draw(self, pos):
         """This function prints the title of the figure and the graph"""
         plt.xlim([-1.5, 1.5])
         plt.ylim([-2, 2])
-        plt.title(self._patient_name, fontsize=12)
+        # plt.title(self._patient_name, fontsize=12)
+        if not self.bottom_arrow_design == BottomEdgeDesign.NONE:
+            add_to_edges, add_to_pos, add_to_colors, add_to_labels = self.add_bottom_arrows(pos)
+            # add add_to_pos to pos
+            pos = {**pos, **add_to_pos}
+
+        # set the nodes size to default (300) and only the white nodes (for the split&merge arrows)
+        # are small (so to not intifear the arrows)
+        colors = nx.get_node_attributes(self._base_graph, NodeAttr.COLOR)
+        size_list = []
+        for node, color in colors.items():
+            if color == Colors.WHITE:
+                size_list.append(0)
+            else:
+                size_list.append(300)
+
         nx.draw_networkx_nodes(G=self._base_graph,
                                pos=pos,
-                               node_color=list(nx.get_node_attributes(self._base_graph, NodeAttr.COLOR).values()))
+                               node_color=list(nx.get_node_attributes(self._base_graph, NodeAttr.COLOR).values()),
+                               node_size=size_list)
+
         nx.draw_networkx_labels(G=self._base_graph,
                                 pos=pos,
                                 labels=self.set_nodes_labels())
+
         is_skip_edge = nx.get_edge_attributes(self._base_graph, EdgeAttr.IS_SKIP)
-        nx.draw_networkx_edges(G=self._base_graph,
-                               pos=pos,
-                               edgelist=[e for e, is_skip in is_skip_edge.items() if not is_skip],
-                               edge_color=[c for e, c in
-                                           nx.get_edge_attributes(self._base_graph, EdgeAttr.COLOR).items() if
-                                           not is_skip_edge[e]],
-                               connectionstyle='arc3')
-        nx.draw_networkx_edges(G=self._base_graph,
-                               pos=pos,
-                               edgelist=[e for e, is_skip in is_skip_edge.items() if is_skip],
-                               edge_color=[c for e, c in
-                                           nx.get_edge_attributes(self._base_graph, EdgeAttr.COLOR).items() if
-                                           is_skip_edge[e]],
-                               connectionstyle='arc3, rad=-0.5')
+
+        if not self.bottom_arrow_design == BottomEdgeDesign.TOTAL_CHANGE:
+            nx.draw_networkx_edges(G=self._base_graph,
+                                   pos=pos,
+                                   edgelist=[e for e, is_skip in is_skip_edge.items() if not is_skip],
+                                   edge_color=[c for e, c in
+                                               nx.get_edge_attributes(self._base_graph, EdgeAttr.COLOR).items() if
+                                               not is_skip_edge[e]],
+                                   connectionstyle='arc3')
+            nx.draw_networkx_edges(G=self._base_graph,
+                                   pos=pos,
+                                   edgelist=[e for e, is_skip in is_skip_edge.items() if is_skip],
+                                   edge_color=[c for e, c in
+                                               nx.get_edge_attributes(self._base_graph, EdgeAttr.COLOR).items() if
+                                               is_skip_edge[e]],
+                                   connectionstyle='arc3, rad=-0.5')
+        else:  # no color
+            nx.draw_networkx_edges(G=self._base_graph,
+                                   pos=pos,
+                                   edgelist=[e for e, is_skip in is_skip_edge.items() if not is_skip],
+                                   connectionstyle='arc3')
+            nx.draw_networkx_edges(G=self._base_graph,
+                                   pos=pos,
+                                   edgelist=[e for e, is_skip in is_skip_edge.items() if is_skip],
+                                   connectionstyle='arc3, rad=-0.5')
+
+        if not self.bottom_arrow_design == BottomEdgeDesign.NONE:
+            # add the summing edges in the split and merge cases
+            for edge, label in add_to_labels.items():
+                if edge in add_to_colors:
+                    color = add_to_colors[edge]
+                    nx.draw_networkx_edge_labels(G=self._base_graph, pos=pos, edge_labels={edge: label}, font_color=color)
+            nx.draw_networkx_edges(self._base_graph, pos, edgelist=add_to_edges,
+                                   arrowstyle='|-|', width=2.0, edge_color=[c for e, c in
+                                               add_to_colors.items()], node_size=0)  # actual white node size is 5, set edge as if it is 20
+
         self.draw_volume_related_attributes_on_graph(pos)  # volume
         nx.spring_layout(self._base_graph, scale=6.0)
+
 
     def set_graph_layout(self):
         """ Stack graph's connected components one upon the other and fill the blanks with placeholders """
@@ -395,7 +569,8 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         # lower date text
         lower_node -= 0.3
 
-        text_positions = [(pos_x, lower_node - 0.2) for pos_x in layer_pos_x]
+
+        text_positions = [(pos_x, lower_node - 0.3) for pos_x in layer_pos_x]
         for layer_idx in range(self._num_of_layers):
             current_text_pos = text_positions[layer_idx]
             plt.text(current_text_pos[0], current_text_pos[1], self._patient_dates[layer_idx],

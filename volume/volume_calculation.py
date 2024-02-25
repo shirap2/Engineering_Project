@@ -128,8 +128,7 @@ def get_dict_of_volume_percentage_change_and_classification_per_edge(ld: LoaderS
 
     for edge in ld.get_edges():
         src_node, dest_node = edge
-
-        if len(edges_from_node_dict[src_node]) > 1:  # splitted
+        if len(edges_from_node_dict[src_node]) > 1:  # split
 
             src_total_volume, is_existing = get_volume(longitudinal_volumes_array, src_node)
             if not is_existing:
@@ -150,7 +149,7 @@ def get_dict_of_volume_percentage_change_and_classification_per_edge(ld: LoaderS
                 percentage_diff = ((dest_total_volume/src_total_volume) - 1) * 100
             volume_change_per_edge_dict[edge] = [percentage_diff, edgeVolumeClassification.SPLITTING]
 
-        elif len(edges_to_node_dict[dest_node]) > 1: # merged
+        elif len(edges_to_node_dict[dest_node]) > 1:  # merged
             dest_total_volume, is_existing = get_volume(longitudinal_volumes_array, dest_node)
             if not is_existing:
                     print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")

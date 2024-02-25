@@ -82,9 +82,9 @@ def replace_zeros_in_table(table_data):
         table_data[1][col_idx] = replace_zeros_with_hyphen(cell_value)
 
 
-def get_volume_changes_per_time_table(patient_partial_path : str):
+def get_volume_changes_per_time_table(patient_partial_path : str,volumes_dict):
 
-    diff_in_total = get_diff_in_total(generate_longitudinal_volumes_array(patient_partial_path)) # [total_vol_cm3, vol_percentage_diff, vol_cm3_diff]
+    diff_in_total = get_diff_in_total(volumes_dict) # [total_vol_cm3, vol_percentage_diff, vol_cm3_diff]
 
     table_data = [["Time Stamp", "Total Volume [cm³]", "Volume Difference Percentage", "Volume Difference [cm³]"]]
 
@@ -122,7 +122,7 @@ def get_nodes_graph_image(image_path : str):
     return [graph, credit]
 
 
-def create_single_patient_pdf_page(patient_name : str, scan_name : str, patient_partial_path : str, png_name : str):
+def create_single_patient_pdf_page(patient_name : str, scan_name : str, patient_partial_path : str, png_name : str,volumes_dict):
 
     ld = LoaderSimpleFromJson(scan_name)
     elements = []
@@ -142,7 +142,7 @@ def create_single_patient_pdf_page(patient_name : str, scan_name : str, patient_
 
     # table 2
     elements += get_sub_title("Tracking the Changes in the Total Volume of the Tumors From One Scan to the Previous One")
-    elements += get_volume_changes_per_time_table(patient_partial_path)
+    elements += get_volume_changes_per_time_table(patient_partial_path,volumes_dict)
     elements.append(Spacer(1,20))
     
     return elements

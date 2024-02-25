@@ -212,7 +212,8 @@ def get_dates(patient_path):
     return formatted_dates
 
 
-def create_single_lesion_pdf_page(patient_name: str, json_path: str, pkl_path: str, patient_partial_path: str):
+def create_single_lesion_pdf_page(patient_name: str, json_path: str, pkl_path: str, patient_partial_path: str,
+                                  longitudinal_volumes_array):
     with open(pkl_path, "rb") as file:
         lg = pickle.load(file)
 
@@ -224,7 +225,7 @@ def create_single_lesion_pdf_page(patient_name: str, json_path: str, pkl_path: s
     elements.append(Spacer(1, 20))
 
     # graph image
-    vol_list = generate_volume_list_single_lesion(patient_partial_path)
+    vol_list = generate_volume_list_single_lesion(patient_partial_path, longitudinal_volumes_array)
     cc_idx = 0
     ld = LoaderSimpleFromJson(json_path)
 
@@ -237,7 +238,7 @@ def create_single_lesion_pdf_page(patient_name: str, json_path: str, pkl_path: s
     disappeared_components, new_single_components, components_to_draw = devide_components(components,
                                                                                           max_time_per_cc_dict,
                                                                                           total_max_time)
-    longitudinal_volumes_array = generate_longitudinal_volumes_array(patient_partial_path)
+    # longitudinal_volumes_array = generate_longitudinal_volumes_array(patient_partial_path)
     percentage_diff_per_edge_dict = get_percentage_diff_per_edge_dict(ld, patient_partial_path)
 
     # add section of new

@@ -1,8 +1,8 @@
 from gen_single_patient_pdf import create_single_patient_pdf_page
 from gen_single_lesion.gen_single_lesion_pdf import create_single_lesion_pdf_page
 from reportlab.platypus import SimpleDocTemplate, PageBreak
+from volume.volume_calculation import generate_longitudinal_volumes_array
 import os
-
 # USR = "shira_p/PycharmProjects/engineering_project/matching"
 USR = "talia.dym/Desktop/Engineering_Project"
 
@@ -28,34 +28,35 @@ def get_patient_input(patient_name: str):
 
 def create_pdf_file(patient_name: str):
     patient = get_patient_input(patient_name)
-
     pdf_name = f"/cs/usr/{USR}/output/" + patient_name.replace(" ", "_") + "_patient_summary.pdf"
     if os.path.exists(pdf_name):
         os.remove(pdf_name)
     doc = SimpleDocTemplate(pdf_name)
 
     elements = []
-
+    volumes_dict = generate_longitudinal_volumes_array(patient.partial_scans_address)  # returns sorted (by date)
+    # array of dictionaries (one for each time stamp), key - lesion idx, value - volume in cm^3
     elements += create_single_patient_pdf_page(patient_name, patient.json_input_address, patient.partial_scans_address,
-                                               patient.praph_image_path)
+                                               patient.praph_image_path, volumes_dict)
 
     elements.append(PageBreak())
 
-    elements += create_single_lesion_pdf_page(patient_name, patient.json_input_address, patient.pickle_input_address,
-                                              patient.partial_scans_address)
+    elements += create_single_lesion_pdf_page(patient_name, patient.json_input_address,
+                                              patient.pickle_input_address, patient.partial_scans_address, volumes_dict)
 
     doc.build(elements)
 
 
-# NAME = "A. W."
-# create_pdf_file(NAME)
+#
+# NAME = "Z. Aa."
 # NAME = "A. S. H."
-# create_pdf_file(NAME)
 # NAME = "A. S. S."
-# create_pdf_file(NAME)
 # NAME = "B. B. S."
-# create_pdf_file(NAME)
 # NAME = "B. T."
-# create_pdf_file(NAME)
 NAME = "C. A."
+# NAME = "E. N."
+# NAME = "F. Y. Ga."
+# NAME = "AA0"
+# NAME = "A. W."
+
 create_pdf_file(NAME)
