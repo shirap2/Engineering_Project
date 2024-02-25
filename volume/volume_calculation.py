@@ -123,26 +123,24 @@ def get_volume(longitudinal_volumes_array, node):
 
 def get_dict_of_volume_percentage_change_and_classification_per_edge(ld: LoaderSimpleFromJson, longitudinal_volumes_array):
     volume_change_per_edge_dict = {}  # return {edge : [volume percentage change, calssification]}
-
     edges_to_node_dict = get_edges_to_node_dict(ld)  # {node : [edges to node]}
     edges_from_node_dict = get_edges_from_node_dict(ld)  # {node : [edges from node]}
 
     for edge in ld.get_edges():
         src_node, dest_node = edge
-
         if len(edges_from_node_dict[src_node]) > 1:  # split
 
             src_total_volume, is_existing = get_volume(longitudinal_volumes_array, src_node)
             if not is_existing:
                 print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
-                return {}
+                # return {}
             dest_total_volume = 0
             for edge_from_src in edges_from_node_dict[src_node]:
                 temp_dest = edge_from_src[1]
                 vol, is_existing = get_volume(longitudinal_volumes_array, temp_dest)
                 if not is_existing:
                     print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
-                    return {}
+                    # return {}
                 dest_total_volume += vol
 
             if src_total_volume == 0:
@@ -156,14 +154,14 @@ def get_dict_of_volume_percentage_change_and_classification_per_edge(ld: LoaderS
             dest_total_volume, is_existing = get_volume(longitudinal_volumes_array, dest_node)
             if not is_existing:
                     print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
-                    return {}
+                    # return {}
             src_total_volume = 0
             for edge_to_dest in edges_to_node_dict[dest_node]:
                 temp_src = edge_to_dest[0]
                 vol, is_existing = get_volume(longitudinal_volumes_array, temp_src)
                 if not is_existing:
                     print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
-                    return {}
+                    # return {}
                 src_total_volume += vol
                 
             if src_total_volume == 0:
