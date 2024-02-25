@@ -49,7 +49,7 @@ def count_d_in_d_out(ld):
     return d_in_d_out_per_time_arr
 
 """
-this funcion gets dictonary of node as key and value [num,num] representing 
+this function gets dictionary of node as key and value [num,num] representing 
 the number of edges going in and out of the node as input.
 the function returns a dictionary of classified nodes. key is node and value is its class """
 def classify_changes_in_individual_lesions(d_in_d_out_per_time_arr,ld):
