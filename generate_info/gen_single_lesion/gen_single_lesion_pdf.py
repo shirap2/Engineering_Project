@@ -273,7 +273,7 @@ def create_single_lesion_pdf_page(patient_name: str, json_path: str, pkl_path: s
         count = 0
         ran_through_all_scans = False
         CC_first_appeared_in = min_time_per_cc_dict[tuple(components_to_draw[cc_idx])]
-        print(CC_first_appeared_in)
+
         while not ran_through_all_scans:
 
             start = count + CC_first_appeared_in
