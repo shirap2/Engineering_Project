@@ -211,14 +211,15 @@ def get_dates(patient_path):
     formatted_dates = sorted(formatted_dates, key=lambda x: datetime.strptime(x, '%d.%m.%y'))
     return formatted_dates
 
+# patient_name, patient.json_input_address,
+#                                               patient.pickle_input_address, patient.partial_scans_address,
 
-def create_single_lesion_pdf_page(patient_name: str, json_path: str, pkl_path: str, patient_partial_path: str,
-                                  patient,
+def create_single_lesion_pdf_page(patient,
                                   longitudinal_volumes_array):
-    with open(pkl_path, "rb") as file:
+    with open(patient.pickle_input_address, "rb") as file:
         lg = pickle.load(file)
 
-    png_name = "output/" + patient_name.replace(" ", "_") + "_lesion_changes.png"
+    png_name = "output/" + patient.name.replace(" ", "_") + "_lesion_changes.png"
     elements = []
 
     # file title
@@ -226,9 +227,9 @@ def create_single_lesion_pdf_page(patient_name: str, json_path: str, pkl_path: s
     elements.append(Spacer(1, 20))
 
     # graph image
-    vol_list = generate_volume_list_single_lesion(patient_partial_path, longitudinal_volumes_array)
+    # vol_list = generate_volume_list_single_lesion(patient.partial_scans_address, longitudinal_volumes_array)
     cc_idx = 0
-    ld = LoaderSimpleFromJson(json_path)
+    ld = LoaderSimpleFromJson(patient.json_input_address)
 
     G = lg.get_graph()
     components = list(nx.connected_components(G))
@@ -240,7 +241,7 @@ def create_single_lesion_pdf_page(patient_name: str, json_path: str, pkl_path: s
                                                                                           max_time_per_cc_dict,
                                                                                           total_max_time)
     # longitudinal_volumes_array = generate_longitudinal_volumes_array(patient_partial_path)
-    percentage_diff_per_edge_dict = get_percentage_diff_per_edge_dict(ld, patient_partial_path)
+    percentage_diff_per_edge_dict = get_percentage_diff_per_edge_dict(ld, patient.partial_scans_address)
 
     # add section of new
     elements += get_sub_title("New Lesions", True)
@@ -290,7 +291,7 @@ def create_single_lesion_pdf_page(patient_name: str, json_path: str, pkl_path: s
             # lg._num_of_layers = MAX_SCANS_PER_GRAPH
             path = f"/cs/usr/{USR}/output/{patient.organ}/sub_graphs/single_labeled_lesion_graph"
             graph, lesions_idx = get_single_node_graph_image(path,
-                                                             json_path, cc_idx, lg, ld, components_to_draw,
+                                                             patient.json_input_address, cc_idx, lg, ld, components_to_draw,
                                                              longitudinal_volumes_array, percentage_diff_per_edge_dict,
                                                              start, end_of_patient_dates)
             if not graph:

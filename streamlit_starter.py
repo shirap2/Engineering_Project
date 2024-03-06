@@ -11,7 +11,7 @@ def get_num_of_scans_for_patient(patient_name):
 
 def main():
 
-    st.sidebar.header("Patient Name", divider='blue')
+    st.sidebar.header("Patient Name", divider='blue') ### change text
     option_name = st.sidebar.selectbox(
         'Choose a patient to display',
         ('A. S. H.', 'A. S. W.', 'A. W.')
@@ -33,11 +33,11 @@ def main():
     selected_num_scans = range_slider(num_scans_available)
 
     # st.sidebar.header("Number of Overlapped Scans")
-    overlap_num = st.sidebar.slider("Select the number of overlapped scans to display in each row",
-                                    min_value=0, max_value=3)
-    st.sidebar.write(f"""<div style="color: black; font-size: 14px;"> <b>Selected: 
-    {selected_num_scans} scans to display with overlap of {overlap_num} scans per row </b>
-    </div>""", unsafe_allow_html=True)
+    # overlap_num = st.sidebar.slider("Select the number of overlapped scans to display in each row",
+    #                                 min_value=0, max_value=3)
+    # st.sidebar.write(f"""<div style="color: black; font-size: 14px;"> <b>Selected:
+    # {selected_num_scans} scans to display with overlap of {overlap_num} scans per row </b>
+    # </div>""", unsafe_allow_html=True)
 
     st.sidebar.header("Filter by Type of Lesion", divider='blue')
     # st.sidebar.header("Lesion Volume Filter")
@@ -45,7 +45,8 @@ def main():
     threshold_size = st.sidebar.slider("Select lesion volume threshold", min_value=0, max_value=50)
 
     # st.sidebar.header("Lesion Volume Changes Threshold (%)")
-    vol_change_percentage = st.sidebar.slider("Select lesion growth percentage threshold", min_value=0, max_value=100,step=10)
+    vol_change_percentage = st.sidebar.slider("Select percentage threshold for lesion volume changes compared to "
+                                              "previous scan", min_value=0, max_value=100,step=10)
     st.sidebar.write(f"""
         <div style="color: black; font-size: 14px;margin-bottom: 35px"> 
         <b> Displaying lesions that are larger than: {threshold_size} [cm^3]  and 
@@ -69,7 +70,7 @@ def add_buttons():
 
 
 def range_slider(range_size):
-    selected_value = st.sidebar.slider('Select the number of longitudinal scans to display', min_value=0, max_value=range_size,
+    selected_value = st.sidebar.slider('Select the number of previous scans to display', min_value=0, max_value=range_size,
                                        value=range_size // 2)
     return selected_value
 

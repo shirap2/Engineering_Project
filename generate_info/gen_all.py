@@ -1,9 +1,10 @@
 from gen_single_patient_pdf import create_single_patient_pdf_page
 from gen_single_lesion.gen_single_lesion_pdf import create_single_lesion_pdf_page
 from reportlab.platypus import SimpleDocTemplate, PageBreak
+
 from volume.volume_calculation import generate_longitudinal_volumes_array
 import os
-from create_input.create_input_files import get_patient_input, PatientInput, Organ
+from create_input.create_input_files import get_patient_input, Organ
 
 # USR = "shira_p/PycharmProjects/engineering_project/matching"
 USR = "talia.dym/Desktop/Engineering_Project"
@@ -25,9 +26,7 @@ def create_pdf_file(patient_name: str, organ: Organ):
 
     elements.append(PageBreak())
 
-    elements += create_single_lesion_pdf_page(patient_name, patient.json_input_address,
-                                              patient.pickle_input_address, patient.partial_scans_address, patient,
-                                              volumes_dict)
+    elements += create_single_lesion_pdf_page(patient, volumes_dict)
 
     doc.build(elements)
 
@@ -47,4 +46,5 @@ def create_pdf_file(patient_name: str, organ: Organ):
 name = 'E_N_'
 organ = Organ.LIVER
 create_pdf_file(name, organ)
+
 

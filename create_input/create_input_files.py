@@ -81,10 +81,6 @@ def list_folders(directory):  # used to get all patients names
 def create_all_input():
     for organ in ['liver', 'brain', 'lungs']:
         path = f"/cs/casmip/bennydv/{organ}_pipeline/gt_data/size_filtered/labeled_no_reg/"
-        print(list_folders(path))
         for patient in list_folders(path):
             save_patient_input(patient, (organ,))
-
-# create_all_input()
-
 
