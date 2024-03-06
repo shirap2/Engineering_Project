@@ -5,8 +5,8 @@ from common_packages.LongGraphClassification import LongitClassification
 from generate_info.gen_single_lesion.gen_single_lesion_pdf import get_dates
 import matplotlib.pyplot as plt
 
-# USR = "shira_p/PycharmProjects/engineering_project/matching"
-USR = "talia.dym/Desktop/Engineering_Project"
+USR = "shira_p/PycharmProjects/engineering_project/matching"
+# USR = "talia.dym/Desktop/Engineering_Project"
 
 def save_patient_input_into_pickle_file(name, name_for_path, partial_scans_adress, ld):
     # data to dump
@@ -151,3 +151,13 @@ JSON_ADDRESS = "/cs/casmip/bennydv/brain_pipeline/lesions_matching/longitudinal_
 PARTIAL_ADDRESS = "/cs/casmip/bennydv/brain_pipeline/gt_data/size_filtered/labeled_no_reg/AA0"
 save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
 
+folder_path = "/cs/casmip/bennydv/brain_pipeline/lesions_matching/longitudinal_gt/original_corrected/"
+
+# Iterate over files in the folder
+for filename in os.listdir(folder_path):
+    if "glong" in filename:
+        name_until_glong = filename.split('glong')[0]
+        # NAME = "AA0"
+        JSON_ADDRESS = folder_path+name_until_glong+"glong_gt.json"
+        PARTIAL_ADDRESS = "/cs/casmip/bennydv/brain_pipeline/gt_data/size_filtered/labeled_no_reg/"+name_until_glong
+        save_patient_input(name_until_glong, PARTIAL_ADDRESS, JSON_ADDRESS)

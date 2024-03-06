@@ -1,3 +1,6 @@
+import pickle
+
+from common_packages.LongGraphPackage import LoaderSimpleFromJson
 from gen_single_patient_pdf import create_single_patient_pdf_page
 from gen_single_lesion.gen_single_lesion_pdf import create_single_lesion_pdf_page
 from reportlab.platypus import SimpleDocTemplate, PageBreak
@@ -45,6 +48,8 @@ def create_pdf_file(patient_name: str):
                                               patient.pickle_input_address, patient.partial_scans_address, volumes_dict)
 
     doc.build(elements)
+
+
 
 
 #

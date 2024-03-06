@@ -12,8 +12,8 @@ from datetime import datetime
 import re
 import pickle
 
-# USR = "shira_p/PycharmProjects/engineering_project/matching"
-USR = "talia.dym/Desktop/Engineering_Project"
+USR = "shira_p/PycharmProjects/engineering_project/matching"
+# USR = "talia.dym/Desktop/Engineering_Project"
 
 
 MAX_SCANS_PER_GRAPH = 5
@@ -225,7 +225,7 @@ def create_single_lesion_pdf_page(patient_name: str, json_path: str, pkl_path: s
     elements.append(Spacer(1, 20))
 
     # graph image
-    vol_list = generate_volume_list_single_lesion(patient_partial_path, longitudinal_volumes_array)
+    # vol_list = generate_volume_list_single_lesion(patient_partial_path, longitudinal_volumes_array)
     cc_idx = 0
     ld = LoaderSimpleFromJson(json_path)
 
