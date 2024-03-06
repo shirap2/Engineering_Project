@@ -121,6 +121,7 @@ def get_volume(longitudinal_volumes_array, node):
         return longitudinal_volumes_array[time][idx], True
     return 0, False
 
+
 def get_dict_of_volume_percentage_change_and_classification_per_edge(ld: LoaderSimpleFromJson, longitudinal_volumes_array):
     volume_change_per_edge_dict = {}  # return {edge : [volume percentage change, calssification]}
     edges_to_node_dict = get_edges_to_node_dict(ld)  # {node : [edges to node]}
@@ -132,14 +133,14 @@ def get_dict_of_volume_percentage_change_and_classification_per_edge(ld: LoaderS
 
             src_total_volume, is_existing = get_volume(longitudinal_volumes_array, src_node)
             if not is_existing:
-                print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
+                print("Error in get_dict_of_volume_percentage_change_and_classification_per_edge 1")
                 # return {}
             dest_total_volume = 0
             for edge_from_src in edges_from_node_dict[src_node]:
                 temp_dest = edge_from_src[1]
                 vol, is_existing = get_volume(longitudinal_volumes_array, temp_dest)
                 if not is_existing:
-                    print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
+                    print("Error in get_dict_of_volume_percentage_change_and_classification_per_edge 2")
                     # return {}
                 dest_total_volume += vol
 
@@ -149,18 +150,17 @@ def get_dict_of_volume_percentage_change_and_classification_per_edge(ld: LoaderS
                 percentage_diff = ((dest_total_volume/src_total_volume) - 1) * 100
             volume_change_per_edge_dict[edge] = [percentage_diff, edgeVolumeClassification.SPLITTING]
 
-
         elif len(edges_to_node_dict[dest_node]) > 1:  # merged
             dest_total_volume, is_existing = get_volume(longitudinal_volumes_array, dest_node)
             if not is_existing:
-                    print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
+                    print("Error in get_dict_of_volume_percentage_change_and_classification_per_edge 3")
                     # return {}
             src_total_volume = 0
             for edge_to_dest in edges_to_node_dict[dest_node]:
                 temp_src = edge_to_dest[0]
                 vol, is_existing = get_volume(longitudinal_volumes_array, temp_src)
                 if not is_existing:
-                    print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
+                    print("Error in get_dict_of_volume_percentage_change_and_classification_per_edge 4")
                     # return {}
                 src_total_volume += vol
                 

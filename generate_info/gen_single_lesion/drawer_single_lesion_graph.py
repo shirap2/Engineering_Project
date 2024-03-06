@@ -6,6 +6,8 @@ from common_packages.BaseClasses import Longit, NodeAttr, EdgeAttr, Colors, Draw
 from volume.volume_calculation import get_edges_to_node_dict, get_edges_from_node_dict
 from enum import Enum
 
+
+
 class BottomEdgeDesign(Enum):
     TOTAL_CHANGE = 'total'
     SPLIT_MERGE_CHANGE = 'split_merge_change'
@@ -35,6 +37,8 @@ colors_dict = {
     19: "lightgray"
 }
 
+def time(node: str):
+    return int(node.split('_')[1])
 
 def edit_volume_percentage_data_to_str_and_color(vol_percentage_diff_per_edge: dict):
     edited_dict = dict()
@@ -90,6 +94,10 @@ class DrawerLabelsAndLabeledEdges(Drawer):
     def __init__(self, longit: Longit, cc_idx: int, ld: Loader, components: list,
                  longitudinal_volumes_array: list,
                  percentage_diff_per_edge_dict, start: int, end_of_patient_dates: int, attr_to_print=None):
+
+        self.start = start
+        self.end = end_of_patient_dates
+
         self._attr_to_print = attr_to_print
         if self._attr_to_print is not None:
             longit.nodes_have_attribute(self._attr_to_print)
@@ -132,7 +140,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
 
         self.longitudinal_volumes_array = longitudinal_volumes_array
         self.percentage_diff_per_edge_dict = percentage_diff_per_edge_dict
-        self.bottom_arrow_design = BottomEdgeDesign.NONE
+        self.bottom_arrow_design = BottomEdgeDesign.SPLIT_MERGE_CHANGE
 
         self.should_print_label_on_edge = dict()
         edge_is_skip = nx.get_edge_attributes(self._base_graph, name=EdgeAttr.IS_SKIP)
@@ -247,7 +255,6 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         idx, time = node_str.split('_')
         if int(idx) in self.longitudinal_volumes_array[int(time)]:
             return round(self.longitudinal_volumes_array[int(time)][int(idx)], 2), True
-            # return self.longitudinal_volumes_array[int(time)][int(idx)] # todo talia check
         return 0, False
 
 
@@ -294,6 +301,37 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                 self.should_print_label_on_edge[edge] = True
 
     def add_edge_skipping_over_node(self, node):
+        # prev_node = ""
+        # next_node = ""
+        #
+        # # find edge into unseen node
+        # edges_before = self.edges_to_node_dict[node]
+        # # if len(edges_before) != 1:
+        # #     print("Error: more than one / zero edges into 'doesnt appear' node")
+        # # else:
+        # node1, node2 = edges_before[0]
+        # if time(node2) < time(node1):
+        #     node2, node1 = edges_before[0]
+        #
+        # # don't add if the root of the edge is out of the display
+        # if time(node1) >= self.start:
+        #     prev_node = node1
+        # ########### add check if this is also unseen
+        #
+        # # find edge from unseen node
+        # edges_after = self.edges_from_node_dict[node]
+        # # if len(edges_after) != 1:
+        # #     print("Error: more than one / zero edges from 'doesnt appear' node")
+        # # else:
+        # node1, node2 = edges_after[0]
+        # if time(node2) < time(node1):
+        #     node2, node1 = edges_before[0]
+        #
+        # # don't add if the tail of the edge is out of the display
+        # if time(node1) < self.end:
+        #     next_node = node2
+        # ########### add check if this is also unseen
+
         # find edge before and after
         prev_node = ""
         next_node = ""
@@ -306,33 +344,42 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                 node1_time = node1.split("_")[1]
                 if node1_time > node_time:
                     if next_node != "":
-                        print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
+                        print("Error in add_edge_skipping_over_node 1")
                     next_node = node1
                 else:
                     if prev_node != "":
-                        print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
+                        print("Error in add_edge_skipping_over_node 2")
                     prev_node = node1
 
             if node1 == node:
                 node2_time = node2.split("_")[1]
                 if node2_time > node_time:
                     if next_node != "":
-                        print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
+                        print("Error in add_edge_skipping_over_node 3")
                     next_node = node2
                 else:
                     if prev_node != "":
-                        print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
+                        print("Error in add_edge_skipping_over_node 4")
                     prev_node = node2
-        if (prev_node == "") or (next_node == ""):
-            print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
-        else:
-            mutable_graph = nx.Graph(self._base_graph)
-            mutable_graph.add_edge(prev_node, next_node)
-            mutable_graph.edges[(prev_node, next_node)][EdgeAttr.IS_SKIP] = True
-            edge_is_skip = nx.get_edge_attributes(mutable_graph, name=EdgeAttr.IS_SKIP)
-            self._base_graph = mutable_graph
 
-            self.add_volume_labels_to_skipping_edges()
+        if (prev_node == "") or (next_node == ""):
+            print(f"Error: cant find skipping arrow for {node}")
+        else:
+            src_vol, _ = self.get_node_volume(prev_node)
+            dest_vol, _ = self.get_node_volume(next_node)
+
+            if (src_vol == 0) or (dest_vol == 0):
+                print(f"Error: cant find skipping arrow for {node} because neighbor doesnt appear")
+            else:
+                print(f"added {(prev_node, next_node)}")
+                mutable_graph = nx.Graph(self._base_graph)
+                mutable_graph.add_edge(prev_node, next_node)
+                mutable_graph.edges[(prev_node, next_node)][EdgeAttr.IS_SKIP] = True
+                edge_is_skip = nx.get_edge_attributes(mutable_graph, name=EdgeAttr.IS_SKIP)
+                self._base_graph = mutable_graph
+
+                self.add_volume_labels_to_skipping_edges()
+                self.should_print_label_on_edge[(prev_node, next_node)] = True
 
 
     def add_volume_labels_to_skipping_edges(self):
@@ -356,48 +403,6 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                 if src_vol != 0:
                     percentage_diff = ((dest_vol/src_vol) - 1) * 100
                 self.percentage_diff_per_edge_dict[edge] = percentage_diff
-
-
-    def add_edge_skipping_over_node(self, node):
-        # find edge before and after
-        prev_node = ""
-        next_node = ""
-        edge_is_skip = nx.get_edge_attributes(self._base_graph, name=EdgeAttr.IS_SKIP)
-        node_time = node.split("_")[1]
-        for edge, _ in edge_is_skip.items():
-            node1, node2 = edge
-
-            if node2 == node:
-                node1_time = node1.split("_")[1]
-                if node1_time > node_time:
-                    if next_node != "":
-                       print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT") 
-                    next_node = node1
-                else:
-                    if prev_node != "":
-                       print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT") 
-                    prev_node = node1
-
-            if node1 == node:
-                node2_time = node2.split("_")[1]
-                if node2_time > node_time:
-                    if next_node != "":
-                       print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT") 
-                    next_node = node2
-                else:
-                    if prev_node != "":
-                       print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT") 
-                    prev_node = node2
-        if (prev_node == "") or (next_node == ""):
-            print("Error: LESION DOESNT APPEAR AND ISNT IN LINEAR FORMAT")
-        else:
-            mutable_graph = nx.Graph(self._base_graph)
-            mutable_graph.add_edge(prev_node, next_node)
-            mutable_graph.edges[(prev_node, next_node)][EdgeAttr.IS_SKIP] = True
-            edge_is_skip = nx.get_edge_attributes(mutable_graph, name=EdgeAttr.IS_SKIP)
-            self._base_graph = mutable_graph
-
-            self.add_volume_labels_to_skipping_edges()
 
 
     def set_nodes_volume_labels(self):
@@ -474,9 +479,6 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         nodes_pos_y = [pos[1] for pos in nodes_position.values()]
         lower_node = np.min(nodes_pos_y)
 
-        # lower date text
-        lower_node -= 0.2
-
         arrow_positions = [[pos_x, lower_node - 0.2] for pos_x in layer_pos_x]
 
         attributes = self._base_graph.nodes[list(self._base_graph.nodes())[0]].keys()
@@ -491,8 +493,8 @@ class DrawerLabelsAndLabeledEdges(Drawer):
             self._base_graph.add_node(node1)
             self._base_graph.add_node(node2)
 
-            arrow_pos1 = arrow_positions[t1]
-            arrow_pos2 = arrow_positions[t2]
+            arrow_pos1 = arrow_positions[t1 - self.start]
+            arrow_pos2 = arrow_positions[t2 - self.start]
 
             add_to_pos[node1] = np.array(arrow_pos1)
             add_to_pos[node2] = np.array(arrow_pos2)
