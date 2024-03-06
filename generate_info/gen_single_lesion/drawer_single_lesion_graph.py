@@ -479,7 +479,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         nodes_pos_y = [pos[1] for pos in nodes_position.values()]
         lower_node = np.min(nodes_pos_y)
 
-        arrow_positions = [[pos_x, lower_node - 0.2] for pos_x in layer_pos_x]
+        arrow_positions = [[pos_x, lower_node - 0.01] for pos_x in layer_pos_x]
 
         attributes = self._base_graph.nodes[list(self._base_graph.nodes())[0]].keys()
 
@@ -633,9 +633,8 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         nodes_pos_y = [pos[1] for pos in nodes_position.values()]
         lower_node = np.min(nodes_pos_y)
 
-        # lower date text
-        lower_node -= 0.3
-
+        # # lower date text
+        # lower_node -= 0.2
 
         text_positions = [(pos_x, lower_node - 0.3) for pos_x in layer_pos_x]
         for layer_idx in range(self._num_of_layers):

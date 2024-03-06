@@ -8,12 +8,45 @@ import matplotlib.pyplot as plt
 # USR = "shira_p/PycharmProjects/engineering_project/matching"
 USR = "talia.dym/Desktop/Engineering_Project"
 
-def save_patient_input_into_pickle_file(name, name_for_path, partial_scans_adress, ld):
+class Organ:
+    LIVER = 'liver',
+    BRAIN = 'brain',
+    LUNGS = 'lungs'
+
+
+class PatientInput:
+    def __init__(self, name, organ: Organ, partial_scans_address, json_input_address,
+                 pickle_input_address, graph_image_path):
+        self.name = name
+        self.organ = organ[0]  # tuple -> str
+        self.partial_scans_address = partial_scans_address
+        self.json_input_address = json_input_address
+        self.pickle_input_address = pickle_input_address
+        self.graph_image_path = graph_image_path
+
+
+def get_patient_input(name_for_path: str, organ: Organ):
+
+    patient_name = name_for_path.replace("_", ". ")
+
+    pickle_input_address = f"/cs/usr/{USR}/input/{organ[0]}/pkl_files/{name_for_path}_graph_class_data.pkl"
+    graph_image_path = f"/cs/usr/{USR}/input/{organ[0]}/graph_images/{name_for_path}_graph_image.png"
+
+    json_input_address = f"/cs/casmip/bennydv/{organ[0]}_pipeline/" \
+                         f"lesions_matching/longitudinal_gt/original_corrected/{name_for_path}glong_gt.json"
+    partial_scans_address = f"/cs/casmip/bennydv/{organ[0]}_pipeline/" \
+                            f"gt_data/size_filtered/labeled_no_reg/{name_for_path}"
+
+    return PatientInput(patient_name, organ,
+                        partial_scans_address, json_input_address, pickle_input_address, graph_image_path)
+
+
+def save_patient_input_into_pickle_file(name, patient, ld):
     # data to dump
-    lg = LongitClassification(ld, name, get_dates(partial_scans_adress))
+    lg = LongitClassification(ld, name, get_dates(patient.partial_scans_address))
 
     # save
-    path_to_save_in = f"/cs/usr/{USR}/input/pkl_files/{name_for_path}_graph_class_data.pkl"
+    path_to_save_in = patient.pickle_input_address
     if os.path.exists(path_to_save_in):
         os.remove(path_to_save_in)
 
@@ -22,132 +55,36 @@ def save_patient_input_into_pickle_file(name, name_for_path, partial_scans_adres
         pickle.dump(lg, file)
 
 
-def save_patient_input_graph_image(ld, name_for_path):
+def save_patient_input_graph_image(ld, patient):
     plt.figure()
     lg1 = LongitClassification(ld)
     dr_2 = DrawerLabels(lg1)
-
-    image_path = f"/cs/usr/{USR}/input/graph_images/{name_for_path}_graph_image.png"
-    dr_2.show_graph(image_path)
+    dr_2.show_graph(patient.graph_image_path)
 
 
-def save_patient_input(name, partial_scans_adress, json_input_address):
-    name_for_path = name.replace(" ", "_").replace(".", "")
-    ld = LoaderSimpleFromJson(json_input_address)
-    save_patient_input_graph_image(ld, name_for_path)
-    save_patient_input_into_pickle_file(name, name_for_path, partial_scans_adress, ld)
+def save_patient_input(name: str, organ: Organ):
+    patient = get_patient_input(name, organ)
+    ld = LoaderSimpleFromJson(patient.json_input_address)
+    save_patient_input_graph_image(ld, patient)
+    save_patient_input_into_pickle_file(name, patient, ld)
 
 
-# # A. W.
-# NAME = "A. W."
-# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/A_W_glong_gt.json"
-# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_W_"
-
-# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
-
-# A. S. H.
-# NAME = "A. S. H."
-# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/A_S_H_glong_gt.json"
-# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_S_H_"
-#
-# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
-
-# # # A. S. S.
-# NAME = "A. S. S."
-# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/A_S_S_glong_gt.json"
-# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_S_S_"
-
-# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
-
-# # B. B. S.
-# NAME = "B. B. S."
-# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/B_B_S_glong_gt.json"
-# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/B_B_S_"
-
-# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
-
-# # B. T.
-# NAME = "B. T."
-# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/B_T_glong_gt.json"
-# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/B_T_"
-
-# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
-
-# # C. A.
-# NAME = "C. A."
-# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/C_A_glong_gt.json"
-# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/C_A_"
-
-# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
-
-# # E. N.
-# NAME = "E. N."
-# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/E_N_glong_gt.json"
-# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/E_N_"
-# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
-
-# NAME = "F. Y. Ga."
-# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/F_Y_Ga_glong_gt.json"
-# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/F_Y_Ga_"
-# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+def list_folders(directory):  # used to get all patients names
+    folders = []
+    for item in os.listdir(directory):
+        item_path = os.path.join(directory, item)
+        if os.path.isdir(item_path):
+            folders.append(item)
+    return folders
 
 
-## next batch ###
-# NAME = "G. B."
-# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/G_B_glong_gt.json"
-# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/G_B_"
-# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
-#
-#
-# NAME = "G. Y."
-# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/G_Y_glong_gt.json"
-# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/G_Y_"
-# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
-#
-# NAME = "H. G."
-# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/H_G_glong_gt.json"
-# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/H_G_"
-# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
-#
-# NAME = "M. I."
-# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/M_I_glong_gt.json"
-# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/M_I_"
-# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
-#
-# NAME = "M. N."
-# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/M_N_glong_gt.json"
-# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/M_N_"
-# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+def create_all_input():
+    for organ in ['liver', 'brain', 'lungs']:
+        path = f"/cs/casmip/bennydv/{organ}_pipeline/gt_data/size_filtered/labeled_no_reg/"
+        print(list_folders(path))
+        for patient in list_folders(path):
+            save_patient_input(patient, (organ,))
 
-### next batch ###
-# NAME = "N. M."
-# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/N_M_glong_gt.json"
-# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/N_M_"
-# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
-#
-# NAME = "S. I."
-# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/S_I_glong_gt.json"
-# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/S_I_"
-# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
-#
-# NAME = "S. N."
-# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/S_N_glong_gt.json"
-# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/S_N_"
-# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
-#
-# NAME = "T. N."
-# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/T_N_glong_gt.json"
-# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/T_N_"
-# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+# create_all_input()
 
-# NAME = "Z. Aa."
-# JSON_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/Z_Aa_glong_gt.json"
-# PARTIAL_ADDRESS = "/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/Z_Aa_"
-# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
-
-
-NAME = "AA0"
-JSON_ADDRESS = "/cs/casmip/bennydv/brain_pipeline/lesions_matching/longitudinal_gt/original_corrected/AA0glong_gt.json"
-PARTIAL_ADDRESS = "/cs/casmip/bennydv/brain_pipeline/gt_data/size_filtered/labeled_no_reg/AA0"
-save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
 

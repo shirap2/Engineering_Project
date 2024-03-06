@@ -213,6 +213,7 @@ def get_dates(patient_path):
 
 
 def create_single_lesion_pdf_page(patient_name: str, json_path: str, pkl_path: str, patient_partial_path: str,
+                                  patient,
                                   longitudinal_volumes_array):
     with open(pkl_path, "rb") as file:
         lg = pickle.load(file)
@@ -287,7 +288,8 @@ def create_single_lesion_pdf_page(patient_name: str, json_path: str, pkl_path: s
 
             lg._num_of_layers = end_of_patient_dates - start
             # lg._num_of_layers = MAX_SCANS_PER_GRAPH
-            graph, lesions_idx = get_single_node_graph_image(f"/cs/usr/{USR}/output/single_labeled_lesion_graph",
+            path = f"/cs/usr/{USR}/output/{patient.organ}/sub_graphs/single_labeled_lesion_graph"
+            graph, lesions_idx = get_single_node_graph_image(path,
                                                              json_path, cc_idx, lg, ld, components_to_draw,
                                                              longitudinal_volumes_array, percentage_diff_per_edge_dict,
                                                              start, end_of_patient_dates)
