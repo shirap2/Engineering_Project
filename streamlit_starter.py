@@ -6,7 +6,7 @@ def get_num_of_scans_for_patient(patient_name):
     this function checks how many scans are available for the patient
     :return: number of scans available
     """
-    return 8
+    return 9
 
 
 def main():
@@ -14,17 +14,17 @@ def main():
     st.sidebar.header("Patient Name", divider='blue') ### change text
     option_name = st.sidebar.selectbox(
         'Choose a patient to display',
-        ('A. S. H.', 'A. S. W.', 'A. W.')
+        ('A. S. H.', 'A. S. W.', 'A. W.', 'C. A.')
     )
 
     st.write('# You selected:', option_name)
     # Display image based on the selected option
-    if option_name == 'A. S. H.':
-        st.image('input/graph_images/A_S_H_graph_image.png', caption='Graph Image for A.S.H.', use_column_width=True)
-    elif option_name == 'A. S. W.':
-        st.image('input/graph_images/A_S_S_graph_image.png', caption='Graph Image for A.S.W.', use_column_width=True)
-    elif option_name == 'A. W.':
-        st.image('input/graph_images/A_W_graph_image.png', caption='Graph Image for A.W.', use_column_width=True)
+    # if option_name == 'A. S. H.':
+    #     st.image('input/graph_images/A_S_H_graph_image.png', caption='Graph Image for A.S.H.', use_column_width=True)
+    # elif option_name == 'A. S. W.':
+    #     st.image('input/graph_images/A_S_S_graph_image.png', caption='Graph Image for A.S.W.', use_column_width=True)
+    # elif option_name == 'A. W.':
+    #     st.image('input/graph_images/A_W_graph_image.png', caption='Graph Image for A.W.', use_column_width=True)
     st.sidebar.header("Filter Scans", divider='blue')
 
     # st.sidebar.header("Number of Scans")
@@ -42,15 +42,15 @@ def main():
     st.sidebar.header("Filter by Type of Lesion", divider='blue')
     # st.sidebar.header("Lesion Volume Filter")
 
-    threshold_size = st.sidebar.slider("Select lesion volume threshold", min_value=0, max_value=50)
+    threshold_size = st.sidebar.slider("Select lesion volume threshold in current scan", min_value=0, max_value=50)
 
     # st.sidebar.header("Lesion Volume Changes Threshold (%)")
     vol_change_percentage = st.sidebar.slider("Select percentage threshold for lesion volume changes compared to "
-                                              "previous scan", min_value=0, max_value=100,step=10)
+                                              "previous scan", min_value=0, max_value=100, step=10)
     st.sidebar.write(f"""
         <div style="color: black; font-size: 14px;margin-bottom: 35px"> 
-        <b> Displaying lesions that are larger than: {threshold_size} [cm^3]  and 
-        with a volume change of at least {vol_change_percentage} % from previous scan </b>
+        <b> Displaying lesions that are currently larger than: {threshold_size}[cm³] and 
+        with a volume change of at least {vol_change_percentage}% from previous scan </b>
         </div>
         """, unsafe_allow_html=True)
 
@@ -70,7 +70,8 @@ def add_buttons():
 
 
 def range_slider(range_size):
-    selected_value = st.sidebar.slider('Select the number of previous scans to display', min_value=0, max_value=range_size,
+    selected_value = st.sidebar.slider('Select the number of previous scans to display', min_value=0,
+                                       max_value=range_size,
                                        value=range_size // 2)
     return selected_value
 
@@ -91,4 +92,6 @@ def display_content(file_path):
 
 
 if __name__ == "__main__":
+    # TO CONNECT ENV RUN:
+    # source ./env/bin/activate
     main()

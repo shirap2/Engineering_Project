@@ -16,7 +16,7 @@ import pickle
 USR = "talia.dym/Desktop/Engineering_Project"
 
 
-MAX_SCANS_PER_GRAPH = 5
+MAX_SCANS_PER_GRAPH = 10
 OVERLAP_BETWEEN_GRAPHS = 1
 
 
