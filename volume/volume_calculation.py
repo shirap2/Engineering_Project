@@ -121,6 +121,7 @@ def get_volume(longitudinal_volumes_array, node):
         return longitudinal_volumes_array[time][idx], True
     return 0, False
 
+
 def get_dict_of_volume_percentage_change_and_classification_per_edge(ld: LoaderSimpleFromJson, longitudinal_volumes_array):
     volume_change_per_edge_dict = {}  # return {edge : [volume percentage change, calssification]}
     edges_to_node_dict = get_edges_to_node_dict(ld)  # {node : [edges to node]}

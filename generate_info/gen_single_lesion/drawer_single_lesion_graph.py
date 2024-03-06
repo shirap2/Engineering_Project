@@ -37,6 +37,8 @@ colors_dict = {
     19: "lightgray"
 }
 
+def time(node: str):
+    return int(node.split('_')[1])
 
 def edit_volume_percentage_data_to_str_and_color(vol_percentage_diff_per_edge: dict):
     edited_dict = dict()
@@ -92,7 +94,10 @@ class DrawerLabelsAndLabeledEdges(Drawer):
     def __init__(self, longit: Longit, cc_idx: int, ld: Loader, components: list,
                  longitudinal_volumes_array: list,
                  percentage_diff_per_edge_dict, start: int, end_of_patient_dates: int, attr_to_print=None):
+
         self.start = start
+        self.end = end_of_patient_dates
+
         self._attr_to_print = attr_to_print
         if self._attr_to_print is not None:
             longit.nodes_have_attribute(self._attr_to_print)
@@ -296,6 +301,37 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                 self.should_print_label_on_edge[edge] = True
 
     def add_edge_skipping_over_node(self, node):
+        # prev_node = ""
+        # next_node = ""
+        #
+        # # find edge into unseen node
+        # edges_before = self.edges_to_node_dict[node]
+        # # if len(edges_before) != 1:
+        # #     print("Error: more than one / zero edges into 'doesnt appear' node")
+        # # else:
+        # node1, node2 = edges_before[0]
+        # if time(node2) < time(node1):
+        #     node2, node1 = edges_before[0]
+        #
+        # # don't add if the root of the edge is out of the display
+        # if time(node1) >= self.start:
+        #     prev_node = node1
+        # ########### add check if this is also unseen
+        #
+        # # find edge from unseen node
+        # edges_after = self.edges_from_node_dict[node]
+        # # if len(edges_after) != 1:
+        # #     print("Error: more than one / zero edges from 'doesnt appear' node")
+        # # else:
+        # node1, node2 = edges_after[0]
+        # if time(node2) < time(node1):
+        #     node2, node1 = edges_before[0]
+        #
+        # # don't add if the tail of the edge is out of the display
+        # if time(node1) < self.end:
+        #     next_node = node2
+        # ########### add check if this is also unseen
+
         # find edge before and after
         prev_node = ""
         next_node = ""
@@ -325,17 +361,25 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                     if prev_node != "":
                         print("Error in add_edge_skipping_over_node 4")
                     prev_node = node2
-        if (prev_node == "") or (next_node == ""):
-            print("Error in add_edge_skipping_over_node 5")
-        else:
-            mutable_graph = nx.Graph(self._base_graph)
-            mutable_graph.add_edge(prev_node, next_node)
-            mutable_graph.edges[(prev_node, next_node)][EdgeAttr.IS_SKIP] = True
-            edge_is_skip = nx.get_edge_attributes(mutable_graph, name=EdgeAttr.IS_SKIP)
-            self._base_graph = mutable_graph
 
-            self.add_volume_labels_to_skipping_edges()
-            self.should_print_label_on_edge[(prev_node, next_node)] = True
+        if (prev_node == "") or (next_node == ""):
+            print(f"Error: cant find skipping arrow for {node}")
+        else:
+            src_vol, _ = self.get_node_volume(prev_node)
+            dest_vol, _ = self.get_node_volume(next_node)
+
+            if (src_vol == 0) or (dest_vol == 0):
+                print(f"Error: cant find skipping arrow for {node} because neighbor doesnt appear")
+            else:
+                print(f"added {(prev_node, next_node)}")
+                mutable_graph = nx.Graph(self._base_graph)
+                mutable_graph.add_edge(prev_node, next_node)
+                mutable_graph.edges[(prev_node, next_node)][EdgeAttr.IS_SKIP] = True
+                edge_is_skip = nx.get_edge_attributes(mutable_graph, name=EdgeAttr.IS_SKIP)
+                self._base_graph = mutable_graph
+
+                self.add_volume_labels_to_skipping_edges()
+                self.should_print_label_on_edge[(prev_node, next_node)] = True
 
 
     def add_volume_labels_to_skipping_edges(self):

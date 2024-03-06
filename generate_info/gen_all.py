@@ -47,7 +47,6 @@ def create_pdf_file(patient_name: str):
     doc.build(elements)
 
 
-#
 # NAME = "Z. Aa."
 # NAME = "A. S. H."
 # NAME = "A. S. S."
