@@ -4,10 +4,14 @@ from common_packages.LongGraphPackage import LoaderSimpleFromJson
 from gen_single_patient_pdf import create_single_patient_pdf_page
 from gen_single_lesion.gen_single_lesion_pdf import create_single_lesion_pdf_page
 from reportlab.platypus import SimpleDocTemplate, PageBreak
+
 from volume.volume_calculation import generate_longitudinal_volumes_array
 import os
-# USR = "shira_p/PycharmProjects/engineering_project/matching"
-USR = "talia.dym/Desktop/Engineering_Project"
+
+USR = "shira_p/PycharmProjects/engineering_project/matching"
+
+
+# USR = "talia.dym/Desktop/Engineering_Project"
 
 
 class PatientInput:
@@ -56,11 +60,10 @@ def create_pdf_file(patient_name: str):
 # NAME = "A. S. S."
 # NAME = "B. B. S."
 # NAME = "B. T."
-NAME = "C. A."
+# NAME = "C. A."
 # NAME = "E. N."
 # NAME = "F. Y. Ga."
 # NAME = "AA0"
 # NAME = "A. W."
 
-create_pdf_file(NAME)
 

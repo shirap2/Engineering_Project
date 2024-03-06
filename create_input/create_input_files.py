@@ -146,10 +146,10 @@ def save_patient_input(name, partial_scans_adress, json_input_address):
 # save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
 
 
-NAME = "AA0"
-JSON_ADDRESS = "/cs/casmip/bennydv/brain_pipeline/lesions_matching/longitudinal_gt/original_corrected/AA0glong_gt.json"
-PARTIAL_ADDRESS = "/cs/casmip/bennydv/brain_pipeline/gt_data/size_filtered/labeled_no_reg/AA0"
-save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
+# NAME = "AA0"
+# JSON_ADDRESS = "/cs/casmip/bennydv/brain_pipeline/lesions_matching/longitudinal_gt/original_corrected/AA0glong_gt.json"
+# PARTIAL_ADDRESS = "/cs/casmip/bennydv/brain_pipeline/gt_data/size_filtered/labeled_no_reg/AA0"
+# save_patient_input(NAME, PARTIAL_ADDRESS, JSON_ADDRESS)
 
 folder_path = "/cs/casmip/bennydv/brain_pipeline/lesions_matching/longitudinal_gt/original_corrected/"
 

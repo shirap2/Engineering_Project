@@ -57,10 +57,13 @@ def check_complex_merge_split(timestamp_dict):
 folder_path_brain = "/cs/casmip/bennydv/brain_pipeline/lesions_matching/longitudinal_gt/original_corrected/"
 folder_path_liver = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/"
 # Iterate over files in the folder
-for filename in os.listdir(folder_path_liver):
-    if "glong" in filename:
-        name_until_glong = filename.split('_glong')[0]
-        edge_case_res = check_for_edge_case(name_until_glong)
-        if edge_case_res:
-            print(name_until_glong)
-        create_pdf_file(name_until_glong)
+# for filename in os.listdir(folder_path_liver):
+#     if "glong" in filename:
+#         name_until_glong = filename.split('_glong')[0]
+#         edge_case_res = check_for_edge_case(name_until_glong)
+#         if edge_case_res:
+#             print(name_until_glong)
+#         create_pdf_file(name_until_glong)
+
+
+create_pdf_file("H_G")
