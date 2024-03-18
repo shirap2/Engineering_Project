@@ -75,6 +75,7 @@ def list_folders(directory):  # used to get all patients names
         item_path = os.path.join(directory, item)
         if os.path.isdir(item_path):
             folders.append(item)
+            break
     return folders
 
 
