@@ -9,7 +9,8 @@ from enum import Enum
 
 
 class BottomEdgeDesign(Enum):
-    TOTAL_CHANGE = 'total'
+    ONLY_TOTAL_CHANGE = 'total'
+    ADDITIONAL_TOTAL_CHANGE = 'additional_total'
     SPLIT_MERGE_CHANGE = 'split_merge_change'
     NONE = 'none'
 
@@ -140,7 +141,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
 
         self.longitudinal_volumes_array = longitudinal_volumes_array
         self.percentage_diff_per_edge_dict = percentage_diff_per_edge_dict
-        self.bottom_arrow_design = BottomEdgeDesign.TOTAL_CHANGE
+        self.bottom_arrow_design = BottomEdgeDesign.ADDITIONAL_TOTAL_CHANGE
 
         self.should_print_label_on_edge = dict()
         edge_is_skip = nx.get_edge_attributes(self._base_graph, name=EdgeAttr.IS_SKIP)
@@ -155,7 +156,10 @@ class DrawerLabelsAndLabeledEdges(Drawer):
 
         if self.bottom_arrow_design == BottomEdgeDesign.SPLIT_MERGE_CHANGE:
             self.process_merge_and_split_bottom_arrows_edges_labels(percentage_diff_per_edge_dict)
-        elif self.bottom_arrow_design == BottomEdgeDesign.TOTAL_CHANGE:
+        elif self.bottom_arrow_design == BottomEdgeDesign.ONLY_TOTAL_CHANGE:
+            self.process_none_bottom_arrows_edges_labels(percentage_diff_per_edge_dict)
+            self.process_total_bottom_arrows_edges_labels(percentage_diff_per_edge_dict)
+        elif self.bottom_arrow_design == BottomEdgeDesign.ADDITIONAL_TOTAL_CHANGE:
             self.process_none_bottom_arrows_edges_labels(percentage_diff_per_edge_dict)
             self.process_total_bottom_arrows_edges_labels(percentage_diff_per_edge_dict)
         elif self.bottom_arrow_design == BottomEdgeDesign.NONE:
@@ -463,7 +467,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                                 labels=self.nodes_volume_labels, font_size=10, font_color='black')
 
     def draw_volume_related_attributes_on_graph(self, pos):
-        if not self.bottom_arrow_design == BottomEdgeDesign.TOTAL_CHANGE:
+        if not self.bottom_arrow_design == BottomEdgeDesign.ONLY_TOTAL_CHANGE:
             self.color_edges_labels(pos)
         self.draw_nodes_volume_labels(pos)
 
@@ -551,7 +555,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
 
         is_skip_edge = nx.get_edge_attributes(self._base_graph, EdgeAttr.IS_SKIP)
 
-        if not self.bottom_arrow_design == BottomEdgeDesign.TOTAL_CHANGE:
+        if not self.bottom_arrow_design == BottomEdgeDesign.ONLY_TOTAL_CHANGE:
             nx.draw_networkx_edges(G=self._base_graph,
                                    pos=pos,
                                    edgelist=[e for e, is_skip in is_skip_edge.items() if not is_skip],
