@@ -140,7 +140,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
 
         self.longitudinal_volumes_array = longitudinal_volumes_array
         self.percentage_diff_per_edge_dict = percentage_diff_per_edge_dict
-        self.bottom_arrow_design = BottomEdgeDesign.SPLIT_MERGE_CHANGE
+        self.bottom_arrow_design = BottomEdgeDesign.TOTAL_CHANGE
 
         self.should_print_label_on_edge = dict()
         edge_is_skip = nx.get_edge_attributes(self._base_graph, name=EdgeAttr.IS_SKIP)

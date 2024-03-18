@@ -8,23 +8,7 @@ def get_num_of_scans_for_patient(patient_name):
     """
     return 9
 
-
-def main():
-
-    st.sidebar.header("Patient Name", divider='blue') ### change text
-    option_name = st.sidebar.selectbox(
-        'Choose a patient to display',
-        ('A. S. H.', 'A. S. W.', 'A. W.', 'C. A.')
-    )
-
-    st.write('# You selected:', option_name)
-    # Display image based on the selected option
-    # if option_name == 'A. S. H.':
-    #     st.image('input/graph_images/A_S_H_graph_image.png', caption='Graph Image for A.S.H.', use_column_width=True)
-    # elif option_name == 'A. S. W.':
-    #     st.image('input/graph_images/A_S_S_graph_image.png', caption='Graph Image for A.S.W.', use_column_width=True)
-    # elif option_name == 'A. W.':
-    #     st.image('input/graph_images/A_W_graph_image.png', caption='Graph Image for A.W.', use_column_width=True)
+def filter_scans(option_name):
     st.sidebar.header("Filter Scans", divider='blue')
 
     # st.sidebar.header("Number of Scans")
@@ -53,8 +37,28 @@ def main():
         with a volume change of at least {vol_change_percentage}% from previous scan </b>
         </div>
         """, unsafe_allow_html=True)
+    return []
 
+
+def main():
+    # 0. pre-loading all patients: Dict {patient_name: PatientInput, volume dict}
+
+    # 1. choose patient
+    st.sidebar.header("Patient Name", divider='blue')  ### change text
+    option_name = st.sidebar.selectbox(
+        'Choose a patient to display',
+        ('choose', 'A. S. H.', 'A. S. W.', 'A. W.', 'C. A.'))
+
+    # 2. write title
+    st.write('# You selected:', option_name)
+
+    # 3. filter scans
+    args = filter_scans(option_name)
     add_buttons()
+
+    # 4. show summary using args
+    volume_th = 9
+
 
 def add_buttons():
     # session_state = SessionState()

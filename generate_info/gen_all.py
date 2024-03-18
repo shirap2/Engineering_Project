@@ -46,7 +46,7 @@ def create_pdf_file(patient_name: str, organ: Organ):
 # ['M_G_', 'A_Z_A_', 'N_M_R_', 'S_I_', 'S_N_', 'F_Y_Ga_', 'G_B_', 'C_A_', 'B_S_Ya_', 'B_B_S_', 'P_I_', 'N_Na_',
 #       'A_S_H_', 'Z_Aa_', 'A_Y_', 'A_A_', 'G_Ea_', 'L_I_', 'M_S_']
 
-name = 'C_A_'
+name = 'A_S_H_'
 organ = Organ.LIVER
 create_pdf_file(name, organ)
 
