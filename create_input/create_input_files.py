@@ -5,8 +5,8 @@ from common_packages.LongGraphClassification import LongitClassification
 from generate_info.gen_single_lesion.gen_single_lesion_pdf import get_dates
 import matplotlib.pyplot as plt
 
-# USR = "shira_p/PycharmProjects/engineering_project/matching"
-USR = "talia.dym/Desktop/Engineering_Project"
+USR = "shira_p/PycharmProjects/engineering_project/matching"
+# USR = "talia.dym/Desktop/Engineering_Project"
 
 class Organ:
     LIVER = 'liver'

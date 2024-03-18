@@ -6,9 +6,10 @@ from volume.volume_calculation import generate_longitudinal_volumes_array
 import os
 from create_input.create_input_files import get_patient_input, Organ
 
-# USR = "shira_p/PycharmProjects/engineering_project/matching"
-USR = "talia.dym/Desktop/Engineering_Project"
+USR = "shira_p/PycharmProjects/engineering_project/matching"
 
+
+# USR = "talia.dym/Desktop/Engineering_Project"
 
 
 def create_pdf_file(patient_name: str, organ: Organ):
@@ -50,5 +51,3 @@ def create_pdf_file(patient_name: str, organ: Organ):
 name = 'A_S_H_'
 organ = Organ.LIVER
 create_pdf_file(name, organ)
-
-
