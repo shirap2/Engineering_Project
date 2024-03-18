@@ -1,4 +1,5 @@
-from generate_info.gen_single_lesion.drawer_single_lesion_graph import DrawerLabelsAndLabeledEdges
+from generate_info.gen_single_lesion.drawer_single_lesion_graph import (
+    DrawerLabelsAndLabeledEdges, PatientData, GraphDisplay)
 import reportlab.platypus as ply
 import os
 import matplotlib.pyplot as plt
@@ -26,8 +27,11 @@ def get_single_node_graph_image(image_path: str, scan_name: str, cc_idx: int, lg
                                 components: list, longitudinal_volumes_array: list,
                                 percentage_diff_per_edge_dict, start: int, end_of_patient_dates: int):
 
-    dr = DrawerLabelsAndLabeledEdges(lg, cc_idx, ld, components, longitudinal_volumes_array,
-                                     percentage_diff_per_edge_dict, start, end_of_patient_dates)
+    patient_data = PatientData(lg, ld, components,
+                 longitudinal_volumes_array, percentage_diff_per_edge_dict)
+    graph_display = GraphDisplay(cc_idx, start, end_of_patient_dates)
+
+    dr = DrawerLabelsAndLabeledEdges(patient_data, graph_display)
 
     if dr._is_graph_empty:
         return [None, None]
