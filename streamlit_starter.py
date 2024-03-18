@@ -19,12 +19,12 @@ def main():
 
     st.write('# You selected:', option_name)
     # Display image based on the selected option
-    if option_name == 'A. S. H.':
-        st.image('input/graph_images/A_S_H_graph_image.png', caption='Graph Image for A.S.H.', use_column_width=True)
-    elif option_name == 'A. S. W.':
-        st.image('input/graph_images/A_S_S_graph_image.png', caption='Graph Image for A.S.W.', use_column_width=True)
-    elif option_name == 'A. W.':
-        st.image('input/graph_images/A_W_graph_image.png', caption='Graph Image for A.W.', use_column_width=True)
+    # if option_name == 'A. S. H.':
+    #     st.image('input/graph_images/A_S_H_graph_image.png', caption='Graph Image for A.S.H.', use_column_width=True)
+    # elif option_name == 'A. S. W.':
+    #     st.image('input/graph_images/A_S_S_graph_image.png', caption='Graph Image for A.S.W.', use_column_width=True)
+    # elif option_name == 'A. W.':
+    #     st.image('input/graph_images/A_W_graph_image.png', caption='Graph Image for A.W.', use_column_width=True)
     st.sidebar.header("Filter Scans", divider='blue')
 
     # st.sidebar.header("Number of Scans")

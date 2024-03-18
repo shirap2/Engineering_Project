@@ -2,6 +2,7 @@ import os
 import pickle
 
 from common_packages.LongGraphPackage import LoaderSimpleFromJson
+from create_input.create_input_files import Organ, list_folders
 from generate_info.gen_all import get_patient_input, create_pdf_file
 from patient_summary.classify_changes_in_individual_lesions import gen_dict_classified_nodes_for_layers, \
     count_d_in_d_out_for_test, classify_changes_in_individual_lesions_test
@@ -17,7 +18,7 @@ def check_for_edge_case(patient_name):
     :return:
     """
     files_to_check = []
-    patient = get_patient_input(patient_name)
+    patient = get_patient_input(patient_name,organ=Organ.LUNGS)
     pkl_path = patient.pickle_input_address
     with open(pkl_path, "rb") as file:
         lg = pickle.load(file)
@@ -56,14 +57,19 @@ def check_complex_merge_split(timestamp_dict):
 
 folder_path_brain = "/cs/casmip/bennydv/brain_pipeline/lesions_matching/longitudinal_gt/original_corrected/"
 folder_path_liver = "/cs/casmip/bennydv/liver_pipeline/lesions_matching/longitudinal_gt/original_corrected/"
+folder_path_lungs ="/cs/casmip/bennydv/lungs_pipeline/lesions_matching/longitudinal_gt/original_corrected/"
 # Iterate over files in the folder
-# for filename in os.listdir(folder_path_liver):
+# for filename in os.listdir(folder_path_lungs):
 #     if "glong" in filename:
 #         name_until_glong = filename.split('_glong')[0]
 #         edge_case_res = check_for_edge_case(name_until_glong)
 #         if edge_case_res:
 #             print(name_until_glong)
-#         create_pdf_file(name_until_glong)
+#         # create_pdf_file(name_until_glong)
 
+path = f"/cs/casmip/bennydv/lungs_pipeline/gt_data/size_filtered/labeled_no_reg/"
+for patient in list_folders(path):
+    edge_case_res = check_for_edge_case(patient)
+    if edge_case_res:
+        print(patient)
 
-create_pdf_file("H_G")
