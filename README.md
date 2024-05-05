@@ -1,7 +1,7 @@
 # 💡 Analysis and Summarization of Radiological Findings in Medical Patient Images
 
 <!-- cool project cover image -->
-![Project Cover Image]()
+![Project Cover Image](project_picture_for_readme.png)
 
 <!-- table of content -->
 ## Table of Contents
@@ -25,10 +25,7 @@
 
 
 ## 📚 Project Description
-- A brief description of the project/challange, what it does, and how it works.
-- A list of the main features and functionalities of the project.
-- A list of the main components of the project.
-- A list of the main technologies used in the project.
+
 
 
 ## ⚡ Getting Started
