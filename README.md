@@ -1,7 +1,7 @@
 # 💡 Analysis and Summarization of Radiological Findings in Medical Patient Images
 
 <!-- cool project cover image -->
-![Project Cover Image](/media/project-cover-img.jpg)
+![Project Cover Image]()
 
 <!-- table of content -->
 ## Table of Contents
@@ -17,11 +17,11 @@
 
 ## 👥 The Team 
 **Team Members**
-- [Member 1](name@emial.com)
-- [Member 2](name@emial.com)
+- [Talia Dym](talia.dym@mail.huji.ac.il)
+- [Shira Parker](shira.parker@mail.huji.ac.il)
 
 **Supervisor**
-- [Supervisor](wwww.link_to_lab.com)
+- [Leo Joskowicz](https://elsc.huji.ac.il/people-directory/faculty-members/leo-joskowicz/)
 
 
 ## 📚 Project Description
