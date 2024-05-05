@@ -20,6 +20,9 @@
 - [Talia Dym](talia.dym@mail.huji.ac.il)
 - [Shira Parker](shira.parker@mail.huji.ac.il)
 
+**Advisor**
+- [Alon Olesinski](Alon.olesinski@mail.huji.ac.il)
+- 
 **Supervisor**
 - [Leo Joskowicz](https://elsc.huji.ac.il/people-directory/faculty-members/leo-joskowicz/)
 
