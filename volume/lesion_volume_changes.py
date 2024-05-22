@@ -55,7 +55,7 @@ def check_single_lesion_growth(vol_list, lesion_idx):
     this function gets a list of a lesion's volume changes over time
     and checks if the volume increased/decreased
     """
-    lesion_volumes = [0]
+    lesion_volumes = 0
     if lesion_idx in vol_list:
         lesion_volumes = vol_list[lesion_idx]
     if not lesion_volumes:

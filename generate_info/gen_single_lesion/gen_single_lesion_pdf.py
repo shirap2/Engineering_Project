@@ -14,6 +14,7 @@ from datetime import datetime
 import re
 import pickle
 from pathlib import Path
+from text_generation.gen_text import gen_summary_for_cc
 
 
 ROOT = str(Path(__file__).resolve().parent).replace("generate_info/gen_single_lesion", "")
@@ -231,6 +232,20 @@ def set_nodes_external_name(cc_idx, nodes):
     return internal_external_names_dict
 
 
+def set_nodes_external_name(cc_idx, nodes):
+    letters = [chr(i) for i in range(ord('a'), ord('z') + 1)]
+    n = len(letters)
+    i = 0
+
+    sorted_nodes = sorted(nodes, key=lambda x: int(x.split("_")[1]))
+    internal_external_names_dict = {}
+    for node in sorted_nodes:
+        internal_external_names_dict[node] = f'{cc_idx + 1}{letters[i%n]}'
+        i += 1
+
+    return internal_external_names_dict
+
+
 def create_single_lesion_pdf_page(patient,
                                   longitudinal_volumes_array):
     with open(patient.pickle_input_address, "rb") as file:
@@ -299,7 +314,7 @@ def create_single_lesion_pdf_page(patient,
         count = 0
         ran_through_all_scans = False
         CC_first_appeared_in = min_time_per_cc_dict[tuple(components_to_draw[cc_idx])]
-
+        cur_component = patient_data.components[cc_idx]
         while not ran_through_all_scans:
 
             start = count + CC_first_appeared_in
@@ -319,8 +334,7 @@ def create_single_lesion_pdf_page(patient,
 
             # elements += get_graph_title(lesions_idx)
             elements += [graph]
-            # elements += get_lesion_history_text(lesions_idx[0], vol_list)  # todo
-            #
+            
             # ## shira added text for classification of connected component
             # elements += cc_class_text(node2cc, nodes2cc_class, lesions_idx[0])
 
@@ -331,6 +345,7 @@ def create_single_lesion_pdf_page(patient,
 
         # shira added text for classification of connected component
         # elements += cc_class_text(node2cc, nodes2cc_class, lesions_idx[0])
+        elements += gen_summary_for_cc(ld,cur_component,longitudinal_volumes_array,internal_external_names_dict,nodes2cc_class)  # todo
 
         cc_idx += 1
         # return elements #todo remove
