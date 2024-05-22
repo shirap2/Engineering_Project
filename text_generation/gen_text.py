@@ -1,26 +1,11 @@
-import math
+import nltk
+from nltk.corpus import wordnet
+from nltk.tokenize import sent_tokenize
 from volume.volume_calculation import generate_longitudinal_volumes_array, get_diff_in_total
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.platypus import Paragraph
 
 
-def generate_volume_list_single_lesion(patient_path, longitudinal_volumes_array):
-    # longitudinal_volumes_array = generate_longitudinal_volumes_array(patient_path)  # returns sorted (by date) array of
-    # dictionaries (one for each time stamp), key - lesion idx, value - volume in cm^3
-
-    grouped_volumes = {}
-
-    for time_stamp in longitudinal_volumes_array:
-        for lesion_idx, volume in time_stamp.items():
-            if lesion_idx not in grouped_volumes:
-                grouped_volumes[lesion_idx] = []
-
-            grouped_volumes[lesion_idx].append(volume)
-
-    # Sort the volumes by lesion index
-    sorted_grouped_volumes = dict(sorted(grouped_volumes.items()))
-
-    return sorted_grouped_volumes
-
+nltk.download('wordnet')
 
 def check_lesion_growth_from_last_scan(lesion_volumes):
     """
@@ -41,14 +26,13 @@ def check_lesion_growth_from_last_scan(lesion_volumes):
     change_percentage = round(abs((cur_volume / prev_volume) - 1) * 100)
     if cur_volume < prev_volume:
         #The volume has increased by {change_percentage}% between the previous scan and the current scan.
-        text += f"Lesion volume has decreased by {change_percentage}% from previous scan to current scan. "
+        text += f"The lesion volume has increased by {change_percentage}% from previous scan to current scan. "
     elif cur_volume > prev_volume:
         text += f"Lesion volume has decreased by {change_percentage}% from previous scan to current scan. "
     else:
         text += "No change in lesion volume from previous scan to current scan. "
 
     return text
-
 
 def check_single_lesion_growth(vol_list, lesion_idx):
     """
@@ -107,6 +91,50 @@ def lesion_growth_percentage(patient_partial_path, num_of_tumors):
 
     return paragraph
 
-# vol_list = generate_volume_list_single_lesion("/cs/casmip/bennydv/liver_pipeline/gt_data/size_filtered/labeled_no_reg/A_W_")
-# print(vol_list)
-# check_single_lession_growth(vol_list,2)
+
+def format_lesion_data(lesion_list):
+    data = []
+    for lesion in lesion_list:
+        pass
+
+        
+
+    return data
+
+
+lesions_data = [
+    {
+        'id': 1,
+        'changes': [
+            {'timestamp': '2023-01-01', 'volume': 2.0},
+            {'timestamp': '2023-02-01', 'volume': 2.5}
+        ]
+    },
+    {
+        'id': 2,
+        'changes': [
+            {'timestamp': '2023-01-01', 'volume': 1.5},
+            {'timestamp': '2023-02-01', 'volume': 0.0}
+        ]
+    },
+    {
+        'id': 3,
+        'changes': [
+            {'timestamp': '2023-01-01', 'volume': 3.0},
+            {'timestamp': '2023-02-01', 'volume': 3.5}
+        ]
+    }
+]
+      
+
+
+def gen_summary_for_cc(lesion_data):
+    pass
+
+
+def gen_text_summaries(connected_components, lesions_data):
+    summaries = []
+    for cc in connected_components:
+        summary = gen_summary_for_cc(cc, lesions_data)
+        summaries.append(summary)
+    return summaries
