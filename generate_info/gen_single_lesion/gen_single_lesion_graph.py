@@ -1,5 +1,5 @@
 from generate_info.gen_single_lesion.drawer_single_lesion_graph import (
-    DrawerLabelsAndLabeledEdges, PatientData, GraphDisplay)
+    DrawerLabelsAndLabeledEdges, GraphDisplay)
 import reportlab.platypus as ply
 import os
 import matplotlib.pyplot as plt
@@ -23,12 +23,8 @@ def crop_middle_of_image(input_path, output_path, crop_dimensions):
     cropped_image.save(output_path)
 
 
-def get_single_node_graph_image(image_path: str, scan_name: str, cc_idx: int, lg, ld,
-                                components: list, longitudinal_volumes_array: list,
-                                percentage_diff_per_edge_dict, start: int, end_of_patient_dates: int):
+def get_single_node_graph_image(image_path: str, cc_idx: int, start: int, end_of_patient_dates: int, patient_data):
 
-    patient_data = PatientData(lg, ld, components,
-                 longitudinal_volumes_array, percentage_diff_per_edge_dict)
     graph_display = GraphDisplay(cc_idx, start, end_of_patient_dates)
 
     dr = DrawerLabelsAndLabeledEdges(patient_data, graph_display)

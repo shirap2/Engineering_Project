@@ -1,6 +1,8 @@
 from common_packages.LongGraphPackage import LoaderSimpleFromJson
 from reportlab.platypus import Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
+
+from generate_info.gen_single_lesion.drawer_single_lesion_graph import PatientData
 from patient_summary.classify_changes_in_individual_lesions import classify_changes_in_individual_lesions, \
     count_d_in_d_out, gen_dict_classified_nodes_for_layers
 from volume.lesion_volume_changes import check_single_lesion_growth, generate_volume_list_single_lesion
@@ -11,13 +13,15 @@ from common_packages.BaseClasses import *
 from datetime import datetime
 import re
 import pickle
+from pathlib import Path
 
-USR = "shira_p/PycharmProjects/engineering_project/matching"
-# USR = "talia.dym/Desktop/Engineering_Project"
 
+ROOT = str(Path(__file__).resolve().parent).replace("generate_info/gen_single_lesion", "")
+output_path = ROOT + "output"
 
 MAX_SCANS_PER_GRAPH = 5
 OVERLAP_BETWEEN_GRAPHS = 1
+
 
 
 def get_title(title_string):
@@ -270,6 +274,10 @@ def create_single_lesion_pdf_page(patient,
     elements += get_sub_title("Lesions Appearing in Multiple Scans", False)
     all_patient_dates = lg.get_patient_dates()
     num_of_CCS_to_draw = len(components_to_draw)
+
+    patient_data = PatientData(lg, ld, components_to_draw,
+                               longitudinal_volumes_array, percentage_diff_per_edge_dict)
+
     while True:
         if cc_idx >= num_of_CCS_to_draw:
             return elements
@@ -289,11 +297,8 @@ def create_single_lesion_pdf_page(patient,
 
             lg._num_of_layers = end_of_patient_dates - start
             # lg._num_of_layers = MAX_SCANS_PER_GRAPH
-            path = f"/cs/usr/{USR}/output/{patient.organ}/sub_graphs/single_labeled_lesion_graph"
-            graph, lesions_idx = get_single_node_graph_image(path,
-                                                             patient.json_input_address, cc_idx, lg, ld, components_to_draw,
-                                                             longitudinal_volumes_array, percentage_diff_per_edge_dict,
-                                                             start, end_of_patient_dates)
+            path = f"{output_path}/{patient.organ}/sub_graphs/single_labeled_lesion_graph"
+            graph, lesions_idx = get_single_node_graph_image(path,cc_idx, start, end_of_patient_dates, patient_data)
             if not graph:
                 return elements
 

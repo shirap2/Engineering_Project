@@ -39,7 +39,7 @@ colors_dict = {
 }
 
 
-def time(node: str):
+def get_time(node: str):
     return int(node.split('_')[1])
 
 def get_node_volume(node_str: str, longitudinal_volumes_array):
@@ -113,14 +113,15 @@ class PatientData:
         is_place_holder_dict = nx.get_node_attributes(self.lg.get_graph(), NodeAttr.IS_PLACEHOLDER)
         doesnt_appear_per_time_dict = dict()
 
-        for time in range(self.num_of_scans):
-            doesnt_appear_per_time_dict[time] = []
+        for t in range(self.num_of_scans):
+            doesnt_appear_per_time_dict[t] = []
 
         for node, is_place_holder in is_place_holder_dict.items():
             if not is_place_holder:
                 _, is_existing = get_node_volume(node, self.longitudinal_volumes_array)
                 if not is_existing:
-                    doesnt_appear_per_time_dict[time(node)].append(node)
+                    # if get_time(node) < self.num_of_scans:
+                    doesnt_appear_per_time_dict[get_time(node)].append(node)
         return doesnt_appear_per_time_dict
 
     def get_total_edges_without_doesnt_appear(self):
@@ -278,7 +279,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         # fill in total_vol_list
         is_place_holder_dict = nx.get_node_attributes(self._base_graph, NodeAttr.IS_PLACEHOLDER)
         for node, is_place_holder in is_place_holder_dict.items():
-            layer = time(node)
+            layer = get_time(node)
             if not is_place_holder:
                 vol, is_existing = self.get_node_volume(node)
                 if is_existing:
@@ -412,11 +413,11 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         # #     print("Error: more than one / zero edges into 'doesnt appear' node")
         # # else:
         # node1, node2 = edges_before[0]
-        # if time(node2) < time(node1):
+        # if get_time(node2) < get_time(node1):
         #     node2, node1 = edges_before[0]
         #
         # # don't add if the root of the edge is out of the display
-        # if time(node1) >= self.start:
+        # if get_time(node1) >= self.start:
         #     prev_node = node1
         # ########### add check if this is also unseen
         #
@@ -426,11 +427,11 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         # #     print("Error: more than one / zero edges from 'doesnt appear' node")
         # # else:
         # node1, node2 = edges_after[0]
-        # if time(node2) < time(node1):
+        # if get_time(node2) < get_time(node1):
         #     node2, node1 = edges_before[0]
         #
         # # don't add if the tail of the edge is out of the display
-        # if time(node1) < self.end:
+        # if get_time(node1) < self.end:
         #     next_node = node2
         # ########### add check if this is also unseen
 
@@ -520,7 +521,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
 
                     if node in self.skipping_edges_for_doesnt_appear_dict:
                         for src_skip_node, dest_skip_node in self.skipping_edges_for_doesnt_appear_dict[node]:
-                            if time(src_skip_node) >= self.first_time_stamp and time(dest_skip_node) <= self.last_time_stamp:
+                            if get_time(src_skip_node) >= self.first_time_stamp and get_time(dest_skip_node) <= self.last_time_stamp:
                                 mutable_graph = nx.Graph(self._base_graph)
                                 mutable_graph.add_edge(src_skip_node, dest_skip_node)
                                 mutable_graph.edges[(src_skip_node, dest_skip_node)][EdgeAttr.IS_SKIP] = True

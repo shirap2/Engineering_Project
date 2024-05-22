@@ -9,9 +9,9 @@ cs/casmip/bennydv/{ORGAN}_pipeline/gt_data/size_filtered/labeled_no_reg/{PATIENT
 B) Ground-truth lesion masks, labeled
 cs/casmip/bennydv/{ORGAN}_pipeline/gt_data/size_filtered/labeled_no_reg/{PATIENT_NAME}/lesions_gt_{DATE}.nii.gz
 
-[C) Ground-truth organ segmentation
+C) Ground-truth organ segmentation
 cs/casmip/bennydv/{ORGAN}_pipeline/gt_data/size_filtered/labeled_no_reg/{PATIENT_NAME}/{ORGAN}_{DATE}.nii.gz
-]
+
 
 D) Ground-truth longitudinal matching graphs, as json files
 cs/casmip/bennydv/{ORGAN}_pipeline/lesions_matching/longitudinal_gt/original/{PATIENT_NAME}glong_gt.json
