@@ -28,7 +28,14 @@
 
 
 ## 📚 Project Description
+Our project is a program designed to automatically generate a comprehensive summary of a patient's
+sequence of scans. This program involves collecting lesion data and presenting it clearly. 
+We utilize tables, textual summaries, and graphic displays to showcase lesion patterns over time. 
+This allows radiologists to gather more precise information in a shorter time frame.
 
+The summary format will be interactive, allowing radiologists to customize the displayed information. In addition, 
+we generate the summary in a PDF form to support printable summary. 
+This design ensures no crucial details are omitted while avoiding overwhelming with extraneous information.
 
 
 ## ⚡ Getting Started
@@ -67,7 +74,7 @@ Explain what these tests test and why
 Add additional notes on how to deploy this on a live system
 
 ## ⚙️ Built With
-  - [Based on the amazing work of reserch group xxxx](https://www.example.com)
+  - [Based on the work of reserch group xxxx](https://www.example.com)
   - [Contributor Covenant](https://www.contributor-covenant.org/) - Used for the Code of Conduct
   - [Creative Commons](https://creativecommons.org/) - Used to choose the license
 

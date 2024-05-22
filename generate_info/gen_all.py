@@ -5,16 +5,15 @@ from reportlab.platypus import SimpleDocTemplate, PageBreak
 from volume.volume_calculation import generate_longitudinal_volumes_array
 import os
 from create_input.create_input_files import get_patient_input, Organ
+from pathlib import Path
 
-USR = "shira_p/PycharmProjects/engineering_project/matching"
 
-
-# USR = "talia.dym/Desktop/Engineering_Project"
-
+ROOT = str(Path(__file__).resolve().parent).replace("generate_info", "")
+output_path = ROOT + "output"
 
 def create_pdf_file(patient_name: str, organ: Organ):
     patient = get_patient_input(patient_name, organ)
-    pdf_name = f"/cs/usr/{USR}/output/{patient.organ}/" + patient_name.replace(" ", "_") + "patient_summary.pdf"
+    pdf_name = f"{output_path}/{patient.organ}/" + patient_name.replace(" ", "_") + "patient_summary.pdf"
     if os.path.exists(pdf_name):
         os.remove(pdf_name)
     doc = SimpleDocTemplate(pdf_name)
@@ -47,7 +46,8 @@ def create_pdf_file(patient_name: str, organ: Organ):
 # ['M_G_', 'A_Z_A_', 'N_M_R_', 'S_I_', 'S_N_', 'F_Y_Ga_', 'G_B_', 'C_A_', 'B_S_Ya_', 'B_B_S_', 'P_I_', 'N_Na_',
 #       'A_S_H_', 'Z_Aa_', 'A_Y_', 'A_A_', 'G_Ea_', 'L_I_', 'M_S_']
 
-# name = 'C_A_'
-name = 'A_S_H_'
+name = 'C_A_'
+# name = 'A_S_H_'
 organ = Organ.LIVER
 create_pdf_file(name, organ)
+
