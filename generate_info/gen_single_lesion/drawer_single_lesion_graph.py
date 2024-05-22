@@ -106,23 +106,8 @@ class PatientData:
         self.edges_to_node_dict = get_edges_to_node_dict(self.ld)  # {node : [edges to node]}
         self.edges_from_node_dict = get_edges_from_node_dict(self.ld)  # {node : [edges from node]}
         self.num_of_scans = len(self.lg.get_patient_dates())
-        self.doesnt_appear_per_time_dict = self.get_doesnt_appear_per_time_dict()
-        self.total_edges_without_doesnt_appear = self.get_total_edges_without_doesnt_appear()
-
-    def get_doesnt_appear_per_time_dict(self):
-        is_place_holder_dict = nx.get_node_attributes(self.lg.get_graph(), NodeAttr.IS_PLACEHOLDER)
-        doesnt_appear_per_time_dict = dict()
-
-        for t in range(self.num_of_scans):
-            doesnt_appear_per_time_dict[t] = []
-
-        for node, is_place_holder in is_place_holder_dict.items():
-            if not is_place_holder:
-                _, is_existing = get_node_volume(node, self.longitudinal_volumes_array)
-                if not is_existing:
-                    # if get_time(node) < self.num_of_scans:
-                    doesnt_appear_per_time_dict[get_time(node)].append(node)
-        return doesnt_appear_per_time_dict
+        # self.doesnt_appear_per_time_dict = self.get_doesnt_appear_per_time_dict()
+        # self.total_edges_without_doesnt_appear = self.get_total_edges_without_doesnt_appear()
 
     def get_total_edges_without_doesnt_appear(self):
         edges = []
@@ -199,8 +184,10 @@ class DrawerLabelsAndLabeledEdges(Drawer):
             self._patient_dates = pat_dates
         nx.set_node_attributes(self._base_graph, values=False, name=NodeAttr.IS_PLACEHOLDER)
 
+
         self.longitudinal_volumes_array = patient_data.longitudinal_volumes_array
         self.percentage_diff_per_edge_dict = patient_data.percentage_diff_per_edge_dict
+        self.doesnt_appear_per_time_dict = self.get_doesnt_appear_per_time_dict()
         self.bottom_arrow_design = BottomEdgeDesign.ADDITIONAL_TOTAL_CHANGE
 
         self.should_print_label_on_edge = dict()
@@ -227,6 +214,21 @@ class DrawerLabelsAndLabeledEdges(Drawer):
 
         self.skipping_edges_for_doesnt_appear_dict = self.find_skipping_edges_for_doesnt_appear()
         self.nodes_volume_labels = self.set_nodes_volume_labels()
+
+    def get_doesnt_appear_per_time_dict(self):
+        is_place_holder_dict = nx.get_node_attributes(self._base_graph, NodeAttr.IS_PLACEHOLDER)
+        doesnt_appear_per_time_dict = dict()
+
+        for t in range(len(self._patient_dates)):
+            doesnt_appear_per_time_dict[t] = []
+
+        for node, is_place_holder in is_place_holder_dict.items():
+            if not is_place_holder:
+                _, is_existing = self.get_node_volume(node)
+                if not is_existing:
+                    # if get_time(node) < self.num_of_scans:
+                    doesnt_appear_per_time_dict[get_time(node) - self.first_time_stamp].append(node)
+        return doesnt_appear_per_time_dict
 
     def get_prev_appeared_nodes(self, node):
         prev_nodes = [src for src, _ in self.edges_to_node_dict[node]]
@@ -286,11 +288,12 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                     total_vol_list[layer - self.first_time_stamp] += vol
 
         for i in range(0, self._num_of_layers - 1):
-            percentage_diff = "+inf"
-            if total_vol_list[i] != 0:
-                percentage_diff = ((total_vol_list[i + 1]/total_vol_list[i]) - 1) * 100
             time_stamp = i + self.first_time_stamp
-            total_edges_to_add_dict[(time_stamp, time_stamp + 1)] = percentage_diff
+            if total_vol_list[i] != 0:
+                if (len(self.doesnt_appear_per_time_dict[time_stamp - self.first_time_stamp]) == 0) and (len(self.doesnt_appear_per_time_dict[time_stamp + 1 - self.first_time_stamp]) == 0):
+                    percentage_diff = ((total_vol_list[i + 1]/total_vol_list[i]) - 1) * 100
+                # if (len(self.doesnt_appear_per_time_dict[time_stamp]) == 0) and (len(self.doesnt_appear_per_time_dict[time_stamp + 1]) == 0):
+                    total_edges_to_add_dict[(time_stamp, time_stamp + 1)] = percentage_diff
 
         self.summing_edges_to_add_dict = total_edges_to_add_dict
 
