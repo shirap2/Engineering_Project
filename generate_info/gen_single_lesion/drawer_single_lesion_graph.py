@@ -141,7 +141,7 @@ class GraphDisplay:
 class DrawerLabelsAndLabeledEdges(Drawer):
     """Displays the Longit graph with the nodes' color as the ITKSNAP label color. With the parameter attr_to_show you
     can decide what text to print on the nodes. The default is label number"""
-    def __init__(self, patient_data: PatientData, graph_display: GraphDisplay, attr_to_print=None):
+    def __init__(self, patient_data: PatientData, graph_display: GraphDisplay, internal_external_names_dict, attr_to_print=None):
 
         self.first_time_stamp = graph_display.first_time_stamp
         self.last_time_stamp = graph_display.last_time_stamp
@@ -214,6 +214,8 @@ class DrawerLabelsAndLabeledEdges(Drawer):
 
         self.skipping_edges_for_doesnt_appear_dict = self.find_skipping_edges_for_doesnt_appear()
         self.nodes_volume_labels = self.set_nodes_volume_labels()
+
+        self.internal_external_names_dict = internal_external_names_dict
 
     def get_doesnt_appear_per_time_dict(self):
         is_place_holder_dict = nx.get_node_attributes(self._base_graph, NodeAttr.IS_PLACEHOLDER)
@@ -366,6 +368,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
 
     def attr_to_print_on_nodes(self):
         if self._attr_to_print is None:
+            self.set_nodes_label_updated_name()
             return NodeAttr.LABEL
         else:
             return self._attr_to_print
@@ -518,7 +521,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
             if not is_place_holder:
                 vol, is_existing = self.get_node_volume(node)
                 if is_existing:
-                    nodes_volume_labels_dict[node] = f'{vol}cm³'
+                    nodes_volume_labels_dict[node] = f'{vol}cc'
                 else:
                     nodes_volume_labels_dict[node] = "doesn't\nappear"
 
@@ -585,6 +588,10 @@ class DrawerLabelsAndLabeledEdges(Drawer):
             self.color_edges_labels(pos)
         self.draw_nodes_volume_labels(pos)
 
+    def set_nodes_label_updated_name(self):
+        for node, external_name in self.internal_external_names_dict.items():
+                # Update the attribute LABEL of node
+                nx.set_node_attributes(self._base_graph, {node: {NodeAttr.LABEL: external_name}})
 
     def add_bottom_arrows(self, nodes_position):
         add_to_pos = dict()
@@ -618,12 +625,12 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                 add_to_pos[node1] = np.array(arrow_pos1)
                 add_to_pos[node2] = np.array(arrow_pos2)
 
-                node1_attributes[NodeAttr.IS_PLACEHOLDER] = False
+                node1_attributes[NodeAttr.IS_PLACEHOLDER] = True
                 node1_attributes[NodeAttr.LAYER] = t1
                 node1_attributes[NodeAttr.LABEL] = ''
                 node1_attributes[NodeAttr.COLOR] = Colors.WHITE
 
-                node2_attributes[NodeAttr.IS_PLACEHOLDER] = False
+                node2_attributes[NodeAttr.IS_PLACEHOLDER] = True
                 node2_attributes[NodeAttr.LAYER] = t1
                 node2_attributes[NodeAttr.LABEL] = ''
                 node2_attributes[NodeAttr.COLOR] = Colors.WHITE
@@ -641,7 +648,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
 
     def draw(self, pos):
         """This function prints the title of the figure and the graph"""
-        plt.xlim([-1.5, 1.5])
+        plt.xlim([-1.35, 1.35])
         plt.ylim([-2, 2])
         # plt.title(self._patient_name, fontsize=12)
         if not self.bottom_arrow_design == BottomEdgeDesign.NONE:
@@ -649,7 +656,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
             # add add_to_pos to pos
             pos = {**pos, **add_to_pos}
 
-        # set the nodes size to default (300) and only the white nodes (for the split&merge arrows)
+        # set the nodes size to default (400) and only the white nodes (for the split&merge arrows)
         # are small (so to not intifear the arrows)
         colors = nx.get_node_attributes(self._base_graph, NodeAttr.COLOR)
         size_list = []
@@ -657,7 +664,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
             if color == Colors.WHITE:
                 size_list.append(0)
             else:
-                size_list.append(300)
+                size_list.append(400)
 
         nx.draw_networkx_nodes(G=self._base_graph,
                                pos=pos,

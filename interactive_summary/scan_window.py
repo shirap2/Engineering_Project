@@ -1,13 +1,17 @@
 import subprocess
 import os
-import networkx as nx
 
 
-def get_slice(longit):
-    nodes2slice = nx.get_node_attributes(longit.get_graph(), NodeAttr.SLICE)
+
+def scan_path(organ, name, date):
+    return f'/cs/casmip/archive/bennydv/{organ}_pipeline/gt_data/size_filtered/labeled_no_reg/{name}/scan_{date}.nii.gz'
 
 
-def open_itksnap_on_slice(slice_idx, scan_file, seg_file):
+def gt_segmentation_path(organ, name, date):
+    return f'/cs/casmip/archive/bennydv/{organ}_pipeline/gt_data/size_filtered/labeled_no_reg/{name}/lesions_gt_{date}.nii.gz'
+
+
+def open_itksnap_on_slice(organ, name, date, slice_idx=0):
     """
     Opens a specified slice of a NIfTI scan and segmentation file in ITK-SNAP.
 
@@ -16,6 +20,8 @@ def open_itksnap_on_slice(slice_idx, scan_file, seg_file):
     scan_file (str): The path to the NIfTI scan file (.nii.gz).
     seg_file (str): The path to the NIfTI segmentation file (.nii.gz).
     """
+    scan_file = scan_path(organ, name, date)
+    seg_file = gt_segmentation_path(organ, name, date)
     # Ensure ITK-SNAP is installed
     if subprocess.run(["which", "itksnap"], capture_output=True).returncode != 0:
         raise EnvironmentError("ITK-SNAP is not installed or not found in the system PATH.")
@@ -30,8 +36,8 @@ def open_itksnap_on_slice(slice_idx, scan_file, seg_file):
     command = [
         "itksnap",
         "-g", scan_file,
-        "-s", seg_file,
-        "--slice", "z", str(slice_idx)
+        "-s", seg_file
+        # , "--slice", "z", str(slice_idx)
     ]
 
     # Execute the command
@@ -41,5 +47,7 @@ def open_itksnap_on_slice(slice_idx, scan_file, seg_file):
     except subprocess.CalledProcessError as e:
         print(f"Failed to open ITK-SNAP: {e}")
 
-
-open_itksnap_on_slice(50, "path/to/scan.nii.gz", "path/to/segmentation.nii.gz")
+# organ = "liver"
+# name = "C_A_"
+# date = "14_01_2020"
+# open_itksnap_on_slice(scan_path(organ, name, date), gt_segmentation_path(organ, name, date))

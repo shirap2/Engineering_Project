@@ -86,7 +86,7 @@ def get_volume_changes_per_time_table(patient_partial_path : str,volumes_dict):
 
     diff_in_total = get_diff_in_total(volumes_dict) # [total_vol_cm3, vol_percentage_diff, vol_cm3_diff]
 
-    table_data = [["Time Stamp", "Total Volume [cm³]", "Volume Difference Percentage", "Volume Difference [cm³]"]]
+    table_data = [["Time Stamp", "Total Volume [cc]", "Volume Difference Percentage", "Volume Difference [cc]"]]
 
     for idx, data in enumerate(diff_in_total):
         data = edit_volume_data_to_str(data)

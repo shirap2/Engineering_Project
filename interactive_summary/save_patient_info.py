@@ -52,21 +52,38 @@ def save_info(key, organ):
     return [patient, volumes_dict, number_of_scans, max_vol]
 
 
-def load_save_patient_data(organ_type):
-    organ = ""
-    if organ_type == Organ.LIVER:
-        organ = "liver"
-    if organ_type == Organ.LUNGS:
-        organ = "lungs"
-    if organ_type == Organ.BRAIN:
-        organ = "brain"
+# def load_save_patient_data(organ_type):
+#     organ = ""
+#     if organ_type == Organ.LIVER:
+#         organ = "liver"
+#     if organ_type == Organ.LUNGS:
+#         organ = "lungs"
+#     if organ_type == Organ.BRAIN:
+#         organ = "brain"
+#
+#     folder_path = f"/cs/casmip/archive/bennydv/{organ}_pipeline/gt_data/size_filtered/labeled_no_reg/"
+#
+#     folders = list_folders(folder_path)
+#     patient_data_dict = {key: save_info(key, organ) for key in folders}
+#
+#     return patient_data_dict
 
-    folder_path = f"/cs/casmip/bennydv/{organ}_pipeline/gt_data/size_filtered/labeled_no_reg/"
+def load_save_patient_data(organ_type, patient_name):
+    # organ = ""
+    # if organ_type == Organ.LIVER:
+    #     organ = "liver"
+    # if organ_type == Organ.LUNGS:
+    #     organ = "lungs"
+    # if organ_type == Organ.BRAIN:
+    #     organ = "brain"
 
-    folders = list_folders(folder_path)
-    patient_data_dict = {key: save_info(key, organ) for key in folders}
+    patient = get_patient_input(patient_name, organ_type)
 
-    return patient_data_dict
+    volumes_dict = generate_longitudinal_volumes_array(patient.partial_scans_address)  # returns sorted (by date)
+    number_of_scans = get_num_of_scans(patient)
+    max_vol = round(get_max_vol(volumes_dict)) - 1
+
+    return [patient, volumes_dict, number_of_scans, max_vol]
 
 def lesion_counter_and_classifier_table(json_input_address):
     ld = LoaderSimpleFromJson(json_input_address)
@@ -99,4 +116,4 @@ def lesion_counter_and_classifier_table(json_input_address):
     pdf_doc.build([table])
 
 
-load_save_patient_data(Organ.LIVER)
+# load_save_patient_data(Organ.LIVER)

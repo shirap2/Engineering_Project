@@ -217,6 +217,19 @@ def get_dates(patient_path):
 
 # patient_name, patient.json_input_address,
 #                                               patient.pickle_input_address, patient.partial_scans_address,
+def set_nodes_external_name(cc_idx, nodes):
+    letters = [chr(i) for i in range(ord('a'), ord('z') + 1)]
+    n = len(letters)
+    i = 0
+
+    sorted_nodes = sorted(nodes, key=lambda x: int(x.split("_")[1]))
+    internal_external_names_dict = {}
+    for node in sorted_nodes:
+        internal_external_names_dict[node] = f'{cc_idx + 1}{letters[i%n]}'
+        i += 1
+
+    return internal_external_names_dict
+
 
 def create_single_lesion_pdf_page(patient,
                                   longitudinal_volumes_array):
@@ -281,6 +294,8 @@ def create_single_lesion_pdf_page(patient,
     while True:
         if cc_idx >= num_of_CCS_to_draw:
             return elements
+        internal_external_names_dict = set_nodes_external_name(cc_idx, patient_data.components[cc_idx])
+
         count = 0
         ran_through_all_scans = False
         CC_first_appeared_in = min_time_per_cc_dict[tuple(components_to_draw[cc_idx])]
@@ -298,7 +313,7 @@ def create_single_lesion_pdf_page(patient,
             lg._num_of_layers = end_of_patient_dates - start
             # lg._num_of_layers = MAX_SCANS_PER_GRAPH
             path = f"{output_path}/{patient.organ}/sub_graphs/single_labeled_lesion_graph"
-            graph, lesions_idx = get_single_node_graph_image(path,cc_idx, start, end_of_patient_dates, patient_data)
+            graph, lesions_idx = get_single_node_graph_image(path,cc_idx, start, end_of_patient_dates, patient_data, internal_external_names_dict)
             if not graph:
                 return elements
 
@@ -321,3 +336,4 @@ def create_single_lesion_pdf_page(patient,
         # return elements #todo remove
 
     # return elements
+
