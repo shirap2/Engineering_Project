@@ -233,6 +233,8 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         return doesnt_appear_per_time_dict
 
     def get_prev_appeared_nodes(self, node):
+        if node not in self.edges_to_node_dict:
+            return []
         prev_nodes = [src for src, _ in self.edges_to_node_dict[node]]
         for prev in prev_nodes:
             src_vol, _ = self.get_node_volume(prev)
@@ -243,13 +245,15 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         return prev_nodes
 
     def get_next_appeared_nodes(self, node):
+        if node not in self.edges_from_node_dict:
+            return []
         next_nodes = [dest for _, dest in self.edges_from_node_dict[node]]
         for next in next_nodes:
             _, dest_vol = self.get_node_volume(next)
             if dest_vol == 0:
                 # remove src
                 next_nodes.remove(next)
-                next_nodes += self.get_prev_appeared_nodes(next)
+                next_nodes += self.get_next_appeared_nodes(next)
         return next_nodes
 
     def find_skipping_edges_for_doesnt_appear(self):

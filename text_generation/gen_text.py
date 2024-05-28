@@ -1,12 +1,13 @@
 import nltk
 from nltk.corpus import wordnet
 from nltk.tokenize import sent_tokenize
-from volume.volume_calculation import generate_longitudinal_volumes_array, get_diff_in_total,get_dict_of_volume_percentage_change_and_classification_per_edge
+from volume.volume_calculation import generate_longitudinal_volumes_array, get_diff_in_total,get_dict_of_volume_percentage_change_and_classification_per_edge,get_edges_to_node_dict
 from reportlab.platypus import Paragraph
 from generate_info.gen_single_lesion.drawer_single_lesion_graph import get_node_volume
+from reportlab.lib.styles import getSampleStyleSheet
 
 
-nltk.download('wordnet')
+# nltk.download('wordnet')
 
 def check_lesion_growth_from_last_scan(lesion_volumes):
     """
@@ -55,9 +56,9 @@ def check_single_lesion_growth(lesion_volumes):
             increasing = False
     change_percentage = round(abs((lesion_volumes[-1] / lesion_volumes[0]) - 1) * 100)
     if increasing:
-        text += f"Volume monotonically increased over time by {change_percentage}% from first scan to last scan. "
+        text += f"The total lesion burden has monotonically increased, from first scan to last scan, by {change_percentage}%. "
     elif decreasing:
-        text += f"Volume monotonically decreased over time by {change_percentage}% from first scan to last scan. "
+        text += f"The total lesion burden has monotonically decreased, from first scan to last scan, by {change_percentage}%. "
     else:
         text += f"Volume shows both increases and decreases over time from first scan to last scan. "
     return text
@@ -111,15 +112,70 @@ def get_vol_change_percentage(src,dest):
 
     return percentage_diff
 
+def join_with_and(strings):
+    if not strings:
+        return ""
+    elif len(strings) == 1:
+        return strings[0]
+    else:
+        return ", ".join(strings[:-1]) + " and " + strings[-1]
 
-def gen_text_single_node(last_node,nodes2cc_class,edge_vol_change_class):
-    text =[]
-    vol_change_percentage,edge_class = edge_vol_change_class
+def get_prev_appeared_nodes(node,edges_to_node_dict):
+    if node not in edges_to_node_dict:
+        return []
+    prev_nodes = [src for src, _ in edges_to_node_dict[node]]
+    for prev in prev_nodes:
+        src_vol, _ = get_node_volume(prev)
+        if src_vol == 0:
+            # remove src
+            prev_nodes.remove(prev)
+            prev_nodes += get_prev_appeared_nodes(prev)
+    return prev_nodes
+
+
+def doesnt_appear_lesion(ld,last_node,pattern,volumes_from_first_scan,all_patient_dates):
+    edges_to_node_dict = get_edges_to_node_dict(ld)
+    last_seen,_ = edges_to_node_dict[last_node][0]
+    last_seen_time = last_seen.split("_")[1]
+    cur_time = last_node.split("_")[1]
+    
+    text =""
+    date = "date"
+    text += f"The lesion does not appear in the scan taken on {all_patient_dates[int(cur_time)]}."
+    if last_seen:
+        text+=f"It last appeared in the scan taken on {all_patient_dates[int(last_seen_time)]}"
+
+    return text
+
+
+
+
+def gen_text_single_node(ld,last_node,nodes2cc_class,edge_vol_change_class,edges_list,longitudinal_volumes_array,all_patient_dates):
+    text =""
     # check pattern type of cc
     pattern = nodes2cc_class[last_node]
-    if pattern =='merge_p':
-        pass
+    vol_change_percentage,edge_class = edge_vol_change_class
+    vol_change_percentage = round(vol_change_percentage)
+    doesnt_appear_flag =False
+    if edge_class == "empty":
+        doesnt_appear_flag=True
+        text = doesnt_appear_lesion(ld,last_node,pattern,longitudinal_volumes_array,all_patient_dates)
 
+    if vol_change_percentage<0:
+        change = "decreased"
+        
+    if vol_change_percentage>0:
+        change ="increased"
+
+    if pattern =='merge_p':
+        connected_nodes = [node1 for node1, node2 in edges_list]
+        connected_nodes_list = join_with_and(connected_nodes)
+        text +=f"Lesion {last_node} is a merged lesion resulting from a merge of lesions {connected_nodes_list}. "
+        if not doesnt_appear_flag:
+            text += f"Lesion {last_node}'s total volume, relative to the combined (summed) previous volumes of lesions {connected_nodes_list}, has {change} by {vol_change_percentage}%. "
+        return text
+    
+    ## todo
     if pattern == 'split_p':
         pass
 
@@ -144,8 +200,8 @@ def gen_text_single_node(last_node,nodes2cc_class,edge_vol_change_class):
     return text
 
 
-def gen_summary_for_cc(ld,cur_component,longitudinal_volumes_array,max_time_per_cc_dict,nodes2cc_class):
-    text =[]
+def gen_summary_for_cc(ld,cur_component,longitudinal_volumes_array,max_time_per_cc_dict,nodes2cc_class,all_patient_dates):
+    text =""
     last_nodes,max_time = get_last_t_node(cur_component)
     volume_change_per_edge_dict= get_dict_of_volume_percentage_change_and_classification_per_edge(ld,longitudinal_volumes_array)
     edges_dict ={}
@@ -153,9 +209,20 @@ def gen_summary_for_cc(ld,cur_component,longitudinal_volumes_array,max_time_per_
         matching_keys = [key for key in volume_change_per_edge_dict.keys() if node in key]
         edges_dict[node]=matching_keys
     if len(last_nodes)==1:
-        gen_text_single_node(last_nodes[0],nodes2cc_class,volume_change_per_edge_dict[edges_dict[0]])
+        last_node_par=last_nodes[0]
+        edges_list =edges_dict[last_node_par]
+
+        # check if there are no edges from this node. meaning node either doesnt appear or is lone
+        if len(edges_list)==0:
+            gen_text_single_node(ld,last_node_par,nodes2cc_class,(0,"empty"),edges_list,longitudinal_volumes_array,all_patient_dates)
+
+        else:
+            input_par =volume_change_per_edge_dict[edges_list[0]]
+            text += gen_text_single_node(ld,last_node_par,nodes2cc_class,input_par,edges_list,longitudinal_volumes_array,all_patient_dates)
 
     ## need to support case of several last nodes in cc
+    # check_single_lesion_growth(vol_list)
 
+    paragraph_text =Paragraph(text,getSampleStyleSheet()['Normal'])
 
-    return text
+    return paragraph_text
