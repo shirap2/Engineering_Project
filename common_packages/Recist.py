@@ -18,7 +18,7 @@ class RecistSimulation:
     def load_patients_longits(self):
         """
         Create a dict in which each patient is assigned his loaded longit graph, with:
-        extrapulated diameter (from volume) and with calliper diameter
+        extrapulated diameter (from volume_cal) and with calliper diameter
         """
         pat2longit = dict()
         for pat in self._patient_list:

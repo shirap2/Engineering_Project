@@ -1,8 +1,8 @@
-from gen_single_patient_pdf import create_single_patient_pdf_page
-from gen_single_lesion.gen_single_lesion_pdf import create_single_lesion_pdf_page
+from generate_info.gen_single_patient_pdf import create_single_patient_pdf_page
+from generate_info.gen_single_lesion.gen_single_lesion_pdf import create_single_lesion_pdf_page
 from reportlab.platypus import SimpleDocTemplate, PageBreak
 import os
-from volume.volume_calculation import generate_longitudinal_volumes_array
+from volume_cal.volume_calculation import generate_longitudinal_volumes_array
 from create_input.create_input_files import get_patient_input, Organ
 from pathlib import Path
 
@@ -19,7 +19,7 @@ def create_pdf_file(patient_name: str, organ: Organ):
 
     elements = []
     volumes_dict = generate_longitudinal_volumes_array(patient.partial_scans_address)  # returns sorted (by date)
-    # array of dictionaries (one for each time stamp), key - lesion idx, value - volume in cm^3
+    # array of dictionaries (one for each time stamp), key - lesion idx, value - volume_cal in cm^3
     elements += create_single_patient_pdf_page(patient_name, patient.json_input_address, patient.partial_scans_address,
                                                patient.graph_image_path, volumes_dict)
 
@@ -28,6 +28,24 @@ def create_pdf_file(patient_name: str, organ: Organ):
     elements += create_single_lesion_pdf_page(patient, volumes_dict)
 
     doc.build(elements)
+
+
+
+def get_full_display_elements(patient_name: str, organ: Organ):
+    patient = get_patient_input(patient_name, organ)
+
+    elements = []
+    volumes_dict = generate_longitudinal_volumes_array(patient.partial_scans_address)  # returns sorted (by date)
+    # array of dictionaries (one for each time stamp), key - lesion idx, value - volume_cal in cm^3
+    elements += create_single_patient_pdf_page(patient_name, patient.json_input_address, patient.partial_scans_address,
+                                               patient.graph_image_path, volumes_dict)
+
+    # elements.append(PageBreak())
+
+    elements += create_single_lesion_pdf_page(patient, volumes_dict)
+
+    # doc.build(elements)
+    return elements
 
 liver = ['E_N_', 'N_M_', 'M_I_', 'M_N_', 'G_Y_', 'S_I_', 'S_N_', 'F_Y_Ga_', 'T_N_', 'G_B_', 'C_A_', 'B_B_S_',
       'A_S_S_', 'A_S_H_', 'Z_Aa_', 'H_G_', 'A_W_', 'B_T_']
@@ -38,19 +56,38 @@ brain = ['SZ0', 'VA0', 'MY1', 'RL0', 'DD1', 'MG0', 'AN0', 'BY0', 'LS0', 'SM0', '
 lungs = ['M_G_', 'A_Z_A_', 'N_M_R_', 'S_I_', 'S_N_', 'F_Y_Ga_', 'G_B_', 'C_A_', 'B_S_Ya_', 'B_B_S_', 'P_I_', 'N_Na_',
       'A_S_H_', 'Z_Aa_', 'A_Y_', 'A_A_', 'G_Ea_', 'L_I_', 'M_S_']
 
-name = 'C_A_'
-# name = 'A_S_H_'
-organ = Organ.LIVER
-create_pdf_file(name, organ)
 
-# for name in lungs:
-#     organ = Organ.LUNGS
-#     create_pdf_file(name, organ)
+def create_pdf_of_entire_dataset():
+    for name in lungs:
+        try:
+            organ = Organ.LUNGS
+            create_pdf_file(name, organ)
+        except Exception as e:
+            print(f'{name}: {e}')
 
-# for name in liver:
-#     organ = Organ.LIVER
-#     create_pdf_file(name, organ)
+    for name in liver:
+        try:
+            organ = Organ.LIVER
+            create_pdf_file(name, organ)
+        except Exception as e:
+            print(f'{name}: {e}')
 
-# for name in brain:
-#     organ = Organ.BRAIN
-#     create_pdf_file(name, organ)
+    for name in brain:
+        try:
+            organ = Organ.BRAIN
+            create_pdf_file(name, organ)
+        except Exception as e:
+            print(f'{name}: {e}')
+
+    # BUG:
+    # G_B_: cannot convert float infinity to integer
+    # A_S_H_: cannot convert float infinity to integer
+    # Z_Aa_: cannot convert float infinity to integer
+
+# create_pdf_of_entire_dataset()
+
+
+# name = 'C_A_'
+# # name = 'A_S_H_'
+# organ = Organ.LIVER
+# create_pdf_file(name, organ)  # this doesnt work for the venv!

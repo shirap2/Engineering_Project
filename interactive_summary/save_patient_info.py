@@ -5,7 +5,7 @@ from reportlab.lib.pagesizes import letter
 
 from common_packages.LongGraphPackage import LoaderSimpleFromJson
 from create_input.create_input_files import Organ, list_folders, get_patient_input
-from volume.volume_calculation import generate_longitudinal_volumes_array
+from volume_cal.volume_calculation import generate_longitudinal_volumes_array
 from reportlab.lib import colors
 
 

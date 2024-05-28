@@ -20,7 +20,7 @@ class AllPairsMatchingAlgo:
         :param pat_name: patient name
         :param lesion_segm_pairs: a list: [[tumors_t1_reg_t2, tumors_t2], []] of N-1 pairs of np.arrays. Each pair is
          a registered labeled lesion segmentation and fix labeled lesion segmentation (of the same dimensions (shape)!).
-         The class assumes that the voxel volume is 1x1x1 mm^3.
+         The class assumes that the voxel volume_cal is 1x1x1 mm^3.
         :param time_indices: a list of N integers being the time indices of the scans. If None, set as [0,...,N-1].
         :param max_dilation: the number of iterations of the algorithm
         :param registration_folder: the path to the folder containing patients folders

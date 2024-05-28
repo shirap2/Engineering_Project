@@ -1,21 +1,26 @@
-import os
-from interactive_summary.scan_window import open_itksnap_on_slice
+from interactive_summary.convert_pdf_to_streamlit import display_element
 import streamlit as st
 import sys
 import os
 import argparse
-from pdf2image import convert_from_bytes
 # from common_packages.LongGraphPackage import LoaderSimpleFromJson
+from generate_info.gen_all import get_full_display_elements
 import base64
-from create_input.create_input_files import Organ
-from interactive_summary.save_patient_info import load_save_patient_data, lesion_counter_and_classifier_table
-from reportlab.platypus import Paragraph, Table, Image
-import pandas as pd
-
-
 # Add the directory containing your module to the Python path
 module_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '/create_input', 'create_input'))
 sys.path.append(module_path)
+
+
+class InteractiveState():
+    initialization = 0
+    default_full_information_display = 1
+    new_lesions = 2
+    lone_lesions = 3
+    non_consecutive_matched_lesions = 4
+    open_itk_snap = 5
+    lesion_segmentation_map = 6
+    download_version = 2
+
 
 
 
@@ -45,23 +50,28 @@ sys.path.append(module_path)
 #     st.sidebar.header("Filter by Type of Lesion", divider='blue')
 #     # st.sidebar.header("Lesion Volume Filter")
 #
-#     threshold_size = st.sidebar.slider("Select lesion volume threshold in current scan", min_value=0, max_value=50)
+#     threshold_size = st.sidebar.slider("Select lesion volume_cal threshold in current scan", min_value=0, max_value=50)
 #
 #     # st.sidebar.header("Lesion Volume Changes Threshold (%)")
-#     vol_change_percentage = st.sidebar.slider("Select percentage threshold for lesion volume changes compared to "
+#     vol_change_percentage = st.sidebar.slider("Select percentage threshold for lesion volume_cal changes compared to "
 #                                               "previous scan", min_value=0, max_value=100, step=10)
 #     st.sidebar.write(f"""
 #         <div style="color: black; font-size: 14px;margin-bottom: 35px">
 #         <b> Displaying lesions that are currently larger than: {threshold_size}[cc] and
-#         with a volume change of at least {vol_change_percentage}% from previous scan </b>
+#         with a volume_cal change of at least {vol_change_percentage}% from previous scan </b>
 #         </div>
 #         """, unsafe_allow_html=True)
 #     return []
 
+# def range_slider(range_size):
+#     selected_value = st.sidebar.slider('Select the number of previous scans to display', min_value=0,
+#                                        max_value=range_size,
+#                                        value=range_size // 2)
+#     return selected_value
 
 
 def main():
-    # ***************** pre-loading all patients: Dict {patient_name: PatientInput, volume dict} ***********************
+    # ***************** pre-loading all patients: Dict {patient_name: PatientInput, volume_cal dict} ***********************
     # organ_type = Organ.LIVER
     # patient_data_dict = load_save_patient_data(
     #     organ_type)  # too slow. i changed the function that goes over folders list to stop after
@@ -71,66 +81,36 @@ def main():
 
 
     # ************************************** configurations - choose patient *******************************************
-    if 'initialization_complete' not in st.session_state:
+    if 'state' not in st.session_state:
+        st.session_state.state = InteractiveState.initialization
 
+    if st.session_state.state == InteractiveState.initialization:
         parser = argparse.ArgumentParser(description='Streamlit App with Command Line Arguments')
         parser.add_argument('--patient_name', type=str, required=True, help='First argument')
         parser.add_argument('--organ_type', type=str, required=True, help='Second argument')
-        args = parser.parse_args()
+        st.session_state.args = parser.parse_args()
 
-        patient_streamlit_data = load_save_patient_data(args.organ_type, args.patient_name)
-        # st.sidebar.header(f'Patient Name: {args.patient_name.replace("_", ".")}', divider='blue')
-        st.session_state.initialization_complete = True
+        # patient_streamlit_data = load_save_patient_data(args.organ_type, args.patient_name)
+        st.session_state.state = InteractiveState.default_full_information_display
     # ******************************************************************************************************************
 
     # ********************************************* configurations - buttons *******************************************
-    add_buttons()
+    add_sidebar()
     # ******************************************************************************************************************
 
-    # ****************************************** display - write title *************************************************
-    st.write('# Summary of the ', args.organ_type, ' patient ', args.patient_name.replace("_", "."))
-    # # ******************************************************************************************************************
+    # ************************************ display default - full inforamtion ******************************************
+    if st.session_state.state == InteractiveState.default_full_information_display:
+        elements = get_full_display_elements(st.session_state.args.patient_name, st.session_state.args.organ_type)
+        for element in elements:
+            display_element(element)
+    # ******************************************************************************************************************
 
     # ****************************************** display - show PDF ****************************************************
-    display_pdf(f'output/{args.organ_type}/{args.patient_name}patient_summary.pdf')
+    elif st.session_state.state == InteractiveState.download_version:
+        display_pdf(f'output/{st.session_state.args.organ_type}/{st.session_state.args.patient_name}patient_summary.pdf')
     # ******************************************************************************************************************
 
-    # # ****************************************** display - add tables **************************************************
-    # lesion_counter_and_classifier_table(patient_streamlit_data[0].json_input_address)
-    # images = convert_from_bytes(open("table.pdf", "rb").read())
-    # # ******************************************************************************************************************
-    #
-    #
-    #
-    # # ****************************************** display - add text & graph ********************************************
-    # # Display the first page of the PDF as an image
-    # for im in images:
-    #     st.image(im)
-    # # ******************************************************************************************************************
-
     # 4. show summary using args
-
-def display_paragraph(paragraph):
-    st.write(paragraph.text)
-
-def display_table(table):
-    data = table._cellvalues
-    df = pd.DataFrame(data)
-    st.table(df)
-
-def display_image(image):
-    image_path = image.filename
-    st.image(image_path)
-
-def display_element(element):
-    if isinstance(element, Paragraph):
-        display_paragraph(element)
-    elif isinstance(element, Table):
-        display_table(element)
-    elif isinstance(element, Image):
-        display_image(element)
-    else:
-        st.write(f"Unsupported element: {type(element)}")
 
 
 def display_pdf(file_path):
@@ -140,45 +120,39 @@ def display_pdf(file_path):
         st.markdown(pdf_display, unsafe_allow_html=True)
 
 
-def add_buttons():
-    st.sidebar.header("Special Cases", divider='blue')
-    # session_state = SessionState()
-    if st.sidebar.button("Disappeared Lesions"):
+def add_sidebar():
+
+    if st.sidebar.button("Full Information Display", use_container_width=True):
+        st.session_state.state = InteractiveState.default_full_information_display
+
+    st.sidebar.header("Special Cases", divider='blue')  # **************************************************************
+
+    if st.sidebar.button("New Lesions", use_container_width=True):
+        st.session_state.state = InteractiveState.new_lesions
+
+    if st.sidebar.button("Lone Lesions", use_container_width=True):
+        st.session_state.state = InteractiveState.lone_lesions
+
+    if st.sidebar.button("Non-Consecutive Matched Lesions", use_container_width=True):
+        st.session_state.state = InteractiveState.non_consecutive_matched_lesions
+
+    st.sidebar.header("Open Scans", divider='blue')  # *****************************************************************
+
+    if st.sidebar.button("Open"):
+        st.session_state.state = InteractiveState.open_itk_snap
         # organ = "liver"
         # name = "C_A_"
         # date = "14_01_2020"
         # open_itksnap_on_slice(organ, name, date)
 
-        st.write("displaying lesions that have disappeared")
-    if st.sidebar.button("New Lesions"):
-        st.write("displaying new lesions")
+    if st.sidebar.button("Lesion - Segmentation Map", use_container_width=True):
+        st.session_state.state = InteractiveState.lesion_segmentation_map
 
-    if st.sidebar.button("Lesions that didnt appear in segmentation"):
-        st.write("displaying lesions didnt appear in segmentation")
-    if st.sidebar.button("Unusual Lesions"):
-        st.write("displaying lesions that are unusual")
+    st.sidebar.header("Download", divider='blue')  # *******************************************************************
 
+    if st.sidebar.button("Download Full Information Display", use_container_width=True):
+        st.session_state.state = InteractiveState.download_version
 
-def range_slider(range_size):
-    selected_value = st.sidebar.slider('Select the number of previous scans to display', min_value=0,
-                                       max_value=range_size,
-                                       value=range_size // 2)
-    return selected_value
-
-
-def display_content(file_path):
-    st.title("Main Section")
-    # Load and display images or text based on user settings
-    if file_path:
-        # If file is uploaded, display its content
-        # with open(file_path, "rb") as file:
-        #     file_content = file.read()
-        st.image(file_path, caption='Uploaded Image')
-
-        # You can add more content here based on user settings
-
-    else:
-        st.write("Upload a file to display content")
 
 
 if __name__ == "__main__":

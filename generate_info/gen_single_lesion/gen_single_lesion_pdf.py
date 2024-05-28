@@ -5,10 +5,10 @@ from reportlab.lib.styles import getSampleStyleSheet
 from generate_info.gen_single_lesion.drawer_single_lesion_graph import PatientData
 from patient_summary.classify_changes_in_individual_lesions import classify_changes_in_individual_lesions, \
     count_d_in_d_out, gen_dict_classified_nodes_for_layers
-from volume.lesion_volume_changes import check_single_lesion_growth, generate_volume_list_single_lesion
+from volume_cal.lesion_volume_changes import check_single_lesion_growth, generate_volume_list_single_lesion
 from generate_info.gen_single_lesion.gen_single_lesion_graph import get_single_node_graph_image
 import networkx as nx
-from volume.volume_calculation import get_percentage_diff_per_edge_dict, generate_longitudinal_volumes_array
+from volume_cal.volume_calculation import get_percentage_diff_per_edge_dict, generate_longitudinal_volumes_array
 from common_packages.BaseClasses import *
 from datetime import datetime
 import re
@@ -258,7 +258,7 @@ def create_single_lesion_pdf_page(patient,
                                                                                           max_time_per_cc_dict,
                                                                                           total_max_time)
     # longitudinal_volumes_array = generate_longitudinal_volumes_array(patient_partial_path)
-    percentage_diff_per_edge_dict = get_percentage_diff_per_edge_dict(ld, patient.partial_scans_address)
+    percentage_diff_per_edge_dict = get_percentage_diff_per_edge_dict(ld, patient.partial_scans_address, longitudinal_volumes_array)
 
     # add section of new
     elements += get_sub_title("New Lesions", True)
