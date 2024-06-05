@@ -136,12 +136,12 @@ def get_prev_appeared_nodes(node,edges_to_node_dict,vol_array):
     return prev_nodes
 
 
-def doesnt_appear_lesion(ld,last_node,pattern,vol_array,all_patient_dates):
+def doesnt_appear_or_lone_lesion(ld,last_node,pattern,vol_array,all_patient_dates,cur_component):
     edges_to_node_dict = get_edges_to_node_dict(ld)
     last_seen,_ = edges_to_node_dict[last_node][0]
     last_seen_time = last_seen.split("_")[1]
     cur_time = last_node.split("_")[1]
-    
+    cur_node_idx=last_node.split("_")[0]
     text =""
     if pattern =="lone":
         text+= f"This is a lone lesion. It appeared in the scan taken on {all_patient_dates[int(cur_time)]}. "
@@ -149,7 +149,15 @@ def doesnt_appear_lesion(ld,last_node,pattern,vol_array,all_patient_dates):
             if int(last_node.split("_")[0]) in vol_array[int(cur_time)-1]:
                 cur_vol = vol_array[int(cur_time)-1][int(last_node.split("_")[0])]
                 text+= f"This lesion's volume is {cur_vol} cc. "
+                return text
     date = "date"
+    if int(cur_node_idx) in vol_array[int(cur_time)]:
+        cur_node_vol = vol_array[int(cur_time)][int(cur_node_idx)]
+        text+=f"This lesion doesn't appear in the previous scan, taken on {all_patient_dates[int(last_seen_time)]}. The currrent lesion volume is {round(cur_node_vol,2)} cc. "
+        text+= get_volume_diff_from_first_scan(ld, last_node,cur_component,vol_array)
+        return text
+    
+
     text += f"The lesion does not appear in the scan taken on {all_patient_dates[int(cur_time)]}."
     if last_seen:
         text+=f"It last appeared in the scan taken on {all_patient_dates[int(last_seen_time)]}"
@@ -258,7 +266,7 @@ def gen_text_single_node(ld,last_node,nodes2cc_class,edge_vol_change_class,edges
     doesnt_appear_flag =False
     if edge_class == "empty":
         doesnt_appear_flag=True
-        text = doesnt_appear_lesion(ld,last_node,pattern,longitudinal_volumes_array,all_patient_dates)
+        text = doesnt_appear_or_lone_lesion(ld,last_node,pattern,longitudinal_volumes_array,all_patient_dates,cur_component)
         return text
 
     if vol_change_percentage<0:
