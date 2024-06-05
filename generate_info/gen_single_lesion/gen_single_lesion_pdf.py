@@ -345,7 +345,7 @@ def create_single_lesion_pdf_page(patient,
 
         # shira added text for classification of connected component
         # elements += cc_class_text(node2cc, nodes2cc_class, lesions_idx[0])
-        elements.append(gen_summary_for_cc(ld,cur_component,longitudinal_volumes_array,internal_external_names_dict,nodes2cc_class,all_patient_dates))  # todo
+        elements.append(gen_summary_for_cc(ld,cur_component,longitudinal_volumes_array,internal_external_names_dict,nodes2cc_class,all_patient_dates,internal_external_names_dict))  # todo
 
         cc_idx += 1
         # return elements #todo remove
