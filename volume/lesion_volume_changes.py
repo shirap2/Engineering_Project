@@ -1,11 +1,11 @@
 import math
-from volume_cal.volume_calculation import generate_longitudinal_volumes_array, get_diff_in_total
+from volume.volume_calculation import generate_longitudinal_volumes_array, get_diff_in_total
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
 
 
 def generate_volume_list_single_lesion(patient_path, longitudinal_volumes_array):
     # longitudinal_volumes_array = generate_longitudinal_volumes_array(patient_path)  # returns sorted (by date) array of
-    # dictionaries (one for each time stamp), key - lesion idx, value - volume_cal in cm^3
+    # dictionaries (one for each time stamp), key - lesion idx, value - volume in cm^3
 
     grouped_volumes = {}
 
@@ -24,42 +24,42 @@ def generate_volume_list_single_lesion(patient_path, longitudinal_volumes_array)
 
 def check_lesion_growth_from_last_scan(lesion_volumes):
     """
-    this function gets a list of a lesion's volume_cal changes over time and
+    this function gets a list of a lesion's volume changes over time and
     checks the difference from last 2 consecutive scans
     :param lesion_volumes:
     :return:
     """
     text = ""
     if not lesion_volumes:
-        return "No volume_cal data available for the lesion."
+        return "No volume data available for the lesion."
     cur_volume = lesion_volumes[-1]
     if len(lesion_volumes) < 2:
-        return "No volume_cal data available for the lesion from previous scan. "
+        return "No volume data available for the lesion from previous scan. "
 
     prev_volume = lesion_volumes[-2]
     vol_change_type = ""
     change_percentage = round(abs((cur_volume / prev_volume) - 1) * 100)
     if cur_volume < prev_volume:
-        #The volume_cal has increased by {change_percentage}% between the previous scan and the current scan.
-        text += f"Lesion volume_cal has decreased by {change_percentage}% from previous scan to current scan. "
+        #The volume has increased by {change_percentage}% between the previous scan and the current scan.
+        text += f"Lesion volume has decreased by {change_percentage}% from previous scan to current scan. "
     elif cur_volume > prev_volume:
-        text += f"Lesion volume_cal has decreased by {change_percentage}% from previous scan to current scan. "
+        text += f"Lesion volume has decreased by {change_percentage}% from previous scan to current scan. "
     else:
-        text += "No change in lesion volume_cal from previous scan to current scan. "
+        text += "No change in lesion volume from previous scan to current scan. "
 
     return text
 
 
 def check_single_lesion_growth(vol_list, lesion_idx):
     """
-    this function gets a list of a lesion's volume_cal changes over time
-    and checks if the volume_cal increased/decreased
+    this function gets a list of a lesion's volume changes over time
+    and checks if the volume increased/decreased
     """
     lesion_volumes = [0]
     if lesion_idx in vol_list:
         lesion_volumes = vol_list[lesion_idx]
     if not lesion_volumes:
-        return "No volume_cal data available for the lesion. "
+        return "No volume data available for the lesion. "
 
     increasing = decreasing = True
 
@@ -81,7 +81,7 @@ def check_single_lesion_growth(vol_list, lesion_idx):
 
 
 """
-this function adds text describing percentage of volume_cal growth for each time stamp
+this function adds text describing percentage of volume growth for each time stamp
 """
 
 

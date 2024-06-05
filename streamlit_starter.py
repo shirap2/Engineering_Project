@@ -1,11 +1,17 @@
+from create_input.create_input_files import get_patient_input
 from interactive_summary.convert_pdf_to_streamlit import display_element
 import streamlit as st
 import sys
 import os
 import argparse
-# from common_packages.LongGraphPackage import LoaderSimpleFromJson
 from generate_info.gen_all import get_full_display_elements
 import base64
+from reportlab.platypus import Paragraph
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+
+from interactive_summary.save_patient_info import get_sorted_patient_scans_date
+from interactive_summary.scan_window import get_segment_mapping_table, open_itksnap_on_slice
+
 # Add the directory containing your module to the Python path
 module_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '/create_input', 'create_input'))
 sys.path.append(module_path)
@@ -50,15 +56,15 @@ class InteractiveState():
 #     st.sidebar.header("Filter by Type of Lesion", divider='blue')
 #     # st.sidebar.header("Lesion Volume Filter")
 #
-#     threshold_size = st.sidebar.slider("Select lesion volume_cal threshold in current scan", min_value=0, max_value=50)
+#     threshold_size = st.sidebar.slider("Select lesion volume threshold in current scan", min_value=0, max_value=50)
 #
 #     # st.sidebar.header("Lesion Volume Changes Threshold (%)")
-#     vol_change_percentage = st.sidebar.slider("Select percentage threshold for lesion volume_cal changes compared to "
+#     vol_change_percentage = st.sidebar.slider("Select percentage threshold for lesion volume changes compared to "
 #                                               "previous scan", min_value=0, max_value=100, step=10)
 #     st.sidebar.write(f"""
 #         <div style="color: black; font-size: 14px;margin-bottom: 35px">
 #         <b> Displaying lesions that are currently larger than: {threshold_size}[cc] and
-#         with a volume_cal change of at least {vol_change_percentage}% from previous scan </b>
+#         with a volume change of at least {vol_change_percentage}% from previous scan </b>
 #         </div>
 #         """, unsafe_allow_html=True)
 #     return []
@@ -71,7 +77,7 @@ class InteractiveState():
 
 
 def main():
-    # ***************** pre-loading all patients: Dict {patient_name: PatientInput, volume_cal dict} ***********************
+    # ***************** pre-loading all patients: Dict {patient_name: PatientInput, volume dict} ***********************
     # organ_type = Organ.LIVER
     # patient_data_dict = load_save_patient_data(
     #     organ_type)  # too slow. i changed the function that goes over folders list to stop after
@@ -90,6 +96,8 @@ def main():
         parser.add_argument('--organ_type', type=str, required=True, help='Second argument')
         st.session_state.args = parser.parse_args()
 
+        st.session_state.args.dates = get_sorted_patient_scans_date(get_patient_input(st.session_state.args.patient_name, st.session_state.args.organ_type))[::-1]
+        st.session_state.args.dates_for_txt = [d.replace("_", ".") for d in st.session_state.args.dates]
         # patient_streamlit_data = load_save_patient_data(args.organ_type, args.patient_name)
         st.session_state.state = InteractiveState.default_full_information_display
     # ******************************************************************************************************************
@@ -109,8 +117,19 @@ def main():
     elif st.session_state.state == InteractiveState.download_version:
         display_pdf(f'output/{st.session_state.args.organ_type}/{st.session_state.args.patient_name}patient_summary.pdf')
     # ******************************************************************************************************************
+    elif st.session_state.state == InteractiveState.lesion_segmentation_map:
 
-    # 4. show summary using args
+        time_stamp = len(st.session_state.args.dates) - 1
+        for date in st.session_state.args.dates:
+            st.write(f'Lesions - Segmentation Map {date.replace("_", ".")}\n')
+            get_segment_mapping_table(date, time_stamp)
+            st.write('')
+            st.write('')
+            st.write('')
+            st.write('')
+            time_stamp -= 1
+
+
 
 
 def display_pdf(file_path):
@@ -138,12 +157,12 @@ def add_sidebar():
 
     st.sidebar.header("Open Scans", divider='blue')  # *****************************************************************
 
-    if st.sidebar.button("Open"):
-        st.session_state.state = InteractiveState.open_itk_snap
-        # organ = "liver"
-        # name = "C_A_"
-        # date = "14_01_2020"
-        # open_itksnap_on_slice(organ, name, date)
+    selected_date = st.sidebar.selectbox("Select Scan Date", ["Select Date"] + st.session_state.args.dates_for_txt)
+
+    if st.sidebar.button(f"Open Scan", use_container_width=True):
+        # this button doesnt change the state - it leaves whatever is displayed open
+        if selected_date != "Select Date":
+            open_itksnap_on_slice(st.session_state.args.organ_type, st.session_state.args.patient_name, selected_date.replace(".", "_"))
 
     if st.sidebar.button("Lesion - Segmentation Map", use_container_width=True):
         st.session_state.state = InteractiveState.lesion_segmentation_map

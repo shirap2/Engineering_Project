@@ -2,7 +2,7 @@ from generate_info.gen_single_patient_pdf import create_single_patient_pdf_page
 from generate_info.gen_single_lesion.gen_single_lesion_pdf import create_single_lesion_pdf_page
 from reportlab.platypus import SimpleDocTemplate, PageBreak
 import os
-from volume_cal.volume_calculation import generate_longitudinal_volumes_array
+from volume.volume_calculation import generate_longitudinal_volumes_array
 from create_input.create_input_files import get_patient_input, Organ
 from pathlib import Path
 
@@ -19,7 +19,7 @@ def create_pdf_file(patient_name: str, organ: Organ):
 
     elements = []
     volumes_dict = generate_longitudinal_volumes_array(patient.partial_scans_address)  # returns sorted (by date)
-    # array of dictionaries (one for each time stamp), key - lesion idx, value - volume_cal in cm^3
+    # array of dictionaries (one for each time stamp), key - lesion idx, value - volume in cm^3
     elements += create_single_patient_pdf_page(patient_name, patient.json_input_address, patient.partial_scans_address,
                                                patient.graph_image_path, volumes_dict)
 
@@ -36,7 +36,7 @@ def get_full_display_elements(patient_name: str, organ: Organ):
 
     elements = []
     volumes_dict = generate_longitudinal_volumes_array(patient.partial_scans_address)  # returns sorted (by date)
-    # array of dictionaries (one for each time stamp), key - lesion idx, value - volume_cal in cm^3
+    # array of dictionaries (one for each time stamp), key - lesion idx, value - volume in cm^3
     elements += create_single_patient_pdf_page(patient_name, patient.json_input_address, patient.partial_scans_address,
                                                patient.graph_image_path, volumes_dict)
 

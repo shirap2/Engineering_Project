@@ -16,7 +16,7 @@ from common_packages.LongGraphClassification import LongitClassification
 
 class LesionAttr:
     REG_CENTROID = 'centroid (reg)'
-    VOLUME = 'volume_cal'
+    VOLUME = 'volume'
     DIAMETER = 'extr. diameter'
     MAX_LESION_Z = 'max lesion slice'
     CALLIPER_DIAMETER = 'calliper diameter'
@@ -83,7 +83,7 @@ class Lesion:
 
 class MatchAttr:
     CENTROID_DIST = 'centroid dist'
-    VOL_DIFFERENCE = 'volume_cal diff'
+    VOL_DIFFERENCE = 'volume diff'
     NUM_OVERLAP_VOXELS = 'num overlap voxels'
     DICE = 'dice'
 
@@ -196,7 +196,7 @@ class TableCreator:
         """
         table_path: the path of the table you want to create. 
         patient_list: list of patients names (str)
-        local_load_series= function that loads reg series, non registered series and voxel volume_cal
+        local_load_series= function that loads reg series, non registered series and voxel volume
         local_load_reg_series = function that loads reg series
         """
         self._table_path = table_path

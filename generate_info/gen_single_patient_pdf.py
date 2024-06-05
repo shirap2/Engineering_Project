@@ -1,7 +1,7 @@
 from reportlab.platypus import Table, TableStyle, Paragraph, Spacer, Image
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from volume_cal.volume_calculation import get_diff_in_total, generate_longitudinal_volumes_array
+from volume.volume_calculation import get_diff_in_total, generate_longitudinal_volumes_array
 from patient_summary.classify_changes_in_individual_lesions import gen_dict_classified_nodes_for_layers, classify_changes_in_individual_lesions, count_d_in_d_out, changes_in_individual_lesions
 from common_packages.LongGraphClassification import LongitClassification
 from common_packages.LongGraphPackage import LoaderSimpleFromJson, DrawerLabels

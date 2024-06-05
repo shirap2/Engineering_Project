@@ -15,7 +15,7 @@ import networkx as nx
 
 
 class LesionAttr:
-    REG_VOLUME = 'volume_cal'
+    REG_VOLUME = 'volume'
 
 
 class Lesion:
@@ -275,7 +275,7 @@ class MatchingAlgo:
         """
         :param pat_name: patient name
         :param lesion_segm_series: a list of N registered labeled lesion segmentations (of the same size!).
-            The class assumes that the voxel volume_cal is 1x1x1 mm^3
+            The class assumes that the voxel volume is 1x1x1 mm^3
         :param time_indices: a list of N integers being the time indices of the scans. If None, set as list indices.
         :param max_dilation: the number of iterations of the algorithm
         """
@@ -420,7 +420,7 @@ class MatchingAlgo:
     def dilation_overlap(self, dilation_table_path) -> pd.DataFrame:
         """
         Iteratively dilate all lesions segmentation and prepare a table, in which: Table[les1,les2]= # iterations in
-        which les1 and les2 have an overlap of at least 10% of their dilated volume_cal.
+        which les1 and les2 have an overlap of at least 10% of their dilated volume.
         :param dilation_table_path: path where the excel table should be saved
         :return: df (pd.DataFrame) of the table.
         """
@@ -533,7 +533,7 @@ class MatchingAlgoTest(MatchingAlgo):
         """
         :param pat_name: patient name
         :param lesion_segm_series: a list of N registered labeled lesion segmentations (of the same size!).
-            The class assumes that the voxel volume_cal is 1x1x1 mm^3
+            The class assumes that the voxel volume is 1x1x1 mm^3
         :param time_indices: a list of N integers being the time indices of the scans. If None, set as list indices.
         :param max_dilation: the number of iterations of the algorithm
         """
@@ -619,7 +619,7 @@ class PairsMatchingAlgo(MatchingAlgo):
         """
         :param pat_name: patient name
         :param lesion_segm_pairs: a list: [[tumors_t1_reg_t2, tumors_t2], []] of N-1 pairs of registered labeled lesion
-            segmentations and fix scan (of the same dimension!). The class assumes that the voxel volume_cal is 1x1x1 mm^3.
+            segmentations and fix scan (of the same dimension!). The class assumes that the voxel volume is 1x1x1 mm^3.
         :param time_indices: a list of N integers being the time indices of the scans. If None, set as list indices.
         :param max_dilation: the number of iterations of the algorithm
         :param registration_folder: the path to the folder containing patients folders
@@ -698,7 +698,7 @@ class PairsMatchingAlgo(MatchingAlgo):
     def dilation_overlap(self, dilation_table_path) -> pd.DataFrame:
         """
         Iteratively dilate all lesions segmentation and prepare a table, in which: Table[les1,les2]= # iterations in
-        which les1 and les2 have an overlap of at least 10% of their dilated volume_cal.
+        which les1 and les2 have an overlap of at least 10% of their dilated volume.
         :param dilation_table_path: path where the excel table should be saved
         :return: df (pd.DataFrame) of the table.
         """

@@ -355,7 +355,7 @@ class GwMatching:
     def __init__(self, label2data=None, tensor=None, dist_threshold=20):
         """
         :param label2data: is a list of dictionaries. Each dictionary is a layer. The dictionary index inside the list is the layer
-        index. The layer is: {lb : ((centroid), volume_cal)
+        index. The layer is: {lb : ((centroid), volume)
         :param tensor: is a numpy array of dim: (x_img, y_img, z_img, n_layers)
         """
         self.cl_list = list()
@@ -802,7 +802,7 @@ class ConnectedLesion:
         self.is_complete = self.check_completeness()
         self.match = match
         self.centroid = self.get_lesions_mean_param(param="centroid")
-        self.volume = self.get_lesions_mean_param(param="volume_cal")
+        self.volume = self.get_lesions_mean_param(param="volume")
 
     def check_completeness(self):
         return np.all(self.layers_presence)
@@ -812,7 +812,7 @@ class ConnectedLesion:
             return None
         if param == "centroid":
             param_ind = CENTROID_IDX
-        elif param == "volume_cal":
+        elif param == "volume":
             param_ind = VOL_IDX
         else:
             raise ValueError("")
@@ -833,7 +833,7 @@ class ConnectedLesion:
         """
         Get a list of lesions ("{label}_{layer}") to add to the current CL. Check if it's possible to add lesions to the
         CL, check in which layers is possible to add lesions and then (if there are addable lesions) add them to the CL,
-        updating the CL centroid and volume_cal.
+        updating the CL centroid and volume.
         """
 
 
@@ -848,7 +848,7 @@ class ConnectedLesion:
         new_match = self.match + new_lesions
         self.match = sorted(new_match, key=lambda u: vert2layer(u))
         self.centroid = self.get_lesions_mean_param(param="centroid")
-        self.volume = self.get_lesions_mean_param(param="volume_cal")
+        self.volume = self.get_lesions_mean_param(param="volume")
         match_layers = [vert2layer(v) for v in self.match]
         self.layers_presence = np.array([layer in match_layers for layer in range(self.n_layers)])
         self.is_complete = self.check_completeness()
@@ -943,9 +943,9 @@ class GwMatchingTester:
     def extract_lesions_data(segmentation_series, voxel_volumes=None):
         """
         :param segmentation_series: a tensor of dim (image_dim1, image_dim2, .. , n_layers)
-        :param voxel_volumes: a list/nparray of length n_layer. Each element is the average voxel volume_cal in the correspondent layer
+        :param voxel_volumes: a list/nparray of length n_layer. Each element is the average voxel volume in the correspondent layer
         :return: label2data is a list of dictionaries. Each dictionary is a layer. The dictionary index inside the list is the layer
-        index. The layer is: {lb : ((centroid), volume_cal)
+        index. The layer is: {lb : ((centroid), volume)
         """
 
         def round_tuple(tup, n_digit):

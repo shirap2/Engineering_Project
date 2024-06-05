@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from common_packages.BaseClasses import Longit, NodeAttr, EdgeAttr, Colors, Drawer, Loader
-from volume_cal.volume_calculation import get_edges_to_node_dict, get_edges_from_node_dict
+from volume.volume_calculation import get_edges_to_node_dict, get_edges_from_node_dict
 from enum import Enum
 
 
@@ -386,9 +386,9 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         # self.percentage_diff_per_edge_dict = {edge: vol for edge, vol in self.percentage_diff_per_edge_dict.items()}
 
         percentage_diff_per_edge_dict, color_dict = edit_volume_percentage_data_to_str_and_color(
-            self.percentage_diff_per_edge_dict)  # volume_cal
-        nx.set_edge_attributes(self._base_graph, percentage_diff_per_edge_dict, name='label')  # volume_cal
-        nx.set_edge_attributes(self._base_graph, color_dict, name='color')  # volume_cal
+            self.percentage_diff_per_edge_dict)  # volume
+        nx.set_edge_attributes(self._base_graph, percentage_diff_per_edge_dict, name='label')  # volume
+        nx.set_edge_attributes(self._base_graph, color_dict, name='color')  # volume
 
     def add_volume_labels_to_skipping_edges(self): # shira
         percentage_diff = "+inf"
@@ -718,7 +718,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                     color = add_to_colors[edge]
                     nx.draw_networkx_edge_labels(G=self._base_graph, pos=pos, edge_labels={edge: label}, font_color=color)
 
-        self.draw_volume_related_attributes_on_graph(pos)  # volume_cal
+        self.draw_volume_related_attributes_on_graph(pos)  # volume
         nx.spring_layout(self._base_graph, scale=6.0)
 
 

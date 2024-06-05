@@ -5,10 +5,10 @@ from reportlab.lib.styles import getSampleStyleSheet
 from generate_info.gen_single_lesion.drawer_single_lesion_graph import PatientData
 from patient_summary.classify_changes_in_individual_lesions import classify_changes_in_individual_lesions, \
     count_d_in_d_out, gen_dict_classified_nodes_for_layers
-from volume_cal.lesion_volume_changes import check_single_lesion_growth, generate_volume_list_single_lesion
+from volume.lesion_volume_changes import check_single_lesion_growth, generate_volume_list_single_lesion
 from generate_info.gen_single_lesion.gen_single_lesion_graph import get_single_node_graph_image
 import networkx as nx
-from volume_cal.volume_calculation import get_percentage_diff_per_edge_dict, generate_longitudinal_volumes_array
+from volume.volume_calculation import get_percentage_diff_per_edge_dict, generate_longitudinal_volumes_array
 from common_packages.BaseClasses import *
 from datetime import datetime
 import re
