@@ -135,9 +135,9 @@ def get_prev_appeared_nodes(node,edges_to_node_dict,vol_array):
             prev_nodes += get_prev_appeared_nodes(prev,edges_to_node_dict,vol_array)
     return prev_nodes
 
-def find_when_last_appeared_text(node,edges_to_node,vol_array):
-    text =""
-    prev_nodes = get_prev_appeared_nodes(node,edges_to_node_dict,vol_array)
+# def find_when_last_appeared_text(node,edges_to_node,vol_array):
+#     text =""
+#     prev_nodes = get_prev_appeared_nodes(node, edges_to_node_dict, vol_array)
     
 
 

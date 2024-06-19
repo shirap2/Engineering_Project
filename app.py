@@ -6,6 +6,7 @@ import os
 import argparse
 from generate_info.gen_all import get_full_display_elements
 import base64
+from interactive_summary.scan_window import get_segment_info
 from reportlab.platypus import Paragraph
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
@@ -86,7 +87,7 @@ def main():
     # ******************************************************************************************************************
 
 
-    # ************************************** configurations - choose patient *******************************************
+    # ************************************** configurations *******************************************
     if 'state' not in st.session_state:
         st.session_state.state = InteractiveState.initialization
 
@@ -96,9 +97,40 @@ def main():
         parser.add_argument('--organ_type', type=str, required=True, help='Second argument')
         st.session_state.args = parser.parse_args()
 
-        st.session_st.ate.args.dates = get_sorted_patient_scans_date(get_patient_input(st.session_state.args.patient_name, st.session_state.args.organ_type))[::-1]
+        # save dates
+        st.session_state.args.dates = get_sorted_patient_scans_date(get_patient_input(st.session_state.args.patient_name, st.session_state.args.organ_type))[::-1]
         st.session_state.args.dates_for_txt = [d.replace("_", ".") for d in st.session_state.args.dates]
         # patient_streamlit_data = load_save_patient_data(args.organ_type, args.patient_name)
+
+        # save patient elements, and
+        # cc info, foe each cc_idx: ( volume_sum_of_last_nodes, internal_external_names_dict, is_cc_non_consecutive, pattern_of_cc )
+        # cc_info_dict[cc_idx] = [volume_sum_of_last_nodes, internal_external_names_dict, is_cc_non_consecutive,
+        # pattern_of_cc]
+
+        st.session_state.elements, st.session_state.cc_elements_dict, st.session_state.cc_info_dict,\
+        non_draw_internal_external_names_dict = get_full_display_elements(
+            st.session_state.args.patient_name, st.session_state.args.organ_type)
+
+        st.session_state.internal_external_names_dict = {}
+        # add names of the drawn cc's
+        for cc_idx in st.session_state.cc_info_dict:
+            _, internal_external_names_dict_per_cc, _, _ = st.session_state.cc_info_dict[cc_idx]
+            for external_name, internal_name in internal_external_names_dict_per_cc.items():
+                st.session_state.internal_external_names_dict[external_name] = internal_name
+        # add names of the non drawn cc's
+        for cc_idx in non_draw_internal_external_names_dict:
+            print(non_draw_internal_external_names_dict[cc_idx])
+            for external_name, internal_name in non_draw_internal_external_names_dict[cc_idx].items():
+                st.session_state.internal_external_names_dict[external_name] = internal_name
+
+        # print(non_draw_internal_external_names_dict.values())
+        # print(st.session_state.internal_external_names_dict)
+
+        # save lesion segmentation map
+        st.session_state.largest_slices_info = {}
+        for date in st.session_state.args.dates:
+            st.session_state.largest_slices_info[date] = get_segment_info(st.session_state.args.organ_type, st.session_state.args.patient_name, date)
+
         st.session_state.state = InteractiveState.default_full_information_display
     # ******************************************************************************************************************
 
@@ -108,8 +140,7 @@ def main():
 
     # ************************************ display default - full inforamtion ******************************************
     if st.session_state.state == InteractiveState.default_full_information_display:
-        elements = get_full_display_elements(st.session_state.args.patient_name, st.session_state.args.organ_type)
-        for element in elements:
+        for element in st.session_state.elements:
             display_element(element)
     # ******************************************************************************************************************
 
@@ -117,6 +148,8 @@ def main():
     elif st.session_state.state == InteractiveState.download_version:
         display_pdf(f'output/{st.session_state.args.organ_type}/{st.session_state.args.patient_name}patient_summary.pdf')
     # ******************************************************************************************************************
+
+    # ************************************** lesion segmentation map ***************************************************
     elif st.session_state.state == InteractiveState.lesion_segmentation_map:
 
         time_stamp = len(st.session_state.args.dates) - 1
@@ -128,9 +161,20 @@ def main():
             st.write('')
             st.write('')
             time_stamp -= 1
+    # ******************************************************************************************************************
 
+    # ************************************** display only non-consecutive **********************************************
+    elif st.session_state.state == InteractiveState.non_consecutive_matched_lesions:
+        if 'non_consecutive_elements' not in st.session_state:
+            st.session_state.non_consecutive_elements = []
+            for cc_idx in st.session_state.cc_elements_dict:
+                _, _, is_cc_non_consecutive, _ = st.session_state.cc_info_dict[cc_idx]
+                if is_cc_non_consecutive:
+                    st.session_state.non_consecutive_elements += st.session_state.cc_elements_dict[cc_idx]
 
-
+        for element in st.session_state.non_consecutive_elements:
+            display_element(element)
+    # ******************************************************************************************************************
 
 def display_pdf(file_path):
     with open(file_path, "rb") as f:

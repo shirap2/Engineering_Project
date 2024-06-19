@@ -1,1 +1,4 @@
 __pycache__/
+output/brain/sub_graphs/
+output/lungs/sub_graphs/
+output/liver/sub_graphs/

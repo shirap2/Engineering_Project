@@ -289,6 +289,7 @@ def create_single_lesion_pdf_page(patient,
 
     G = lg.get_graph()
     components = list(nx.connected_components(G))
+    print(components)
 
     max_time_per_cc_dict, total_max_time = find_max_time_stamp_per_cc_and_total(components)
     min_time_per_cc_dict = find_min_time_stamp_per_cc(components, total_max_time)
@@ -296,18 +297,28 @@ def create_single_lesion_pdf_page(patient,
     disappeared_components, new_single_components, components_to_draw = devide_components(components,
                                                                                           max_time_per_cc_dict,
                                                                                           total_max_time)
+    num_of_CCS_to_draw = len(components_to_draw)
+
+    non_draw_cc_idx = 0
+    non_draw_internal_external_names_dict = {}
+    non_draw_components = disappeared_components + new_single_components
+    for cc in non_draw_components:
+        non_draw_internal_external_names_dict[non_draw_cc_idx] = set_nodes_external_name(
+            non_draw_cc_idx + num_of_CCS_to_draw, non_draw_components[non_draw_cc_idx])
+        non_draw_cc_idx += 1
+
     # longitudinal_volumes_array = generate_longitudinal_volumes_array(patient_partial_path)
     percentage_diff_per_edge_dict = get_percentage_diff_per_edge_dict(ld, patient.partial_scans_address, longitudinal_volumes_array)
 
     # add section of new
     elements += get_sub_title("New Lesions", True)
-    elements += get_new_lesions_text(new_single_components)
+    elements += get_new_lesions_text(new_single_components) #TODO: use non_draw_internal_external_names_dict
     # add section of disappeared
     elements += get_sub_title("Disappeared Lesions", False)
 
     classified_nodes_dict = gen_dict_classified_nodes_for_layers(
         classify_changes_in_individual_lesions(count_d_in_d_out(ld), ld))
-    elements += get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, classified_nodes_dict, lg)
+    elements += get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, classified_nodes_dict, lg) #TODO: use non_draw_internal_external_names_dict
 
     ## classification of nodes and cc from benny code
     lg.classify_nodes()
@@ -325,14 +336,15 @@ def create_single_lesion_pdf_page(patient,
     # draw components to drw (existing in last scan + not new- no history)
     elements += get_sub_title("Lesions Appearing in Multiple Scans", False)
     all_patient_dates = lg.get_patient_dates()
-    num_of_CCS_to_draw = len(components_to_draw)
 
     patient_data = PatientData(lg, ld, components_to_draw,
                                longitudinal_volumes_array, percentage_diff_per_edge_dict)
 
+    cc_info_dict = {}
+
     while True:
         if cc_idx >= num_of_CCS_to_draw:
-            return elements
+            return elements, cc_info_dict, non_draw_internal_external_names_dict
         internal_external_names_dict = set_nodes_external_name(cc_idx, patient_data.components[cc_idx])
 
         count = 0
@@ -352,12 +364,12 @@ def create_single_lesion_pdf_page(patient,
             lg._num_of_layers = end_of_patient_dates - start
             # lg._num_of_layers = MAX_SCANS_PER_GRAPH
             path = f"{output_path}/{patient.organ}/sub_graphs/single_labeled_lesion_graph"
-            graph, lesions_idx = get_single_node_graph_image(path,cc_idx, start, end_of_patient_dates, patient_data, internal_external_names_dict)
+            graph, lesions_idx = get_single_node_graph_image(path, cc_idx, start, end_of_patient_dates, patient_data, internal_external_names_dict)
             if not graph:
-                return elements
+                return elements, cc_info_dict, non_draw_internal_external_names_dict
 
             # elements += get_graph_title(lesions_idx)
-            elements += [graph]
+            elements += [(cc_idx, graph)]
             
             # ## shira added text for classification of connected component
             # elements += cc_class_text(node2cc, nodes2cc_class, lesions_idx[0])
@@ -365,31 +377,14 @@ def create_single_lesion_pdf_page(patient,
             elements.append(Spacer(1, 20))
             count += MAX_SCANS_PER_GRAPH - OVERLAP_BETWEEN_GRAPHS
 
-        
-        # find if has doesnt appear lesion
-        # doesnt_appear_nodes = []
-        # for node in cur_component:
-        #     node_volume,appear = get_node_volume(node,longitudinal_volumes_array)
-        #     if not appear:
-        #         doesnt_appear_nodes.append(node)
-        # # get last volume and pattern of connected component
-        # last_nodes,max_time = get_last_t_node(cur_component)
-        # volume_sum_of_last_nodes=0
-        # for node in last_nodes:
-        #     node_key =int(node.split("_")[0])
-        #     if max_time in longitudinal_volumes_array:
-        #         if node_key in longitudinal_volumes_array[max_time]:
-        #             volume_sum_of_last_nodes+=longitudinal_volumes_array[max_time][node_key]
-        # if len(cur_component)>0:    
-        #     pattern_of_cc = nodes2cc_class[next(iter(cur_component))]
-        doesnt_appear_nodes, volume_sum_of_last_nodes, pattern_of_cc =find_doesnt_appear_vol_pattern(cur_component, longitudinal_volumes_array, nodes2cc_class)
+        doesnt_appear_nodes, volume_sum_of_last_nodes, pattern_of_cc = find_doesnt_appear_vol_pattern(cur_component, longitudinal_volumes_array, nodes2cc_class)
 
+        # update cc info dict
+        is_cc_non_consecutive = len(doesnt_appear_nodes) != 0
+        cc_info_dict[cc_idx] = [volume_sum_of_last_nodes, internal_external_names_dict, is_cc_non_consecutive, pattern_of_cc]
 
         # generate text
-        elements.append(gen_summary_for_cc(ld,cur_component,longitudinal_volumes_array,nodes2cc_class,all_patient_dates,internal_external_names_dict,doesnt_appear_nodes))  # todo
+        elements.append((cc_idx, gen_summary_for_cc(ld,cur_component,longitudinal_volumes_array,nodes2cc_class,all_patient_dates,internal_external_names_dict,doesnt_appear_nodes)))  # todo
 
         cc_idx += 1
-        # return elements #todo remove
-
-    # return elements
 

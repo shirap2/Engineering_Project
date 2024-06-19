@@ -123,13 +123,13 @@ def get_segment_mapping_table(date, time_stamp):
     def rgb_to_hex(r, g, b):
         return Color(r, g, b).hexval().replace("0x", "#")
 
-    largest_slices = get_segment_info(st.session_state.args.organ_type, st.session_state.args.patient_name, date)
-
-    lesions = list(f'{int(idx)}_{time_stamp}' for idx in largest_slices.keys())
-    slices = [val[0] for val in largest_slices.values()]
-    colors = [val[1] for val in largest_slices.values()]
-    areas = [round(val[2], 2) for val in largest_slices.values()]
-    diameters = [round(val[3], 2) for val in largest_slices.values()]
+    largest_slices_info = st.session_state.largest_slices_info[date]
+    lesions = list(f'{int(idx)}_{time_stamp}' for idx in largest_slices_info.keys())
+    # lesions = list(st.session_state.internal_external_names_dict[f'{int(idx)}_{time_stamp}'] for idx in largest_slices_info.keys())
+    slices = [val[0] for val in largest_slices_info.values()]
+    colors = [val[1] for val in largest_slices_info.values()]
+    areas = [round(val[2], 2) for val in largest_slices_info.values()]
+    diameters = [round(val[3], 2) for val in largest_slices_info.values()]
 
     df = pd.DataFrame({
         "Lesion Name": lesions,
