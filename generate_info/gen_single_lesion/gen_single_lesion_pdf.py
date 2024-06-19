@@ -2,13 +2,13 @@ from common_packages.LongGraphPackage import LoaderSimpleFromJson
 from reportlab.platypus import Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 
-from generate_info.gen_single_lesion.drawer_single_lesion_graph import PatientData
+from generate_info.gen_single_lesion.drawer_single_lesion_graph import PatientData, get_node_volume
 from patient_summary.classify_changes_in_individual_lesions import classify_changes_in_individual_lesions, \
     count_d_in_d_out, gen_dict_classified_nodes_for_layers
 from volume.lesion_volume_changes import check_single_lesion_growth, generate_volume_list_single_lesion
 from generate_info.gen_single_lesion.gen_single_lesion_graph import get_single_node_graph_image
 import networkx as nx
-from volume.volume_calculation import get_percentage_diff_per_edge_dict, generate_longitudinal_volumes_array
+from volume.volume_calculation import get_dict_of_volume_percentage_change_and_classification_per_edge, get_percentage_diff_per_edge_dict, generate_longitudinal_volumes_array
 from common_packages.BaseClasses import *
 from datetime import datetime
 import re
@@ -341,11 +341,17 @@ def create_single_lesion_pdf_page(patient,
             elements.append(Spacer(1, 20))
             count += MAX_SCANS_PER_GRAPH - OVERLAP_BETWEEN_GRAPHS
 
-        # elements += get_lesion_history_text(lesions_idx[0], vol_list)  # todo
+        
+        # find if has doesnt appear lesion
+        doesnt_appear_nodes = []
+        for node in cur_component:
+            node_volume,appear = get_node_volume(node,longitudinal_volumes_array)
+            if not appear:
+                doesnt_appear_nodes.append(node)
+        # get last volume and pattern of connected component
 
-        # shira added text for classification of connected component
-        # elements += cc_class_text(node2cc, nodes2cc_class, lesions_idx[0])
-        elements.append(gen_summary_for_cc(ld,cur_component,longitudinal_volumes_array,internal_external_names_dict,nodes2cc_class,all_patient_dates,internal_external_names_dict))  # todo
+        # generate text
+        elements.append(gen_summary_for_cc(ld,cur_component,longitudinal_volumes_array,nodes2cc_class,all_patient_dates,internal_external_names_dict,doesnt_appear_nodes))  # todo
 
         cc_idx += 1
         # return elements #todo remove

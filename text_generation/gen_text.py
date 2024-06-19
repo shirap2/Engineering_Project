@@ -136,7 +136,7 @@ def get_prev_appeared_nodes(node,edges_to_node_dict,vol_array):
     return prev_nodes
 
 
-def doesnt_appear_or_lone_lesion(ld,last_node,pattern,vol_array,all_patient_dates,cur_component):
+def doesnt_appear_or_lone_lesion(ld,last_node,pattern,vol_array,all_patient_dates,cur_component,doesnt_appear_nodes={}):
     edges_to_node_dict = get_edges_to_node_dict(ld)
     last_seen,_ = edges_to_node_dict[last_node][0]
     last_seen_time = last_seen.split("_")[1]
@@ -257,16 +257,17 @@ def get_volume_diff_from_first_scan(ld,cur_node,cur_component,vol_array):
     return text
 
 
-def gen_text_single_node(ld,last_node,nodes2cc_class,edge_vol_change_class,edges_list,longitudinal_volumes_array,all_patient_dates,cur_component,volume_change_per_edge_dict):
+def gen_text_single_node(ld,last_node,nodes2cc_class,edge_vol_change_class,edges_list,longitudinal_volumes_array,all_patient_dates,cur_component,volume_change_per_edge_dict,doesnt_appear_nodes=[]):
     text =""
     # check pattern type of cc
     pattern = nodes2cc_class[last_node]
+    doesnt_appear_cc_dict = {node:nodes2cc_class[node] for node in doesnt_appear_nodes}
     vol_change_percentage,edge_class = edge_vol_change_class
     vol_change_percentage = abs(round(vol_change_percentage))
     doesnt_appear_flag =False
     if edge_class == "empty":
         doesnt_appear_flag=True
-        text = doesnt_appear_or_lone_lesion(ld,last_node,pattern,longitudinal_volumes_array,all_patient_dates,cur_component)
+        text = doesnt_appear_or_lone_lesion(ld,last_node,pattern,longitudinal_volumes_array,all_patient_dates,cur_component,doesnt_appear_cc_dict)
         return text
 
     if vol_change_percentage<0:
@@ -329,7 +330,7 @@ def replace_lesion_names(text,internal_external_names_dict):
     # Perform the replacement
     return pattern.sub(replace_match, text)
 
-def gen_summary_for_cc(ld,cur_component,longitudinal_volumes_array,max_time_per_cc_dict,nodes2cc_class,all_patient_dates,internal_external_names_dict):
+def gen_summary_for_cc(ld,cur_component,longitudinal_volumes_array,nodes2cc_class,all_patient_dates,internal_external_names_dict,doesnt_appear_nodes):
     text =""
     last_nodes,max_time = get_last_t_node(cur_component)
     volume_change_per_edge_dict= get_dict_of_volume_percentage_change_and_classification_per_edge(ld,longitudinal_volumes_array)
@@ -342,8 +343,8 @@ def gen_summary_for_cc(ld,cur_component,longitudinal_volumes_array,max_time_per_
         edges_list =edges_dict[last_node_par]
 
         # check if there are no edges from this node. meaning node either doesnt appear or is lone
-        if len(edges_list)==0:
-            text+= gen_text_single_node(ld,last_node_par,nodes2cc_class,(0,"empty"),edges_list,longitudinal_volumes_array,all_patient_dates,cur_component,volume_change_per_edge_dict)
+        if len(doesnt_appear_nodes)>0:
+            text+= gen_text_single_node(ld,last_node_par,nodes2cc_class,(0,"empty"),edges_list,longitudinal_volumes_array,all_patient_dates,cur_component,volume_change_per_edge_dict,doesnt_appear_nodes)
 
         else:
             input_par =volume_change_per_edge_dict[edges_list[0]]
