@@ -14,7 +14,7 @@ from datetime import datetime
 import re
 import pickle
 from pathlib import Path
-from text_generation.gen_text import gen_summary_for_cc
+from text_generation.gen_text import gen_summary_for_cc, get_last_t_node
 
 
 ROOT = str(Path(__file__).resolve().parent).replace("generate_info/gen_single_lesion", "")
@@ -245,6 +245,30 @@ def set_nodes_external_name(cc_idx, nodes):
 
     return internal_external_names_dict
 
+def find_doesnt_appear_vol_pattern(cur_component, longitudinal_volumes_array, nodes2cc_class):
+    
+    # Determine nodes that do not appear
+    doesnt_appear_nodes = [
+        node for node in cur_component
+        if not get_node_volume(node, longitudinal_volumes_array)[1]
+    ]
+    
+    # Get last nodes and max time
+    last_nodes, max_time = get_last_t_node(cur_component)
+    
+    # Calculate the volume sum of the last nodes
+    volume_sum_of_last_nodes = 0
+    for node in last_nodes:
+
+        if len(longitudinal_volumes_array)>max_time:
+            if int(node.split("_")[0]) in longitudinal_volumes_array[max_time]:
+                volume_sum_of_last_nodes+=longitudinal_volumes_array[max_time][int(node.split("_")[0])]
+    
+    # Determine the pattern of the connected component
+    pattern_of_cc = nodes2cc_class[next(iter(cur_component))] if cur_component else None
+    
+    return doesnt_appear_nodes, volume_sum_of_last_nodes, pattern_of_cc
+
 
 def create_single_lesion_pdf_page(patient,
                                   longitudinal_volumes_array):
@@ -343,12 +367,23 @@ def create_single_lesion_pdf_page(patient,
 
         
         # find if has doesnt appear lesion
-        doesnt_appear_nodes = []
-        for node in cur_component:
-            node_volume,appear = get_node_volume(node,longitudinal_volumes_array)
-            if not appear:
-                doesnt_appear_nodes.append(node)
-        # get last volume and pattern of connected component
+        # doesnt_appear_nodes = []
+        # for node in cur_component:
+        #     node_volume,appear = get_node_volume(node,longitudinal_volumes_array)
+        #     if not appear:
+        #         doesnt_appear_nodes.append(node)
+        # # get last volume and pattern of connected component
+        # last_nodes,max_time = get_last_t_node(cur_component)
+        # volume_sum_of_last_nodes=0
+        # for node in last_nodes:
+        #     node_key =int(node.split("_")[0])
+        #     if max_time in longitudinal_volumes_array:
+        #         if node_key in longitudinal_volumes_array[max_time]:
+        #             volume_sum_of_last_nodes+=longitudinal_volumes_array[max_time][node_key]
+        # if len(cur_component)>0:    
+        #     pattern_of_cc = nodes2cc_class[next(iter(cur_component))]
+        doesnt_appear_nodes, volume_sum_of_last_nodes, pattern_of_cc =find_doesnt_appear_vol_pattern(cur_component, longitudinal_volumes_array, nodes2cc_class)
+
 
         # generate text
         elements.append(gen_summary_for_cc(ld,cur_component,longitudinal_volumes_array,nodes2cc_class,all_patient_dates,internal_external_names_dict,doesnt_appear_nodes))  # todo
