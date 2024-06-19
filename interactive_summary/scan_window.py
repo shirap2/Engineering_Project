@@ -6,6 +6,7 @@ import streamlit as st
 from common_packages.BaseClasses import Colors
 import pandas as pd
 from reportlab.lib.colors import Color
+from scipy.spatial import distance_matrix
 
 
 def scan_path(organ, name, date):
@@ -55,15 +56,26 @@ def open_itksnap_on_slice(organ, name, date):
 # ########################################### Get SLice Number etc. ###############################################
 def calculate_diameter(binary_slice, label):
     """Calculate the diameter of the segment in a binary slice."""
-    coords = np.argwhere(binary_slice == label)
-    if coords.size == 0:
-        return 0
+    # coords = np.argwhere(binary_slice == label)
+    # if coords.size == 0:
+    #     return 0
+    #
+    # y_min, x_min = coords.min(axis=0)
+    # y_max, x_max = coords.max(axis=0)
+    #
+    # diameter = np.sqrt((y_max - y_min) ** 2 + (x_max - x_min) ** 2)
+    # return diameter
 
-    y_min, x_min = coords.min(axis=0)
-    y_max, x_max = coords.max(axis=0)
+    # Extract coordinates of non-zero pixels
+    points = np.argwhere(binary_slice == label)
 
-    diameter = np.sqrt((y_max - y_min) ** 2 + (x_max - x_min) ** 2)
-    return diameter
+    # Compute the pairwise distance matrix
+    dist_matrix = distance_matrix(points, points)
+
+    # Find the maximum distance
+    max_dist = np.max(dist_matrix)
+
+    return max_dist
 
 
 def get_segment_info(organ, name, date):

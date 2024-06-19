@@ -5,6 +5,7 @@ from volume.volume_calculation import get_diff_in_total, generate_longitudinal_v
 from patient_summary.classify_changes_in_individual_lesions import gen_dict_classified_nodes_for_layers, classify_changes_in_individual_lesions, count_d_in_d_out, changes_in_individual_lesions
 from common_packages.LongGraphClassification import LongitClassification
 from common_packages.LongGraphPackage import LoaderSimpleFromJson, DrawerLabels
+import numpy as np
 
 def get_file_title(patient_name: str):
     title_string = patient_name + " Patient Summary"
@@ -61,11 +62,20 @@ def get_lesion_counter_and_classifier_table(ld):
 def edit_volume_data_to_str(data: list):
     total_vol_cm3, vol_percentage_diff, vol_cm3_diff = data
     diff_is_positive = (vol_percentage_diff > 0)
-    
+
     total_vol_cm3 = str(round(total_vol_cm3, 2))
-    vol_percentage_diff = str(round(vol_percentage_diff)) 
-    if vol_percentage_diff!="0":
-        vol_percentage_diff+="%"
+
+    # added this check because of the error: cannot convert float infinity to integer
+    if np.isinf(vol_percentage_diff):
+        if vol_percentage_diff > 0:
+            vol_percentage_diff = 'inf'
+        else:
+            vol_percentage_diff = '-inf'
+    else:
+        vol_percentage_diff = str(round(vol_percentage_diff))
+
+    if vol_percentage_diff != "0":
+        vol_percentage_diff += "%"
     vol_cm3_diff = str(round(vol_cm3_diff, 2))
 
     if diff_is_positive:

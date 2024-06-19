@@ -11,6 +11,8 @@ lungs = ['M_G_', 'A_Z_A_', 'N_M_R_', 'S_I_', 'S_N_', 'F_Y_Ga_', 'G_B_', 'C_A_', 
       'A_S_H_', 'Z_Aa_', 'A_Y_', 'A_A_', 'G_Ea_', 'L_I_', 'M_S_']
 
 
+""" runs the generation of all elements of all the dataset patients and organs 
+- displays them onto a PDF for further checking """
 def create_pdf_of_entire_dataset():
     for name in lungs:
         try:

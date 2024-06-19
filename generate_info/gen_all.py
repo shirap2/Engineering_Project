@@ -57,36 +57,6 @@ lungs = ['M_G_', 'A_Z_A_', 'N_M_R_', 'S_I_', 'S_N_', 'F_Y_Ga_', 'G_B_', 'C_A_', 
       'A_S_H_', 'Z_Aa_', 'A_Y_', 'A_A_', 'G_Ea_', 'L_I_', 'M_S_']
 
 
-def create_pdf_of_entire_dataset():
-    for name in lungs:
-        try:
-            organ = Organ.LUNGS
-            create_pdf_file(name, organ)
-        except Exception as e:
-            print(f'{name}: {e}')
-
-    for name in liver:
-        try:
-            organ = Organ.LIVER
-            create_pdf_file(name, organ)
-        except Exception as e:
-            print(f'{name}: {e}')
-
-    for name in brain:
-        try:
-            organ = Organ.BRAIN
-            create_pdf_file(name, organ)
-        except Exception as e:
-            print(f'{name}: {e}')
-
-    # BUG:
-    # G_B_: cannot convert float infinity to integer
-    # A_S_H_: cannot convert float infinity to integer
-    # Z_Aa_: cannot convert float infinity to integer
-
-# create_pdf_of_entire_dataset()
-
-
 # name = 'C_A_'
 # # name = 'A_S_H_'
 # organ = Organ.LIVER

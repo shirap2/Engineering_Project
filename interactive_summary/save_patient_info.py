@@ -52,8 +52,6 @@ def get_sorted_patient_scans_date(patient):
     return formatted_dates
 
 
-
-
 def get_max_vol(volumes_dict):
     return max(volumes_dict[-1].values())
 

@@ -1,4 +1,3 @@
-# test_my_app.py
 import streamlit.testing.v1 as st_test
 from streamlit.testing.v1 import AppTest
 
