@@ -135,7 +135,13 @@ def get_prev_appeared_nodes(node,edges_to_node_dict,vol_array):
             prev_nodes += get_prev_appeared_nodes(prev,edges_to_node_dict,vol_array)
     return prev_nodes
 
+def find_when_last_appeared_text(node,edges_to_node,vol_array):
+    text =""
+    prev_nodes = get_prev_appeared_nodes(node,edges_to_node_dict,vol_array)
+    
 
+
+    return text
 def doesnt_appear_or_lone_lesion(ld,last_node,pattern,vol_array,all_patient_dates,cur_component,doesnt_appear_nodes={}):
     edges_to_node_dict = get_edges_to_node_dict(ld)
     last_seen,_ = edges_to_node_dict[last_node][0]
@@ -153,7 +159,9 @@ def doesnt_appear_or_lone_lesion(ld,last_node,pattern,vol_array,all_patient_date
     date = "date"
     if int(cur_node_idx) in vol_array[int(cur_time)]:
         cur_node_vol = vol_array[int(cur_time)][int(cur_node_idx)]
-        text+=f"This lesion doesn't appear in the previous scan, taken on {all_patient_dates[int(last_seen_time)]}. The currrent lesion volume is {round(cur_node_vol,2)} cc. "
+        text+=f"This lesion doesn't appear in the previous scan, taken on {all_patient_dates[int(last_seen_time)]}. "
+        # text += find_when_last_appeared_text()
+        text+=f"The currrent lesion volume is {round(cur_node_vol,2)} cc. "
         text+= get_volume_diff_from_first_scan(ld, last_node,cur_component,vol_array)
         return text
     
