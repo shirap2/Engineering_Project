@@ -2,18 +2,19 @@ from common_packages.LongGraphPackage import LoaderSimpleFromJson
 from reportlab.platypus import Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 
-from generate_info.gen_single_lesion.drawer_single_lesion_graph import PatientData
+from generate_info.gen_single_lesion.drawer_single_lesion_graph import PatientData, get_node_volume
 from patient_summary.classify_changes_in_individual_lesions import classify_changes_in_individual_lesions, \
     count_d_in_d_out, gen_dict_classified_nodes_for_layers
 from volume.lesion_volume_changes import check_single_lesion_growth, generate_volume_list_single_lesion
 from generate_info.gen_single_lesion.gen_single_lesion_graph import get_single_node_graph_image
 import networkx as nx
-from volume.volume_calculation import get_percentage_diff_per_edge_dict, generate_longitudinal_volumes_array
+from volume.volume_calculation import get_dict_of_volume_percentage_change_and_classification_per_edge, get_percentage_diff_per_edge_dict, generate_longitudinal_volumes_array
 from common_packages.BaseClasses import *
 from datetime import datetime
 import re
 import pickle
 from pathlib import Path
+from text_generation.gen_text import gen_summary_for_cc
 
 
 ROOT = str(Path(__file__).resolve().parent).replace("generate_info/gen_single_lesion", "")
@@ -231,6 +232,20 @@ def set_nodes_external_name(cc_idx, nodes):
     return internal_external_names_dict
 
 
+def set_nodes_external_name(cc_idx, nodes):
+    letters = [chr(i) for i in range(ord('a'), ord('z') + 1)]
+    n = len(letters)
+    i = 0
+
+    sorted_nodes = sorted(nodes, key=lambda x: int(x.split("_")[1]))
+    internal_external_names_dict = {}
+    for node in sorted_nodes:
+        internal_external_names_dict[node] = f'{cc_idx + 1}{letters[i%n]}'
+        i += 1
+
+    return internal_external_names_dict
+
+
 def create_single_lesion_pdf_page(patient,
                                   longitudinal_volumes_array):
     with open(patient.pickle_input_address, "rb") as file:
@@ -244,7 +259,7 @@ def create_single_lesion_pdf_page(patient,
     elements.append(Spacer(1, 20))
 
     # graph image
-    # vol_list = generate_volume_list_single_lesion(patient.partial_scans_address, longitudinal_volumes_array)
+    # vol_list = generate_volume_list_single_lesion(longitudinal_volumes_array)
     cc_idx = 0
     ld = LoaderSimpleFromJson(patient.json_input_address)
 
@@ -299,7 +314,7 @@ def create_single_lesion_pdf_page(patient,
         count = 0
         ran_through_all_scans = False
         CC_first_appeared_in = min_time_per_cc_dict[tuple(components_to_draw[cc_idx])]
-
+        cur_component = patient_data.components[cc_idx]
         while not ran_through_all_scans:
 
             start = count + CC_first_appeared_in
@@ -319,18 +334,24 @@ def create_single_lesion_pdf_page(patient,
 
             # elements += get_graph_title(lesions_idx)
             elements += [graph]
-            # elements += get_lesion_history_text(lesions_idx[0], vol_list)  # todo
-            #
+            
             # ## shira added text for classification of connected component
             # elements += cc_class_text(node2cc, nodes2cc_class, lesions_idx[0])
 
             elements.append(Spacer(1, 20))
             count += MAX_SCANS_PER_GRAPH - OVERLAP_BETWEEN_GRAPHS
 
-        # elements += get_lesion_history_text(lesions_idx[0], vol_list)  # todo
+        
+        # find if has doesnt appear lesion
+        doesnt_appear_nodes = []
+        for node in cur_component:
+            node_volume,appear = get_node_volume(node,longitudinal_volumes_array)
+            if not appear:
+                doesnt_appear_nodes.append(node)
+        # get last volume and pattern of connected component
 
-        # shira added text for classification of connected component
-        # elements += cc_class_text(node2cc, nodes2cc_class, lesions_idx[0])
+        # generate text
+        elements.append(gen_summary_for_cc(ld,cur_component,longitudinal_volumes_array,nodes2cc_class,all_patient_dates,internal_external_names_dict,doesnt_appear_nodes))  # todo
 
         cc_idx += 1
         # return elements #todo remove

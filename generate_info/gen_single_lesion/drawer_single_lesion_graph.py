@@ -252,7 +252,6 @@ class DrawerLabelsAndLabeledEdges(Drawer):
             if dest_vol == 0:
                 # remove src
                 next_nodes.remove(next)
-                # next_nodes += self.get_prev_appeared_nodes(next) ## ?????
                 next_nodes += self.get_next_appeared_nodes(next)
         return next_nodes
 

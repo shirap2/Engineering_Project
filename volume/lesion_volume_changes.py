@@ -3,7 +3,7 @@ from volume.volume_calculation import generate_longitudinal_volumes_array, get_d
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
 
 
-def generate_volume_list_single_lesion(patient_path, longitudinal_volumes_array):
+def generate_volume_list_single_lesion(longitudinal_volumes_array):
     # longitudinal_volumes_array = generate_longitudinal_volumes_array(patient_path)  # returns sorted (by date) array of
     # dictionaries (one for each time stamp), key - lesion idx, value - volume in cm^3
 
@@ -55,7 +55,7 @@ def check_single_lesion_growth(vol_list, lesion_idx):
     this function gets a list of a lesion's volume changes over time
     and checks if the volume increased/decreased
     """
-    lesion_volumes = [0]
+    lesion_volumes = 0
     if lesion_idx in vol_list:
         lesion_volumes = vol_list[lesion_idx]
     if not lesion_volumes:
