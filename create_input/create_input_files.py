@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 
-DATASET_ON_CASMIP = False
+DATASET_ON_CASMIP = True
 
 def get_project_root():
     # Get the path of the current script
@@ -18,7 +18,7 @@ def get_project_root():
     
     # Alternatively, you may need to navigate up multiple levels, e.g., project_root = current_script_path.parents[1]
     
-    return str(project_root).replace("create_input", "")
+    return str(project_root)
 
 ROOT = str(Path(__file__).resolve().parent).replace("create_input", "")
 input_path = ROOT + "input"

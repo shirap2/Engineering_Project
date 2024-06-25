@@ -5,7 +5,8 @@ import os
 from volume.volume_calculation import generate_longitudinal_volumes_array
 from create_input.create_input_files import get_patient_input, Organ
 from pathlib import Path
-
+import shutil
+import copy
 
 ROOT = str(Path(__file__).resolve().parent).replace("generate_info", "")
 output_path = ROOT + "output"
@@ -69,18 +70,26 @@ def create_pdf_file(patient_name: str, organ: Organ):
     doc.build(elements)
 
 
+
 def get_full_display_elements(patient_name: str, organ: Organ):
     patient = get_patient_input(patient_name, organ)
+
+    pdf_name = f"{output_path}/{patient.organ}/" + patient_name.replace(" ", "_") + "patient_summary.pdf"
+    if os.path.exists(pdf_name):
+        os.remove(pdf_name)
+    doc = SimpleDocTemplate(pdf_name)
 
     elements = []
     volumes_dict = generate_longitudinal_volumes_array(patient.partial_scans_address)  # returns sorted (by date)
     # array of dictionaries (one for each time stamp), key - lesion idx, value - volume in cm^3
     elements += create_single_patient_pdf_page(patient_name, patient.json_input_address, patient.partial_scans_address,
                                                patient.graph_image_path, volumes_dict)
-
+    # elements.append(PageBreak())
     elements_per_cc, cc_info_dict, non_draw_internal_external_names_dict = create_single_lesion_pdf_page(patient, volumes_dict)
     organized_cc_elements, cc_elements_dict = organize_elements_per_cc(elements_per_cc, cc_info_dict)
     elements += organized_cc_elements
+
+    doc.build(copy.deepcopy(elements))
 
     return elements, cc_elements_dict, cc_info_dict, non_draw_internal_external_names_dict
 
