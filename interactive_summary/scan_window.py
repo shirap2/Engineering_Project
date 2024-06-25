@@ -117,7 +117,10 @@ def get_segment_info(organ, name, date):
         diameter_of_max_area = calculate_diameter(segmentation_data[:, :, slice_with_max_area], label)
 
         # Store the result in the dictionary
-        color = Colors.itk_colors(label)
+        if DATASET_ON_CASMIP:
+            color = Colors.itk_colors(label)
+        else:
+            color = Colors.itk_colors(label, f'{dataset_path}/label_descriptions.txt')
         largest_slices[label] = [int(slice_with_max_area + 1), color, round(max_area / 100, 2), round(diameter_of_max_area / 10, 2)]
 
     return largest_slices

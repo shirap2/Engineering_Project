@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 
-DATASET_ON_CASMIP = True
+DATASET_ON_CASMIP = False
 
 def get_project_root():
     # Get the path of the current script
