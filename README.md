@@ -29,7 +29,7 @@
 
 ## 📚 Project Description
 Our project is a program designed to automatically generate a comprehensive summary of a patient's
-sequence of scans. This program involves collecting lesion data and presenting it clearly. 
+sequence of scans displayed onto a web app. This program involves collecting lesion data and presenting it clearly. 
 We utilize tables, textual summaries, and graphic displays to showcase lesion patterns over time. 
 This allows radiologists to gather more precise information in a shorter time frame.
 
@@ -44,23 +44,32 @@ These instructions will give you a copy of the project up and running on
 your local machine for development and testing purposes. 
 
 ### 🧱 Prerequisites
-Requirements for the software and other tools to build, test and push 
-- [Example 1](https://www.example.com)
-- [Example 2](https://www.example.com)
+Requirements for the software and other tools to build, test and push:
 
-### 🏗️ Installing
-A step by step series of examples that tell you how to get a development environment running
+1. Verify that you have ITK-snap app installed on your PC and that it is in the system PATH
+    ```bash   
+    which itksnap
+    ```
+    If it doesn't exist on your PC [download ITK-snap app](http://www.itksnap.org/pmwiki/pmwiki.php?n=Downloads.SNAP4)
 
-Say what the step will be
+2. Activate the virtual environment:
+    ```bash
+    source ./env/bin/activate
+    ```
 
-    Give the example
+4. Install requirements from requirements.txt:
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-And repeat
 
-    until finished
+### 🏗️ Run The Program
+1. Activate the virtual environment:
+    ```bash
+    source ./env/bin/activate
+    ```
 
-End with an example of getting some data out of the system or using it
-for a little demo
+###TODO - COMPLETE
 
 ## 🧪 Testing
 Explain how to run tests for this project
