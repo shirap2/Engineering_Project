@@ -7,15 +7,19 @@ from common_packages.BaseClasses import Colors
 import pandas as pd
 from reportlab.lib.colors import Color
 from scipy.spatial import distance_matrix
+from create_input.create_input_files import DATASET_ON_CASMIP, dataset_path
 
 
 def scan_path(organ, name, date):
-    return f'/cs/casmip/archive/bennydv/{organ}_pipeline/gt_data/size_filtered/labeled_no_reg/{name}/scan_{date}.nii.gz'
+    if DATASET_ON_CASMIP:
+        return f'/cs/casmip/archive/bennydv/{organ}_pipeline/gt_data/size_filtered/labeled_no_reg/{name}/scan_{date}.nii.gz'
+    return f"{dataset_path}/{organ}_pipeline/gt_data_nifti/{name}/scan_{date}.nii.gz"
 
 
 def gt_segmentation_path(organ, name, date):
-    return f'/cs/casmip/archive/bennydv/{organ}_pipeline/gt_data/size_filtered/labeled_no_reg/{name}/lesions_gt_{date}.nii.gz'
-
+    if DATASET_ON_CASMIP:
+        return f'/cs/casmip/archive/bennydv/{organ}_pipeline/gt_data/size_filtered/labeled_no_reg/{name}/lesions_gt_{date}.nii.gz'
+    return f"{dataset_path}/{organ}_pipeline/gt_data_nifti/{name}/lesions_gt_{date}.nii.gz"
 
 def open_itksnap_on_slice(organ, name, date):
     """
@@ -125,17 +129,6 @@ def get_segment_mapping_table(date, time_stamp):
 
     largest_slices_info = st.session_state.largest_slices_info[date]
 
-    # lesions = []
-    # for idx in largest_slices_info.keys():
-    #     if f'{int(idx)}_{time_stamp}' in st.session_state.internal_external_names_dict:
-    #         lesions.append(st.session_state.internal_external_names_dict[f'{int(idx)}_{time_stamp}'])
-    #     else:
-    #         lesions.append('_')
-    # slices = [val[0] for val in largest_slices_info.values()]
-    # colors = [val[1] for val in largest_slices_info.values()]
-    # areas = [round(val[2], 2) for val in largest_slices_info.values()]
-    # diameters = [round(val[3], 2) for val in largest_slices_info.values()]
-
     lesions, slices, colors, areas, diameters = [], [], [], [], []
     for idx, val in largest_slices_info.items():
 
@@ -147,6 +140,14 @@ def get_segment_mapping_table(date, time_stamp):
             areas.append(round(val[2], 2))
             diameters.append(round(val[3], 2))
 
+
+    # df = pd.DataFrame({
+    #     "Name": lesions,
+    #     "Lesion Area Slice Num.": slices,
+    #     "Color in Segmentation": colors,
+    #     "Area in Slice [cm²]": areas,
+    #     "Diameter in Slice [cm]": diameters
+    # })
 
     df = pd.DataFrame({
         "Lesion Name": lesions,

@@ -6,6 +6,9 @@ from generate_info.gen_single_lesion.gen_single_lesion_pdf import get_dates
 import matplotlib.pyplot as plt
 from pathlib import Path
 
+
+DATASET_ON_CASMIP = True
+
 def get_project_root():
     # Get the path of the current script
     current_script_path = Path(__file__).resolve()
@@ -19,6 +22,7 @@ def get_project_root():
 
 ROOT = str(Path(__file__).resolve().parent).replace("create_input", "")
 input_path = ROOT + "input"
+dataset_path = ROOT + "DATASET"
 
 class Organ:
     LIVER = 'liver'
@@ -45,10 +49,16 @@ def get_patient_input(name_for_path: str, organ: Organ):
     pickle_input_address = f"{input_path}/{organ}/pkl_files/{name_for_path}_graph_class_data.pkl"
     graph_image_path = f"{input_path}/{organ}/graph_images/{name_for_path}_graph_image.png"
 
-    json_input_address = f"/cs/casmip/archive/bennydv/{organ}_pipeline/" \
-                         f"lesions_matching/longitudinal_gt/original_corrected/{name_for_path}glong_gt.json"
-    partial_scans_address = f"/cs/casmip/archive/bennydv/{organ}_pipeline/" \
-                            f"gt_data/size_filtered/labeled_no_reg/{name_for_path}"
+    if DATASET_ON_CASMIP:
+        json_input_address = f"/cs/casmip/archive/bennydv/{organ}_pipeline/" \
+                             f"lesions_matching/longitudinal_gt/original_corrected/{name_for_path}glong_gt.json"
+        partial_scans_address = f"/cs/casmip/archive/bennydv/{organ}_pipeline/" \
+                                f"gt_data/size_filtered/labeled_no_reg/{name_for_path}"
+    else:
+        json_input_address = f"{dataset_path}/{organ}_pipeline/" \
+                             f"lesions_matching_json/{name_for_path}glong_gt.json"
+        partial_scans_address = f"{dataset_path}/{organ}_pipeline/" \
+                                f"gt_data_nifti/{name_for_path}"
 
     return PatientInput(patient_name, organ,
                         partial_scans_address, json_input_address, pickle_input_address, graph_image_path)
