@@ -289,7 +289,6 @@ def create_single_lesion_pdf_page(patient,
 
     G = lg.get_graph()
     components = list(nx.connected_components(G))
-    print(components)
 
     max_time_per_cc_dict, total_max_time = find_max_time_stamp_per_cc_and_total(components)
     min_time_per_cc_dict = find_min_time_stamp_per_cc(components, total_max_time)

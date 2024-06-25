@@ -124,12 +124,29 @@ def get_segment_mapping_table(date, time_stamp):
         return Color(r, g, b).hexval().replace("0x", "#")
 
     largest_slices_info = st.session_state.largest_slices_info[date]
-    lesions = list(f'{int(idx)}_{time_stamp}' for idx in largest_slices_info.keys())
-    # lesions = list(st.session_state.internal_external_names_dict[f'{int(idx)}_{time_stamp}'] for idx in largest_slices_info.keys())
-    slices = [val[0] for val in largest_slices_info.values()]
-    colors = [val[1] for val in largest_slices_info.values()]
-    areas = [round(val[2], 2) for val in largest_slices_info.values()]
-    diameters = [round(val[3], 2) for val in largest_slices_info.values()]
+
+    # lesions = []
+    # for idx in largest_slices_info.keys():
+    #     if f'{int(idx)}_{time_stamp}' in st.session_state.internal_external_names_dict:
+    #         lesions.append(st.session_state.internal_external_names_dict[f'{int(idx)}_{time_stamp}'])
+    #     else:
+    #         lesions.append('_')
+    # slices = [val[0] for val in largest_slices_info.values()]
+    # colors = [val[1] for val in largest_slices_info.values()]
+    # areas = [round(val[2], 2) for val in largest_slices_info.values()]
+    # diameters = [round(val[3], 2) for val in largest_slices_info.values()]
+
+    lesions, slices, colors, areas, diameters = [], [], [], [], []
+    for idx, val in largest_slices_info.items():
+
+        if f'{int(idx)}_{time_stamp}' in st.session_state.internal_external_names_dict:  # otherwise - Benny ignored those lesions
+
+            lesions.append(st.session_state.internal_external_names_dict[f'{int(idx)}_{time_stamp}'])
+            slices.append(val[0])
+            colors.append(val[1])
+            areas.append(round(val[2], 2))
+            diameters.append(round(val[3], 2))
+
 
     df = pd.DataFrame({
         "Lesion Name": lesions,

@@ -119,12 +119,9 @@ def main():
                 st.session_state.internal_external_names_dict[external_name] = internal_name
         # add names of the non drawn cc's
         for cc_idx in non_draw_internal_external_names_dict:
-            print(non_draw_internal_external_names_dict[cc_idx])
             for external_name, internal_name in non_draw_internal_external_names_dict[cc_idx].items():
                 st.session_state.internal_external_names_dict[external_name] = internal_name
 
-        # print(non_draw_internal_external_names_dict.values())
-        # print(st.session_state.internal_external_names_dict)
 
         # save lesion segmentation map
         st.session_state.largest_slices_info = {}
