@@ -62,13 +62,14 @@ def find_when_last_appeared_text(node,edges_to_node_dict,vol_array,all_patient_d
     if len(prev_nodes)>0:
         time = prev_nodes[0].split("_")[1]
         date = all_patient_dates[int(time)]
-        text+=f"It last appeared in the scan taken on {date}. "
+        text+=f"It previously appeared in the scan taken on {date}. "
         percentage = get_vol_change_percentage(prev_nodes[0],last_node,vol_array) # only works for single prev node
+        changed="increased"
         if percentage<0 :
             changed ="decreased"
-        else:
-            changed="increased"
-        text +=f"This lesion’s volume has {changed} by {abs(int(percentage))}% between the previous scan where it last appeared ({date}) and the current scan. "
+        if time == int(node.split("_")[1]):
+           
+            text +=f"This lesion’s volume has {changed} by {abs(int(percentage))}% between the previous scan where it last appeared ({date}) and the current scan. "
     
 
 
@@ -333,7 +334,7 @@ def gen_text_single_node(ld,last_node,nodes2cc_class,edge_vol_change_class,edges
     
     ## todo
     if pattern == 'split_p':
-        text+=f"The lesion is a result of a split of the previous lesion into multiple lesions. "
+        text+=f"The lesions are a result of a split of a lesion from a previous scan into multiple lesions. "
 
     if pattern == 'complex_p':
         text+= f"The lesion classification is complex. "
