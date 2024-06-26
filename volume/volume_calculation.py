@@ -1,6 +1,6 @@
 import os
 import re
-
+import math
 import numpy as np
 from datetime import datetime
 
@@ -118,7 +118,10 @@ def get_volume(longitudinal_volumes_array, node):
     idx = int(node.split("_")[0])
     time = int(node.split("_")[1])
     if idx in longitudinal_volumes_array[time]:
-        return longitudinal_volumes_array[time][idx], True
+        if math.isinf(longitudinal_volumes_array[time][idx]):
+            print("Cannot round infinity.")
+            return longitudinal_volumes_array[time][idx], True  # Or handle it as appropriate for your application
+        return round(longitudinal_volumes_array[time][idx], 2), True
     return 0, False
 
 
@@ -132,42 +135,42 @@ def get_dict_of_volume_percentage_change_and_classification_per_edge(ld: LoaderS
         if len(edges_from_node_dict[src_node]) > 1:  # split
 
             src_total_volume, is_existing = get_volume(longitudinal_volumes_array, src_node)
-            if not is_existing:
-                print("Error in get_dict_of_volume_percentage_change_and_classification_per_edge 1")
+            # if not is_existing:
+                # print("Error in get_dict_of_volume_percentage_change_and_classification_per_edge 1")
                 # return {}
             dest_total_volume = 0
             for edge_from_src in edges_from_node_dict[src_node]:
                 temp_dest = edge_from_src[1]
                 vol, is_existing = get_volume(longitudinal_volumes_array, temp_dest)
-                if not is_existing:
-                    print("Error in get_dict_of_volume_percentage_change_and_classification_per_edge 2")
+                # if not is_existing:
+                    # print("Error in get_dict_of_volume_percentage_change_and_classification_per_edge 2")
                     # return {}
                 dest_total_volume += vol
 
             if src_total_volume == 0:
                 percentage_diff = "+inf"
             else:
-                percentage_diff = ((dest_total_volume/src_total_volume) - 1) * 100
+                percentage_diff = ((round(dest_total_volume, 2)/round(src_total_volume, 2)) - 1) * 100
             volume_change_per_edge_dict[edge] = [percentage_diff, edgeVolumeClassification.SPLITTING]
 
         elif len(edges_to_node_dict[dest_node]) > 1:  # merged
             dest_total_volume, is_existing = get_volume(longitudinal_volumes_array, dest_node)
-            if not is_existing:
-                    print("Error in get_dict_of_volume_percentage_change_and_classification_per_edge 3")
+            # if not is_existing:
+                    # print("Error in get_dict_of_volume_percentage_change_and_classification_per_edge 3")
                     # return {}
             src_total_volume = 0
             for edge_to_dest in edges_to_node_dict[dest_node]:
                 temp_src = edge_to_dest[0]
                 vol, is_existing = get_volume(longitudinal_volumes_array, temp_src)
-                if not is_existing:
-                    print("Error in get_dict_of_volume_percentage_change_and_classification_per_edge 4")
+                # if not is_existing:
+                    # print("Error in get_dict_of_volume_percentage_change_and_classification_per_edge 4")
                     # return {}
                 src_total_volume += vol
                 
             if src_total_volume == 0:
                 percentage_diff = "+inf"
             else:
-                percentage_diff = ((dest_total_volume/src_total_volume) - 1) * 100
+                percentage_diff = ((round(dest_total_volume, 2)/round(src_total_volume, 2)) - 1) * 100
             if edge not in volume_change_per_edge_dict:
                 volume_change_per_edge_dict[edge] = [percentage_diff, edgeVolumeClassification.MERGED]
             # else:
@@ -204,8 +207,8 @@ def get_diff_in_total(longitudinal_volumes_array):
         total_volume_arr.append([total_vol_cm3, vol_percentage_diff, vol_cm3_diff])
     return total_volume_arr
 
-def get_percentage_diff_per_edge_dict(ld, partial_patient_path):
-    longitudinal_volumes_array = generate_longitudinal_volumes_array(partial_patient_path)
+def get_percentage_diff_per_edge_dict(ld, partial_patient_path, longitudinal_volumes_array):
+    # longitudinal_volumes_array = generate_longitudinal_volumes_array(partial_patient_path)
     # remove the difference in cm^3, leave only difference in percentage
     # volume_change_per_edge = get_dict_of_volume_change_per_edge(ld,longitudinal_volumes_array)
     # return {edge: percentage for edge, (percentage, _) in volume_change_per_edge.items()}

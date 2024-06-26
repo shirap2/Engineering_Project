@@ -184,7 +184,6 @@ class DrawerLabelsAndLabeledEdges(Drawer):
             self._patient_dates = pat_dates
         nx.set_node_attributes(self._base_graph, values=False, name=NodeAttr.IS_PLACEHOLDER)
 
-
         self.longitudinal_volumes_array = patient_data.longitudinal_volumes_array
         self.percentage_diff_per_edge_dict = patient_data.percentage_diff_per_edge_dict
         self.doesnt_appear_per_time_dict = self.get_doesnt_appear_per_time_dict()
@@ -212,7 +211,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         elif self.bottom_arrow_design == BottomEdgeDesign.NONE:
             self.process_none_bottom_arrows_edges_labels()
 
-        self.skipping_edges_for_doesnt_appear_dict = self.find_skipping_edges_for_doesnt_appear()
+        self.skipping_edges_for_doesnt_appear_dict = self.find_skipping_edges_for_doesnt_appear() # {doesnt appear node: its skipping edge}
         self.nodes_volume_labels = self.set_nodes_volume_labels()
 
         self.internal_external_names_dict = internal_external_names_dict
@@ -291,13 +290,13 @@ class DrawerLabelsAndLabeledEdges(Drawer):
             if not is_place_holder:
                 vol, is_existing = self.get_node_volume(node)
                 if is_existing:
-                    total_vol_list[layer - self.first_time_stamp] += vol
+                    total_vol_list[layer - self.first_time_stamp] += round(vol, 2)
 
         for i in range(0, self._num_of_layers - 1):
             time_stamp = i + self.first_time_stamp
             if total_vol_list[i] != 0:
                 if (len(self.doesnt_appear_per_time_dict[time_stamp - self.first_time_stamp]) == 0) and (len(self.doesnt_appear_per_time_dict[time_stamp + 1 - self.first_time_stamp]) == 0):
-                    percentage_diff = ((total_vol_list[i + 1]/total_vol_list[i]) - 1) * 100
+                    percentage_diff = ((round(total_vol_list[i + 1], 2)/round(total_vol_list[i], 2)) - 1) * 100
                 # if (len(self.doesnt_appear_per_time_dict[time_stamp]) == 0) and (len(self.doesnt_appear_per_time_dict[time_stamp + 1]) == 0):
                     total_edges_to_add_dict[(time_stamp, time_stamp + 1)] = percentage_diff
 
@@ -390,7 +389,7 @@ class DrawerLabelsAndLabeledEdges(Drawer):
         nx.set_edge_attributes(self._base_graph, percentage_diff_per_edge_dict, name='label')  # volume
         nx.set_edge_attributes(self._base_graph, color_dict, name='color')  # volume
 
-    def add_volume_labels_to_skipping_edges(self):
+    def add_volume_labels_to_skipping_edges(self): # shira
         percentage_diff = "+inf"
         edge_is_skip = nx.get_edge_attributes(self._base_graph, name=EdgeAttr.IS_SKIP)
         for edge, is_skip in edge_is_skip.items():
@@ -707,14 +706,16 @@ class DrawerLabelsAndLabeledEdges(Drawer):
                                    connectionstyle='arc3, rad=-0.5')
 
         if not self.bottom_arrow_design == BottomEdgeDesign.NONE:
+            nx.draw_networkx_edges(self._base_graph, pos, edgelist=add_to_edges,
+                                   arrowstyle='|-|',
+                                   width=2.0, edge_color=[c for e, c in
+                                                          add_to_colors.items()],
+                                   node_size=0)  # actual white node size is 5, set edge as if it is 20
             # add the summing edges in the split and merge cases
             for edge, label in add_to_labels.items():
                 if edge in add_to_colors:
                     color = add_to_colors[edge]
                     nx.draw_networkx_edge_labels(G=self._base_graph, pos=pos, edge_labels={edge: label}, font_color=color)
-            nx.draw_networkx_edges(self._base_graph, pos, edgelist=add_to_edges,
-                                   arrowstyle='|-|', width=2.0, edge_color=[c for e, c in
-                                               add_to_colors.items()], node_size=0)  # actual white node size is 5, set edge as if it is 20
 
         self.draw_volume_related_attributes_on_graph(pos)  # volume
         nx.spring_layout(self._base_graph, scale=6.0)

@@ -14,22 +14,42 @@ from reportlab.platypus import Table, SimpleDocTemplate
 
 from patient_summary.classify_changes_in_individual_lesions import gen_dict_classified_nodes_for_layers, \
     changes_in_individual_lesions, count_d_in_d_out, classify_changes_in_individual_lesions
+from datetime import datetime
 
+def get_sorted_patient_scans_date(patient):
+    # date_pattern = r'_\d{2}_\d{2}_\d{4}'
+    # folder_path = patient.partial_scans_address
+    # # Counter for files with a different date format
+    # unique_dates = set()
+    # # Iterate over each file in the folder
+    # for filename in os.listdir(folder_path):
+    #     file_path = os.path.join(folder_path, filename)
+    #     if os.path.isfile(file_path):  # Check if it's a file (not a subdirectory)
+    #         # Extract date from filename using regular expression
+    #         match = re.search(date_pattern, filename)
+    #         if match:
+    #             unique_dates.add(match.group()[1:])
+    # # return unique_dates
+    # unique_dates = list(unique_dates)
+    # for d in unique_dates:
+    #     print(d)
+    # return sorted(unique_dates, key=lambda x: datetime.strptime(x, '%d_%m_%y'))
 
-def get_num_of_scans(patient):
-    date_pattern = r'_\d{2}_\d{2}_\d{4}'
-    folder_path = patient.partial_scans_address
-    # Counter for files with a different date format
-    unique_dates = set()
-    # Iterate over each file in the folder
-    for filename in os.listdir(folder_path):
-        file_path = os.path.join(folder_path, filename)
-        if os.path.isfile(file_path):  # Check if it's a file (not a subdirectory)
-            # Extract date from filename using regular expression
-            match = re.search(date_pattern, filename)
-            if match:
-                unique_dates.add(match.group())
-    return len(unique_dates)
+    date_pattern = r'(\d{2}_\d{2}_\d{4})'
+    formatted_dates = set()
+
+    for filename in os.listdir(patient.partial_scans_address):
+        match = re.search(date_pattern, filename)
+        if match:
+            date_str = match.group(1)
+            date_obj = datetime.strptime(date_str, '%d_%m_%Y')
+
+            # Format the datetime object into "dd.mm.yyyy" and append to the list
+            formatted_date = date_obj.strftime('%d_%m_%Y')
+            formatted_dates.add(formatted_date)
+
+    formatted_dates = sorted(formatted_dates, key=lambda x: datetime.strptime(x, '%d_%m_%Y'))
+    return formatted_dates
 
 
 def get_max_vol(volumes_dict):
@@ -46,7 +66,7 @@ def save_info(key, organ):
     patient = get_patient_input(key, organ)
 
     volumes_dict = generate_longitudinal_volumes_array(patient.partial_scans_address)  # returns sorted (by date)
-    number_of_scans = get_num_of_scans(patient)
+    number_of_scans = len(get_sorted_patient_scans_date(patient))
     max_vol = round(get_max_vol(volumes_dict)) - 1
 
     return [patient, volumes_dict, number_of_scans, max_vol]
@@ -80,7 +100,7 @@ def load_save_patient_data(organ_type, patient_name):
     patient = get_patient_input(patient_name, organ_type)
 
     volumes_dict = generate_longitudinal_volumes_array(patient.partial_scans_address)  # returns sorted (by date)
-    number_of_scans = get_num_of_scans(patient)
+    number_of_scans = len(get_sorted_patient_scans_date(patient))
     max_vol = round(get_max_vol(volumes_dict)) - 1
 
     return [patient, volumes_dict, number_of_scans, max_vol]

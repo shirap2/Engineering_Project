@@ -335,7 +335,7 @@ class Colors:
         return d[attr_value]
 
     @staticmethod
-    def itk_colors(label: int, src: str = '/cs/casmip/bennydv/lungs_pipeline/longitudinal/label_descriptions.txt'):
+    def itk_colors(label: int, src: str = '/cs/casmip/archive/bennydv/lungs_pipeline/longitudinal/label_descriptions.txt'):
         class default_dict(collections.UserDict):
             def __init__(self, default_factory=None, *args, **kwargs):
                 super().__init__(*args, **kwargs)
