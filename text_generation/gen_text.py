@@ -379,22 +379,11 @@ def gen_summary_for_cc(ld, cur_component, longitudinal_volumes_array, nodes2cc_c
                        internal_external_names_dict, doesnt_appear_nodes):
     text = ""
     last_nodes, max_time = get_last_t_node(cur_component)
-    volume_change_per_edge_dict = get_dict_of_volume_percentage_change_and_classification_per_edge(ld,
-                                                                                                   longitudinal_volumes_array)
+    volume_change_per_edge_dict = get_dict_of_volume_percentage_change_and_classification_per_edge(ld, longitudinal_volumes_array)
     edges_dict = {}
     for node in last_nodes:
         matching_keys = [key for key in volume_change_per_edge_dict.keys() if node in key]
         edges_dict[node] = matching_keys
-    # if len(last_nodes)==1:
-    #     last_node_par=last_nodes[0]
-    #     edges_list =edges_dict[last_node_par]
-
-    # if len(doesnt_appear_nodes)>0:
-    #     text+= gen_text_single_node(ld,last_node_par,nodes2cc_class,(0,"empty"),edges_list,longitudinal_volumes_array,all_patient_dates,cur_component,volume_change_per_edge_dict,doesnt_appear_nodes)
-
-    # else:
-    #     input_par =volume_change_per_edge_dict[edges_list[0]]
-    #     text += gen_text_single_node(ld,last_node_par,nodes2cc_class,input_par,edges_list,longitudinal_volumes_array,all_patient_dates,cur_component,volume_change_per_edge_dict)
 
     text += gen_text_single_node(ld, last_nodes, nodes2cc_class, volume_change_per_edge_dict, edges_dict,
                                  longitudinal_volumes_array, all_patient_dates, cur_component,
