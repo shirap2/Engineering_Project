@@ -156,6 +156,10 @@ def main():
         st.write('Color: The color of the lesion in the segmentation.')
         st.write('Area: The area of the lesion in the above slice.')
         st.write('Diameter: The diameter of the lesion in the above slice.')
+        st.write('')
+        st.write('')
+        st.write('')
+        st.write('')
 
         time_stamp = len(st.session_state.args.dates) - 1
         for date in st.session_state.args.dates:
