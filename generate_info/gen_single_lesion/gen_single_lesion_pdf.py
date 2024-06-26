@@ -44,16 +44,17 @@ def get_sub_title(sub_title: str, no_spaceBefore=True):
 
 
 def get_sub_sub_title(sub_title: str, spacer=True):
-    elements = []
+    # elements = []
     title_style = getSampleStyleSheet()['Heading1']
     title_style.fontSize = 10
     title_style.spaceAfter = 0
     title_style.spaceBefore = 0
-    title = Paragraph(sub_title, style=title_style)
-    elements.append(title)
-    if spacer:
-        elements.append(Spacer(1, 5))
-    return elements
+    return Paragraph(sub_title, style=title_style)
+    # title = Paragraph(sub_title, style=title_style)
+    # elements.append(title)
+    # if spacer:
+    #     elements.append(Spacer(1, 5))
+    # return elements
 
 
 def get_note(note: str, spacer=False):
@@ -65,16 +66,17 @@ def get_note(note: str, spacer=False):
     return elements
 
 
-def get_graph_title(lesions_idx: list):
-    text = ""
-    if len(lesions_idx) == 1:
-        text += f"The History of Lesion {lesions_idx[0]}"
-    else:
-        as_strings = map(str, lesions_idx)
-        result_string = ", ".join(as_strings)
-        text += f"The History of Lesions {result_string}"
+def get_cc_title(cc_idx, lesions_idx, num_of_all_dates, internal_external_names_dict):
+    lesions_idx_string = ''
+    for lesion_idx in lesions_idx:
+        lesions_idx_string += internal_external_names_dict[f'{str(lesion_idx)}_{num_of_all_dates - 1}']
+        lesions_idx_string += ', '
 
-    return get_sub_sub_title(f"&#8226; {text}", False)
+    lesions_idx_string = lesions_idx_string[:-2]
+    text = f'Changes over-time of lesion {cc_idx + 1}, appearing at last scan as {lesions_idx_string}:'
+
+    return get_sub_title(text, False)[0]
+    # return get_sub_sub_title(f"&#8226; {text}", False)
 
 
 def get_lesion_history_text(key, vol_list):
@@ -111,20 +113,20 @@ def find_min_time_stamp_per_cc(components, max_total_time):
 
 
 def devide_components(components, max_time_per_cc_dict, total_max_time):
-    disappeared_components, mew_single_components, components_to_draw = [], [], []
+    disappeared_components, new_single_components, components_to_draw = [], [], []
     for cc in components:
         if total_max_time == max_time_per_cc_dict[tuple(cc)]:
             if len(cc) == 1:
                 # new & single
-                mew_single_components.append(cc)
+                new_single_components.append(cc)
             else:
                 components_to_draw.append(cc)
         else:
             disappeared_components.append(cc)
-    return disappeared_components, mew_single_components, components_to_draw
+    return disappeared_components, new_single_components, components_to_draw
 
 
-def get_new_lesions_text(new_single_components):
+def get_new_lesions_text(new_single_components, union_non_draw_internal_external_names_dict):
     num_of_new = len(new_single_components)
 
     if num_of_new == 0:
@@ -132,7 +134,8 @@ def get_new_lesions_text(new_single_components):
     lesions_idx = []
     for cc in new_single_components:
         node = cc.pop()
-        lesions_idx.append(int(node.split("_")[0]))
+        lesions_idx.append(union_non_draw_internal_external_names_dict[node])
+        # lesions_idx.append(int(node.split("_")[0]))
     as_strings = map(str, lesions_idx)
     result_string = ", ".join(as_strings)
     text_to_add = f"Lesions {result_string} appeared for the first time in the last scan."
@@ -178,7 +181,8 @@ def get_disappeared_lesions_text(disappeared_components, max_time_per_cc_dict, c
             were_or_was = "s were"
             if num_of_dis_lesions == 1:
                 were_or_was = " was"
-            elements += get_note(f"{num_of_dis_lesions} lesion{were_or_was} last identified in {dates[time]}.", False)
+            if num_of_dis_lesions != 0:
+                elements += get_note(f"{num_of_dis_lesions} lesion{were_or_was} last identified in {dates[time]}.", False)
 
     elements.append(Spacer(1, 5))
     return elements
@@ -300,10 +304,14 @@ def create_single_lesion_pdf_page(patient,
 
     non_draw_cc_idx = 0
     non_draw_internal_external_names_dict = {}
+    union_non_draw_internal_external_names_dict = {}
     non_draw_components = disappeared_components + new_single_components
     for cc in non_draw_components:
-        non_draw_internal_external_names_dict[non_draw_cc_idx] = set_nodes_external_name(
+        cc_dict = set_nodes_external_name(
             non_draw_cc_idx + num_of_CCS_to_draw, non_draw_components[non_draw_cc_idx])
+        union_non_draw_internal_external_names_dict = {**union_non_draw_internal_external_names_dict,
+                                                 **cc_dict}
+        non_draw_internal_external_names_dict[non_draw_cc_idx + num_of_CCS_to_draw] = cc_dict
         non_draw_cc_idx += 1
 
     # longitudinal_volumes_array = generate_longitudinal_volumes_array(patient_partial_path)
@@ -311,7 +319,7 @@ def create_single_lesion_pdf_page(patient,
 
     # add section of new
     elements += get_sub_title("New Lesions", True)
-    elements += get_new_lesions_text(new_single_components) #TODO: use non_draw_internal_external_names_dict
+    elements += get_new_lesions_text(new_single_components, union_non_draw_internal_external_names_dict)
     # add section of disappeared
     elements += get_sub_title("Disappeared Lesions", False)
 
@@ -350,13 +358,16 @@ def create_single_lesion_pdf_page(patient,
         ran_through_all_scans = False
         CC_first_appeared_in = min_time_per_cc_dict[tuple(components_to_draw[cc_idx])]
         cur_component = patient_data.components[cc_idx]
+
+        cur_elements = []
+        num_of_all_dates = len(all_patient_dates)
         while not ran_through_all_scans:
 
             start = count + CC_first_appeared_in
             end_of_patient_dates = start + MAX_SCANS_PER_GRAPH
 
-            if end_of_patient_dates >= len(all_patient_dates):
-                end_of_patient_dates = len(all_patient_dates)
+            if end_of_patient_dates >= num_of_all_dates:
+                end_of_patient_dates = num_of_all_dates
                 ran_through_all_scans = True
             lg._patient_dates = all_patient_dates[start:end_of_patient_dates]
 
@@ -365,25 +376,26 @@ def create_single_lesion_pdf_page(patient,
             path = f"{output_path}/{patient.organ}/sub_graphs/single_labeled_lesion_graph"
             graph, lesions_idx = get_single_node_graph_image(path, cc_idx, start, end_of_patient_dates, patient_data, internal_external_names_dict)
             if not graph:
+                raise Exception('should never get here') # TODO - TEST & REMOVE
                 return elements, cc_info_dict, non_draw_internal_external_names_dict
 
-            # elements += get_graph_title(lesions_idx)
-            elements += [(cc_idx, graph)]
-            
-            # ## shira added text for classification of connected component
-            # elements += cc_class_text(node2cc, nodes2cc_class, lesions_idx[0])
-
-            elements.append(Spacer(1, 20))
+            cur_elements += [(cc_idx, graph)]
             count += MAX_SCANS_PER_GRAPH - OVERLAP_BETWEEN_GRAPHS
+
 
         doesnt_appear_nodes, volume_sum_of_last_nodes, pattern_of_cc = find_doesnt_appear_vol_pattern(cur_component, longitudinal_volumes_array, nodes2cc_class)
 
         # update cc info dict
-        is_cc_non_consecutive = len(doesnt_appear_nodes) != 0
+        is_cc_non_consecutive = (len(doesnt_appear_nodes) != 0)
         cc_info_dict[cc_idx] = [volume_sum_of_last_nodes, internal_external_names_dict, is_cc_non_consecutive, pattern_of_cc]
 
-        # generate text
-        elements.append((cc_idx, gen_summary_for_cc(ld,cur_component,longitudinal_volumes_array,nodes2cc_class,all_patient_dates,internal_external_names_dict,doesnt_appear_nodes)))  # todo
+        # add the cc elements: title, graphs, text, space
+        elements += [(cc_idx, get_cc_title(cc_idx, lesions_idx, num_of_all_dates, internal_external_names_dict))]
+        elements += cur_elements
+        elements.append((cc_idx, gen_summary_for_cc(ld, cur_component, longitudinal_volumes_array,
+                                                    nodes2cc_class, all_patient_dates,
+                                                    internal_external_names_dict, doesnt_appear_nodes)))  # todo
+        elements.append((cc_idx, Spacer(1, 20)))
 
         cc_idx += 1
 

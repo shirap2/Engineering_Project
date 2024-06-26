@@ -5,7 +5,6 @@ import os
 from volume.volume_calculation import generate_longitudinal_volumes_array
 from create_input.create_input_files import get_patient_input, Organ
 from pathlib import Path
-import shutil
 import copy
 
 ROOT = str(Path(__file__).resolve().parent).replace("generate_info", "")
@@ -49,7 +48,9 @@ def organize_elements_per_cc(elements_per_cc, cc_info_dict):
 
 
 def create_pdf_file(patient_name: str, organ: Organ):
+
     patient = get_patient_input(patient_name, organ)
+
     pdf_name = f"{output_path}/{patient.organ}/" + patient_name.replace(" ", "_") + "patient_summary.pdf"
     if os.path.exists(pdf_name):
         os.remove(pdf_name)

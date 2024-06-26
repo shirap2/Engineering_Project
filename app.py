@@ -1,4 +1,5 @@
 from create_input.create_input_files import get_patient_input
+from generate_info.gen_single_lesion.gen_single_lesion_pdf import get_title, get_sub_title
 from interactive_summary.convert_pdf_to_streamlit import display_element
 import streamlit as st
 import sys
@@ -148,6 +149,13 @@ def main():
 
     # ************************************** lesion segmentation map ***************************************************
     elif st.session_state.state == InteractiveState.lesion_segmentation_map:
+        display_element(get_title('Lesion - Segmentation Map')[0])
+        display_element(get_sub_title("Mapping Between Summary Notations and Segmentation Notations", True)[0])
+        st.write('Lesion Name: The used lesion name.')
+        st.write('Slice Num.: The slice index where the lesions diameter is the largest.')
+        st.write('Color: The color of the lesion in the segmentation.')
+        st.write('Area: The area of the lesion in the above slice.')
+        st.write('Diameter: The diameter of the lesion in the above slice.')
 
         time_stamp = len(st.session_state.args.dates) - 1
         for date in st.session_state.args.dates:
@@ -164,6 +172,7 @@ def main():
     elif st.session_state.state == InteractiveState.non_consecutive_matched_lesions:
         if 'non_consecutive_elements' not in st.session_state:
             st.session_state.non_consecutive_elements = []
+            st.session_state.non_consecutive_elements += get_title('Non Consecutive Lesions')
             for cc_idx in st.session_state.cc_elements_dict:
                 _, _, is_cc_non_consecutive, _ = st.session_state.cc_info_dict[cc_idx]
                 if is_cc_non_consecutive:
@@ -172,6 +181,19 @@ def main():
         for element in st.session_state.non_consecutive_elements:
             display_element(element)
     # ******************************************************************************************************************
+
+    # ************************************** display lone pattern lesions **********************************************
+    elif st.session_state.state == InteractiveState.lone_lesions:
+        if 'lone_lesions_elements' not in st.session_state:
+            st.session_state.lone_lesions_elements = []
+            st.session_state.lone_lesions_elements += get_title('Lone Lesions')
+            # for cc_idx in st.session_state.cc_elements_dict:
+                # _, _, _, pattern = st.session_state.cc_info_dict[cc_idx]
+                # print(pattern)
+                # st.session_state.non_consecutive_elements += Paragraph('1')
+
+        for element in st.session_state.lone_lesions_elements:
+            display_element(element)
 
 def display_pdf(file_path):
     with open(file_path, "rb") as f:
