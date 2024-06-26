@@ -203,7 +203,7 @@ def get_volume_diff_from_first_scan(ld, cur_node, cur_component, vol_array):
         return "There is no volume data for this lesion from the first scan. "
     if not cur_vol:
         if first_node_vol:
-            return f"The lesion's volume in the first scan was {first_node_vol}"
+            return f"The lesion's volume in the first scan was {round(first_node_vol,2)}"
         return ""
     change = "decreased"
     if first_node_vol < cur_vol:
