@@ -10,6 +10,7 @@ import base64
 from interactive_summary.scan_window import get_segment_info
 from reportlab.platypus import Paragraph
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from interactive_summary.summary_guide import summary_guide_display
 
 from interactive_summary.save_patient_info import get_sorted_patient_scans_date
 from interactive_summary.scan_window import get_segment_mapping_table, open_itksnap_on_slice
@@ -22,12 +23,12 @@ sys.path.append(module_path)
 class InteractiveState():
     initialization = 0
     default_full_information_display = 1
-    new_lesions = 2
+    download_version = 2
     lone_lesions = 3
     non_consecutive_matched_lesions = 4
     open_itk_snap = 5
     lesion_segmentation_map = 6
-    download_version = 2
+    user_guide = 8
 
 
 
@@ -153,11 +154,11 @@ def main():
     elif st.session_state.state == InteractiveState.lesion_segmentation_map:
         display_element(get_title('Lesion - Segmentation Map')[0])
         display_element(get_sub_title("Mapping Between Summary Notations and Segmentation Notations", True)[0])
-        st.write('Lesion Name: The used lesion name.')
-        st.write('Slice Num.: The slice index where the lesions diameter is the largest.')
-        st.write('Color: The color of the lesion in the segmentation.')
-        st.write('Area: The area of the lesion in the above slice.')
-        st.write('Diameter: The diameter of the lesion in the above slice.')
+        st.write('**Lesion Name:** The used lesion name.')
+        st.write('**Slice Num.:** The slice index where the lesions diameter is the largest.')
+        st.write('**Color:** The color of the lesion in the segmentation.')
+        st.write('**Area:** The area of the lesion in the above slice.')
+        st.write('**Diameter:** The diameter of the lesion in the above slice.')
         st.write('')
         st.write('')
         st.write('')
@@ -211,6 +212,11 @@ def main():
 
         for element in st.session_state.lone_lesions_elements:
             display_element(element)
+    # ******************************************************************************************************************
+
+    # ********************************************* display summary guide **********************************************
+    elif st.session_state.state == InteractiveState.user_guide:
+        summary_guide_display()
 
 def display_pdf(file_path):
     with open(file_path, "rb") as f:
@@ -220,6 +226,9 @@ def display_pdf(file_path):
 
 
 def add_sidebar():
+
+    if st.sidebar.button("User Guide", use_container_width=True):
+        st.session_state.state = InteractiveState.user_guide
 
     if st.sidebar.button("Full Information Display", use_container_width=True):
         st.session_state.state = InteractiveState.default_full_information_display
@@ -251,6 +260,7 @@ def add_sidebar():
 
     if st.sidebar.button("Download Full Information Display", use_container_width=True):
         st.session_state.state = InteractiveState.download_version
+
 
 
 
