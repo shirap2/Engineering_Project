@@ -64,7 +64,7 @@ def create_pdf_file(patient_name: str, organ: Organ):
 
     elements.append(PageBreak())
 
-    elements_per_cc, cc_info_dict, _ = create_single_lesion_pdf_page(patient, volumes_dict)
+    elements_per_cc, cc_info_dict, _, _ = create_single_lesion_pdf_page(patient, volumes_dict)
     organized_cc_elements, _ = organize_elements_per_cc(elements_per_cc, cc_info_dict)
     elements += organized_cc_elements
 
@@ -86,13 +86,13 @@ def get_full_display_elements(patient_name: str, organ: Organ):
     elements += create_single_patient_pdf_page(patient_name, patient.json_input_address, patient.partial_scans_address,
                                                patient.graph_image_path, volumes_dict)
     # elements.append(PageBreak())
-    elements_per_cc, cc_info_dict, non_draw_internal_external_names_dict = create_single_lesion_pdf_page(patient, volumes_dict)
+    elements_per_cc, cc_info_dict, non_draw_internal_external_names_dict, lone_components_dict = create_single_lesion_pdf_page(patient, volumes_dict)
     organized_cc_elements, cc_elements_dict = organize_elements_per_cc(elements_per_cc, cc_info_dict)
     elements += organized_cc_elements
 
     doc.build(copy.deepcopy(elements))
 
-    return elements, cc_elements_dict, cc_info_dict, non_draw_internal_external_names_dict
+    return elements, cc_elements_dict, cc_info_dict, non_draw_internal_external_names_dict, lone_components_dict
 
 
 liver = ['E_N_', 'N_M_', 'M_I_', 'M_N_', 'G_Y_', 'S_I_', 'S_N_', 'F_Y_Ga_', 'T_N_', 'G_B_', 'C_A_', 'B_B_S_',

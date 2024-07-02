@@ -293,6 +293,7 @@ def create_single_lesion_pdf_page(patient,
 
     G = lg.get_graph()
     components = list(nx.connected_components(G))
+    all_patient_dates = lg.get_patient_dates()
 
     max_time_per_cc_dict, total_max_time = find_max_time_stamp_per_cc_and_total(components)
     min_time_per_cc_dict = find_min_time_stamp_per_cc(components, total_max_time)
@@ -306,12 +307,22 @@ def create_single_lesion_pdf_page(patient,
     non_draw_internal_external_names_dict = {}
     union_non_draw_internal_external_names_dict = {}
     non_draw_components = disappeared_components + new_single_components
+    lone_components_dict = {}
     for cc in non_draw_components:
+
+
         cc_dict = set_nodes_external_name(
             non_draw_cc_idx + num_of_CCS_to_draw, non_draw_components[non_draw_cc_idx])
         union_non_draw_internal_external_names_dict = {**union_non_draw_internal_external_names_dict,
                                                  **cc_dict}
         non_draw_internal_external_names_dict[non_draw_cc_idx + num_of_CCS_to_draw] = cc_dict
+
+        if len(cc) == 1:
+            internal_name, external_name = next(iter(cc_dict.items()))
+            date = all_patient_dates[int(internal_name.split('_')[1])]
+            volume, _ = get_node_volume(internal_name, longitudinal_volumes_array)
+            lone_components_dict[external_name] = [date, volume]
+
         non_draw_cc_idx += 1
 
     # longitudinal_volumes_array = generate_longitudinal_volumes_array(patient_partial_path)
@@ -342,7 +353,6 @@ def create_single_lesion_pdf_page(patient,
     lesions_idx = 0
     # draw components to drw (existing in last scan + not new- no history)
     elements += get_sub_title("Lesions Appearing in Multiple Scans", False)
-    all_patient_dates = lg.get_patient_dates()
 
     patient_data = PatientData(lg, ld, components_to_draw,
                                longitudinal_volumes_array, percentage_diff_per_edge_dict)
@@ -351,7 +361,7 @@ def create_single_lesion_pdf_page(patient,
 
     while True:
         if cc_idx >= num_of_CCS_to_draw:
-            return elements, cc_info_dict, non_draw_internal_external_names_dict
+            return elements, cc_info_dict, non_draw_internal_external_names_dict, lone_components_dict
         internal_external_names_dict = set_nodes_external_name(cc_idx, patient_data.components[cc_idx])
 
         count = 0
@@ -375,9 +385,6 @@ def create_single_lesion_pdf_page(patient,
             # lg._num_of_layers = MAX_SCANS_PER_GRAPH
             path = f"{output_path}/{patient.organ}/sub_graphs/single_labeled_lesion_graph"
             graph, lesions_idx = get_single_node_graph_image(path, cc_idx, start, end_of_patient_dates, patient_data, internal_external_names_dict)
-            if not graph:
-                raise Exception('should never get here') # TODO - TEST & REMOVE
-                return elements, cc_info_dict, non_draw_internal_external_names_dict
 
             cur_elements += [(cc_idx, graph)]
             count += MAX_SCANS_PER_GRAPH - OVERLAP_BETWEEN_GRAPHS
@@ -394,7 +401,7 @@ def create_single_lesion_pdf_page(patient,
         elements += cur_elements
         elements.append((cc_idx, gen_summary_for_cc(ld, cur_component, longitudinal_volumes_array,
                                                     nodes2cc_class, all_patient_dates,
-                                                    internal_external_names_dict, doesnt_appear_nodes)))  # todo
+                                                    internal_external_names_dict, doesnt_appear_nodes)))
         elements.append((cc_idx, Spacer(1, 20)))
 
         cc_idx += 1

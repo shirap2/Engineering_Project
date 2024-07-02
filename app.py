@@ -109,7 +109,7 @@ def main():
         # pattern_of_cc]
 
         st.session_state.elements, st.session_state.cc_elements_dict, st.session_state.cc_info_dict,\
-        non_draw_internal_external_names_dict = get_full_display_elements(
+        non_draw_internal_external_names_dict, lone_components_dict = get_full_display_elements(
             st.session_state.args.patient_name, st.session_state.args.organ_type)
 
         st.session_state.internal_external_names_dict = {}
@@ -123,11 +123,13 @@ def main():
             for external_name, internal_name in non_draw_internal_external_names_dict[cc_idx].items():
                 st.session_state.internal_external_names_dict[external_name] = internal_name
 
-
         # save lesion segmentation map
         st.session_state.largest_slices_info = {}
         for date in st.session_state.args.dates:
             st.session_state.largest_slices_info[date] = get_segment_info(st.session_state.args.organ_type, st.session_state.args.patient_name, date)
+
+        # save the lone lesions
+        st.session_state.lone_components_dict = dict(sorted(lone_components_dict.items(), key=lambda item: item[1][1], reverse=True))
 
         st.session_state.state = InteractiveState.default_full_information_display
     # ******************************************************************************************************************
@@ -196,10 +198,11 @@ def main():
         if 'lone_lesions_elements' not in st.session_state:
             st.session_state.lone_lesions_elements = []
             st.session_state.lone_lesions_elements += get_title('Lone Lesions')
-            # for cc_idx in st.session_state.cc_elements_dict:
-                # _, _, _, pattern = st.session_state.cc_info_dict[cc_idx]
-                # print(pattern)
-                # st.session_state.non_consecutive_elements += Paragraph('1')
+
+            for lone_name, [date, volume] in st.session_state.lone_components_dict.items():
+            # lone_components_dict[internal_name] = [date, volume]
+                text = f'Lesion {lone_name} ({volume} [cc]) first appeared at {date} and then disappeared.'
+                st.session_state.lone_lesions_elements += [Paragraph(text, getSampleStyleSheet()['Normal'])]
 
             # the case of no lone lesions: only title in the list
             if len(st.session_state.lone_lesions_elements) == 1:
