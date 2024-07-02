@@ -208,7 +208,7 @@ def add_sidebar():
     if st.sidebar.button("Download Full Information Display", use_container_width=True):
         st.session_state.state = InteractiveState.download_version
 
-    st.sidebar.header("Share your Experience", divider='')  # **********************************************************
+    st.sidebar.header("Share your Experience", divider='blue')  # **********************************************************
     if st.sidebar.button("User Evaluation Form", use_container_width=True):
         st.session_state.state = InteractiveState.evaluation
 
