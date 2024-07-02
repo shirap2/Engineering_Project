@@ -14,6 +14,7 @@ from interactive_summary.summary_guide import summary_guide_display
 
 from interactive_summary.save_patient_info import get_sorted_patient_scans_date
 from interactive_summary.scan_window import get_segment_mapping_table, open_itksnap_on_slice
+from interactive_summary.user_experience_test import render_feedback_form
 
 # Add the directory containing your module to the Python path
 module_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '/create_input', 'create_input'))
@@ -28,6 +29,7 @@ class InteractiveState():
     non_consecutive_matched_lesions = 4
     open_itk_snap = 5
     lesion_segmentation_map = 6
+    evaluation = 7
     user_guide = 8
 
 
@@ -160,6 +162,11 @@ def main():
     # ********************************************* display summary guide **********************************************
     elif st.session_state.state == InteractiveState.user_guide:
         summary_guide_display()
+    # ******************************************************************************************************************
+
+    # ******************************************************** evaluation **********************************************
+    elif st.session_state.state == InteractiveState.evaluation:
+        render_feedback_form(st.session_state.args.patient_name)
 
 def display_pdf(file_path):
     with open(file_path, "rb") as f:
@@ -200,6 +207,10 @@ def add_sidebar():
 
     if st.sidebar.button("Download Full Information Display", use_container_width=True):
         st.session_state.state = InteractiveState.download_version
+
+    st.sidebar.header("Share your Experience", divider='')  # **********************************************************
+    if st.sidebar.button("User Evaluation Form", use_container_width=True):
+        st.session_state.state = InteractiveState.evaluation
 
 
 if __name__ == "__main__":

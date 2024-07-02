@@ -82,18 +82,16 @@ Requirements for the software and other tools to build, test and push:
    - patient name: 'A_S_H_'  organ type: 'liver'
 
 ## 🧪 Testing
-To test that all the elements representing the data were successfully generated with no exceptions:
+The test runs the generation of all elements representing the data and 
+displays them onto a PDF for further checking.
+To test the local dataset:
    ```bash
   python test.py --liver C_A_ A_S_H_ A_S_S_
   ```
-Ane to run it on all thw dataset (only possible with CASMIP lab permissions):
+To test the full dataset (only possible with CASMIP lab permissions):
    ```bash
   python test.py --full_dataset True
   ```
-    
-To test that the web app is built successfully: it simulates a user and checks all buttons work as expected:
-
-
 
 ## ⚙️ Built With
 Based on methods developed at CASMIP lab:

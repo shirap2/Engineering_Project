@@ -1,5 +1,6 @@
 import streamlit as st
 from reportlab.platypus import Paragraph, Table, Image, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 import pandas as pd
 import os
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT, TA_RIGHT
