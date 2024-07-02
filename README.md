@@ -46,6 +46,8 @@ your local machine for development and testing purposes.
 ### 🧱 Prerequisites
 Requirements for the software and other tools to build, test and push:
 
+**NOTICE:** these instruction were built for linux, if you use a different OS make sure to adapt.
+
 1. Verify that you have ITK-snap app installed on your PC and that it is in the system PATH
     ```bash   
     which itksnap
@@ -80,14 +82,17 @@ Requirements for the software and other tools to build, test and push:
    - patient name: 'A_S_H_'  organ type: 'liver'
 
 ## 🧪 Testing
-The tests verify that:
-- All the elements representing the data were successfully generated with no exceptions.
-- The web app is built successfully: it simulates a user and checks all buttons work as expected.
-
-To run tests for this project:
+To test that all the elements representing the data were successfully generated with no exceptions:
    ```bash
+  python test.py --liver C_A_ A_S_H_ A_S_S_
+  ```
+Ane to run it on all thw dataset (only possible with CASMIP lab permissions):
+   ```bash
+  python test.py --full_dataset True
+  ```
     
-   ```
+To test that the web app is built successfully: it simulates a user and checks all buttons work as expected:
+
 
 
 ## ⚙️ Built With

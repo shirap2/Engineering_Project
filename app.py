@@ -9,7 +9,7 @@ from generate_info.gen_all import get_full_display_elements
 import base64
 from interactive_summary.scan_window import get_segment_info
 from reportlab.platypus import Paragraph
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.styles import getSampleStyleSheet
 from interactive_summary.summary_guide import summary_guide_display
 
 from interactive_summary.save_patient_info import get_sorted_patient_scans_date
@@ -31,64 +31,7 @@ class InteractiveState():
     user_guide = 8
 
 
-
-
-# def get_num_of_scans_for_patient(patient_name):
-#     """
-#     this function checks how many scans are available for the patient
-#     :return: number of scans available
-#     """
-#     return 9
-
-
-# def filter_scans(option_name):
-#     st.sidebar.header("Filter Scans", divider='blue')
-#
-#     # st.sidebar.header("Number of Scans")
-#
-#     num_scans_available = get_num_of_scans_for_patient(option_name)
-#     selected_num_scans = range_slider(num_scans_available)
-#
-#     # st.sidebar.header("Number of Overlapped Scans")
-#     # overlap_num = st.sidebar.slider("Select the number of overlapped scans to display in each row",
-#     #                                 min_value=0, max_value=3)
-#     # st.sidebar.write(f"""<div style="color: black; font-size: 14px;"> <b>Selected:
-#     # {selected_num_scans} scans to display with overlap of {overlap_num} scans per row </b>
-#     # </div>""", unsafe_allow_html=True)
-#
-#     st.sidebar.header("Filter by Type of Lesion", divider='blue')
-#     # st.sidebar.header("Lesion Volume Filter")
-#
-#     threshold_size = st.sidebar.slider("Select lesion volume threshold in current scan", min_value=0, max_value=50)
-#
-#     # st.sidebar.header("Lesion Volume Changes Threshold (%)")
-#     vol_change_percentage = st.sidebar.slider("Select percentage threshold for lesion volume changes compared to "
-#                                               "previous scan", min_value=0, max_value=100, step=10)
-#     st.sidebar.write(f"""
-#         <div style="color: black; font-size: 14px;margin-bottom: 35px">
-#         <b> Displaying lesions that are currently larger than: {threshold_size}[cc] and
-#         with a volume change of at least {vol_change_percentage}% from previous scan </b>
-#         </div>
-#         """, unsafe_allow_html=True)
-#     return []
-
-# def range_slider(range_size):
-#     selected_value = st.sidebar.slider('Select the number of previous scans to display', min_value=0,
-#                                        max_value=range_size,
-#                                        value=range_size // 2)
-#     return selected_value
-
-
 def main():
-    # ***************** pre-loading all patients: Dict {patient_name: PatientInput, volume dict} ***********************
-    # organ_type = Organ.LIVER
-    # patient_data_dict = load_save_patient_data(
-    #     organ_type)  # too slow. i changed the function that goes over folders list to stop after
-    # # first one so that only 1 patient is loaded at a time and run time is faster
-    # patient_name = next(iter(patient_data_dict.keys()))
-    # ******************************************************************************************************************
-
-
     # ************************************** configurations *******************************************
     if 'state' not in st.session_state:
         st.session_state.state = InteractiveState.initialization
@@ -234,9 +177,6 @@ def add_sidebar():
         st.session_state.state = InteractiveState.default_full_information_display
 
     st.sidebar.header("Special Cases", divider='blue')  # **************************************************************
-
-    # if st.sidebar.button("New Lesions", use_container_width=True):
-    #     st.session_state.state = InteractiveState.new_lesions
 
     if st.sidebar.button("Lone Lesions", use_container_width=True):
         st.session_state.state = InteractiveState.lone_lesions

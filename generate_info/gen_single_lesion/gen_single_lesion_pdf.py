@@ -5,10 +5,9 @@ from reportlab.lib.styles import getSampleStyleSheet
 from generate_info.gen_single_lesion.drawer_single_lesion_graph import PatientData, get_node_volume
 from patient_summary.classify_changes_in_individual_lesions import classify_changes_in_individual_lesions, \
     count_d_in_d_out, gen_dict_classified_nodes_for_layers
-from volume.lesion_volume_changes import check_single_lesion_growth, generate_volume_list_single_lesion
+from volume.lesion_volume_changes import check_single_lesion_growth
 from generate_info.gen_single_lesion.gen_single_lesion_graph import get_single_node_graph_image
-import networkx as nx
-from volume.volume_calculation import get_dict_of_volume_percentage_change_and_classification_per_edge, get_percentage_diff_per_edge_dict, generate_longitudinal_volumes_array
+from volume.volume_calculation import get_percentage_diff_per_edge_dict
 from common_packages.BaseClasses import *
 from datetime import datetime
 import re
@@ -34,7 +33,6 @@ def get_title(title_string):
 
 def get_sub_title(sub_title: str, no_spaceBefore=True):
     title_style = getSampleStyleSheet()['Heading2']
-    # title_style.fontSize = 10
     title_style.spaceAfter = 0
     title_style.spaceBefore = 20
     if no_spaceBefore:
@@ -76,12 +74,10 @@ def get_cc_title(cc_idx, lesions_idx, num_of_all_dates, internal_external_names_
     text = f'Changes over-time of lesion {cc_idx + 1}, appearing at last scan as {lesions_idx_string}:'
 
     return get_sub_title(text, False)[0]
-    # return get_sub_sub_title(f"&#8226; {text}", False)
 
 
 def get_lesion_history_text(key, vol_list):
     text_to_add = check_single_lesion_growth(vol_list, key)
-    # return get_note("Lesion "+ str(key)+ ": "+ text_to_add, True)
     return get_note(text_to_add, True)
 
 
@@ -220,8 +216,7 @@ def get_dates(patient_path):
     formatted_dates = sorted(formatted_dates, key=lambda x: datetime.strptime(x, '%d.%m.%y'))
     return formatted_dates
 
-# patient_name, patient.json_input_address,
-#                                               patient.pickle_input_address, patient.partial_scans_address,
+
 def set_nodes_external_name(cc_idx, nodes):
     letters = [chr(i) for i in range(ord('a'), ord('z') + 1)]
     n = len(letters)
@@ -279,15 +274,12 @@ def create_single_lesion_pdf_page(patient,
     with open(patient.pickle_input_address, "rb") as file:
         lg = pickle.load(file)
 
-    png_name = "output/" + patient.name.replace(" ", "_") + "_lesion_changes.png"
     elements = []
 
     # file title
     elements += get_title("Individual Lesion Changes")
     elements.append(Spacer(1, 20))
 
-    # graph image
-    # vol_list = generate_volume_list_single_lesion(longitudinal_volumes_array)
     cc_idx = 0
     ld = LoaderSimpleFromJson(patient.json_input_address)
 
@@ -345,9 +337,6 @@ def create_single_lesion_pdf_page(patient,
     # dictionary of nodes-keys and the index of their cc- values
     node2cc = nx.get_node_attributes(G, NodeAttr.CC_INDEX)
 
-    # set of all cc indices
-    cc_set = set(node2cc.values())
-
     # dictionary of node(key)'s class(value) when part of cc
     nodes2cc_class = nx.get_node_attributes(G, NodeAttr.CC_PATTERNS)
     lesions_idx = 0
@@ -385,7 +374,6 @@ def create_single_lesion_pdf_page(patient,
             # lg._num_of_layers = MAX_SCANS_PER_GRAPH
             path = f"{output_path}/{patient.organ}/sub_graphs/single_labeled_lesion_graph"
             graph, lesions_idx = get_single_node_graph_image(path, cc_idx, start, end_of_patient_dates, patient_data, internal_external_names_dict)
-
             cur_elements += [(cc_idx, graph)]
             count += MAX_SCANS_PER_GRAPH - OVERLAP_BETWEEN_GRAPHS
 
