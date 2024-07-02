@@ -182,6 +182,11 @@ def main():
                 if is_cc_non_consecutive:
                     st.session_state.non_consecutive_elements += st.session_state.cc_elements_dict[cc_idx]
 
+            # the case of no non-consecutive lesions: only title in the list
+            if len(st.session_state.non_consecutive_elements) == 1:
+                st.session_state.non_consecutive_elements += \
+                    get_sub_title('This patient has no non consecutive lesions.')
+
         for element in st.session_state.non_consecutive_elements:
             display_element(element)
     # ******************************************************************************************************************
@@ -195,6 +200,11 @@ def main():
                 # _, _, _, pattern = st.session_state.cc_info_dict[cc_idx]
                 # print(pattern)
                 # st.session_state.non_consecutive_elements += Paragraph('1')
+
+            # the case of no lone lesions: only title in the list
+            if len(st.session_state.lone_lesions_elements) == 1:
+                st.session_state.lone_lesions_elements += get_sub_title(
+                    'This patient has no lone lesions.')
 
         for element in st.session_state.lone_lesions_elements:
             display_element(element)

@@ -1,7 +1,7 @@
 # 💡 Analysis and Summarization of Radiological Findings in Medical Patient Images
 
 <!-- cool project cover image -->
-![Project Cover Image](project_picture_for_readme.png)
+![Project Cover Image](project_picture_from_poster.png)
 
 <!-- table of content -->
 ## Table of Contents
@@ -11,7 +11,6 @@
 - [Prerequisites](#prerequisites)
 - [Installing](#installing)
 - [Testing](#testing)
-- [Deployment](#deployment)
 - [Built With](#built-with)
 - [Acknowledgments](#acknowledgments)
 
@@ -33,9 +32,10 @@ sequence of scans displayed onto a web app. This program involves collecting les
 We utilize tables, textual summaries, and graphic displays to showcase lesion patterns over time. 
 This allows radiologists to gather more precise information in a shorter time frame.
 
-The summary format will be interactive, allowing radiologists to customize the displayed information. In addition, 
+The summary format is interactive, allowing radiologists to customize the displayed information. In addition, 
 we generate the summary in a PDF form to support printable summary. 
 This design ensures no crucial details are omitted while avoiding overwhelming with extraneous information.
+In addition it allows the radiologist to easily open the scans visually (the app integrates with a scan display app).
 
 
 ## ⚡ Getting Started
@@ -61,34 +61,42 @@ Requirements for the software and other tools to build, test and push:
     ```bash
     pip install -r requirements.txt
     ```
-
+5. [download the DATASET folder](https://drive.google.com/drive/folders/1_WcZRCpbl7htg7E8vAInMXI5c_MQXr2T?usp=share_link) and place it under Engineering_Project (the project root).
+   
+   NOTICE: this dataset only includes a few patients due to heavy data. The complete dataset is property of the CASMIP lab and is stored in their sources.
 
 ### 🏗️ Run The Program
 1. Activate the virtual environment:
     ```bash
     source ./env/bin/activate
     ```
-
-###TODO - COMPLETE
+2. Run the app
+   ```bash
+    streamlit run app.py -- --patient_name <patient name> --organ_type <organ type>
+    ```
+   The dataset you downloaded contains the following patients:
+   - patient name: 'C_A_'    organ type: 'liver' 
+   - patient name: 'A_S_S_'  organ type: 'liver'
+   - patient name: 'A_S_H_'  organ type: 'liver'
 
 ## 🧪 Testing
-Explain how to run tests for this project
+The tests verify that:
+- All the elements representing the data were successfully generated with no exceptions.
+- The web app is built successfully: it simulates a user and checks all buttons work as expected.
 
-### Sample Tests
-Explain what these tests test and why
+To run tests for this project:
+   ```bash
+    
+   ```
 
-    Give an example
-
-## 🚀 Deployment
-Add additional notes on how to deploy this on a live system
 
 ## ⚙️ Built With
-  - [Based on the work of reserch group xxxx](https://www.example.com)
-  - [Contributor Covenant](https://www.contributor-covenant.org/) - Used for the Code of Conduct
-  - [Creative Commons](https://creativecommons.org/) - Used to choose the license
+Based on methods developed at CASMIP lab:
+  - [Liver lesion changes analysis in longitudinal CECT scans by simultaneous deep learning voxel classification with SimU-Net](https://www.sciencedirect.com/science/article/abs/pii/S1361841522003036)
+  - [A Graph-Theoretic Approach for Analysis of Lesion Changes and
+Lesions Detection Review in Longitudinal Oncological Imaging](https://www.google.com/url?sa=i&url=https%3A%2F%2Fconferences.miccai.org%2F2023%2Fpapers%2F309-Paper0455.html&psig=AOvVaw1AI096scwoyjR0sW-JoIAH&ust=1719994311614000&source=images&cd=vfe&opi=89978449&ved=0CAYQrpoMahcKEwioobOh9IeHAxUAAAAAHQAAAAAQBA)
 
 
 ## 🙏 Acknowledgments
-  - Hat tip to anyone whose code is used
-  - Inspiration
-  - etc
+  We would like to thank the CASMIP (HUJI) lab for their support and resources throughout this project. 
+  Special thanks to our mentor Alon Olesinski and Professor Leo Joskowicz for their essential insights and guidance. 
