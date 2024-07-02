@@ -867,7 +867,7 @@ class Drawer:
         plt.axis('off')
         if save_path is not None:
             plt.savefig(save_path)
-        plt.show()
+        # plt.show()
 
     def write_dates(self, nodes_position):
         """Prints the layers' dates at the bottom of the layers"""

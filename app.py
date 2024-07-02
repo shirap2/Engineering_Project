@@ -202,8 +202,6 @@ def add_sidebar():
         st.session_state.state = InteractiveState.download_version
 
 
-
-
 if __name__ == "__main__":
     # TO CONNECT ENV RUN:
     # source ./env/bin/activate

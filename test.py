@@ -20,7 +20,7 @@ def create_pdf_of_entire_dataset(liver, brain, lungs):
         try:
             organ = Organ.LUNGS
             create_pdf_file(name, organ)
-            print(f'{name}: SUCCESS :)')
+            print(f'{name}: SUCCESS')
         except Exception as e:
             print(f'{name}: FAILURE - {e}')
 
@@ -28,7 +28,7 @@ def create_pdf_of_entire_dataset(liver, brain, lungs):
         try:
             organ = Organ.LIVER
             create_pdf_file(name, organ)
-            print(f'{name}: SUCCESS :)')
+            print(f'{name}: SUCCESS')
         except Exception as e:
             print(f'{name}: FAILURE - {e}')
 
@@ -36,7 +36,7 @@ def create_pdf_of_entire_dataset(liver, brain, lungs):
         try:
             organ = Organ.BRAIN
             create_pdf_file(name, organ)
-            print(f'{name}: SUCCESS :)')
+            print(f'{name}: SUCCESS')
         except Exception as e:
             print(f'{name}: FAILURE - {e}')
 
